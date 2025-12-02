@@ -2,9 +2,12 @@
  * Content Script - Handles text selection and translation popup
  */
 
-import { mdiContentCopy, mdiCheck, mdiClose } from '@mdi/js';
-
 import type { ExtensionMessage } from '@/types/messages';
+
+// MDI icon paths (inlined to avoid bundling issues with content scripts)
+const MDI_CONTENT_COPY = 'M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z';
+const MDI_CHECK = 'M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z';
+const MDI_CLOSE = 'M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z';
 
 /**
  * Create an inline SVG icon from MDI path
@@ -312,9 +315,9 @@ function showTranslationResult(text: string): void {
   const plainText = text.replace(/\n+/g, ' ').trim();
 
   // Icon HTML for buttons
-  const copyIcon = mdiSvg(mdiContentCopy, 14, 'currentColor');
-  const checkIcon = mdiSvg(mdiCheck, 14, 'currentColor');
-  const closeIcon = mdiSvg(mdiClose, 14, 'white');
+  const copyIcon = mdiSvg(MDI_CONTENT_COPY, 14, 'currentColor');
+  const checkIcon = mdiSvg(MDI_CHECK, 14, 'currentColor');
+  const closeIcon = mdiSvg(MDI_CLOSE, 14, 'white');
 
   translationPopup.innerHTML = `
     <div style="white-space: pre-wrap; word-break: break-word; margin-bottom: 12px;">${escapeHtml(text)}</div>
