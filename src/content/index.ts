@@ -299,10 +299,22 @@ function showTranslationResult(text: string): void {
     return;
   }
 
+  // Plain text: remove multiple newlines and trim
+  const plainText = text.replace(/\n+/g, ' ').trim();
+
   translationPopup.innerHTML = `
     <div style="white-space: pre-wrap; word-break: break-word; margin-bottom: 12px;">${escapeHtml(text)}</div>
-    <div style="display: flex; gap: 8px; justify-content: flex-end;">
-      <button id="lta-copy-btn" style="
+    <div style="display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap;">
+      <button id="lta-copy-formatted-btn" style="
+        padding: 6px 12px;
+        background: #3b82f6;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 12px;
+        cursor: pointer;
+      ">📋 フォーマット済み</button>
+      <button id="lta-copy-plain-btn" style="
         padding: 6px 12px;
         background: #e5e7eb;
         color: #374151;
@@ -310,7 +322,7 @@ function showTranslationResult(text: string): void {
         border-radius: 4px;
         font-size: 12px;
         cursor: pointer;
-      ">コピー</button>
+      ">📋 1行</button>
       <button id="lta-close-btn" style="
         padding: 6px 12px;
         background: #ef4444;
@@ -323,15 +335,28 @@ function showTranslationResult(text: string): void {
     </div>
   `;
 
-  const copyBtn = translationPopup.querySelector('#lta-copy-btn');
+  const copyFormattedBtn = translationPopup.querySelector('#lta-copy-formatted-btn');
+  const copyPlainBtn = translationPopup.querySelector('#lta-copy-plain-btn');
   const closeBtn = translationPopup.querySelector('#lta-close-btn');
 
-  copyBtn?.addEventListener('click', () => {
+  copyFormattedBtn?.addEventListener('click', () => {
     void navigator.clipboard.writeText(text);
-    if (copyBtn instanceof HTMLButtonElement) {
-      copyBtn.textContent = 'コピー完了!';
+    if (copyFormattedBtn instanceof HTMLButtonElement) {
+      const original = copyFormattedBtn.textContent;
+      copyFormattedBtn.textContent = '✓ コピー完了!';
       setTimeout(() => {
-        copyBtn.textContent = 'コピー';
+        copyFormattedBtn.textContent = original;
+      }, 2000);
+    }
+  });
+
+  copyPlainBtn?.addEventListener('click', () => {
+    void navigator.clipboard.writeText(plainText);
+    if (copyPlainBtn instanceof HTMLButtonElement) {
+      const original = copyPlainBtn.textContent;
+      copyPlainBtn.textContent = '✓ コピー完了!';
+      setTimeout(() => {
+        copyPlainBtn.textContent = original;
       }, 2000);
     }
   });
