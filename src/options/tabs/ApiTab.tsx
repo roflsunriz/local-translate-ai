@@ -2,11 +2,14 @@ import { useState } from 'react';
 
 import { Button } from '@/components/Button';
 import { LanguageSelector } from '@/components/LanguageSelector';
+import { useTranslation } from '@/hooks/useTranslation';
 import { useSettingsStore, useUIStore } from '@/stores';
-import type { TranslationProfile, SupportedLanguage } from '@/types/settings';
 import { DEFAULT_PROFILE } from '@/types/settings';
 
+import type { TranslationProfile, SupportedLanguage } from '@/types/settings';
+
 export function ApiTab() {
+  const { t } = useTranslation();
   const { settings, addProfile, updateProfile, deleteProfile, setActiveProfile } =
     useSettingsStore();
   const { showSuccess, showError } = useUIStore();
@@ -18,7 +21,7 @@ export function ApiTab() {
     const newProfile: TranslationProfile = {
       ...DEFAULT_PROFILE,
       id: crypto.randomUUID(),
-      name: `プロファイル ${settings.profiles.length + 1}`,
+      name: `${t('settings.api.newProfile')} ${settings.profiles.length + 1}`,
     };
     addProfile(newProfile);
     setEditingProfile(newProfile);
@@ -26,18 +29,18 @@ export function ApiTab() {
 
   const handleDeleteProfile = (id: string) => {
     if (settings.profiles.length <= 1) {
-      showError('削除不可', '最後のプロファイルは削除できません');
+      showError(t('common.error'), t('settings.api.cannotDeleteLast'));
       return;
     }
     deleteProfile(id);
-    showSuccess('削除完了', 'プロファイルを削除しました');
+    showSuccess(t('common.success'), t('common.delete'));
   };
 
   const handleSaveProfile = () => {
     if (editingProfile) {
       updateProfile(editingProfile.id, editingProfile);
       setEditingProfile(null);
-      showSuccess('保存完了', 'プロファイルを保存しました');
+      showSuccess(t('common.success'), t('settings.saved'));
     }
   };
 
@@ -49,10 +52,10 @@ export function ApiTab() {
             className="text-lg font-medium"
             style={{ color: 'var(--color-text-primary)' }}
           >
-            プロファイル
+            {t('settings.api.profiles')}
           </h3>
           <Button variant="secondary" size="sm" onClick={handleCreateProfile}>
-            + 新規プロファイル
+            + {t('settings.api.newProfile')}
           </Button>
         </div>
 
@@ -87,14 +90,14 @@ export function ApiTab() {
                   size="sm"
                   onClick={() => { setEditingProfile({ ...profile }); }}
                 >
-                  編集
+                  {t('common.edit')}
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => { handleDeleteProfile(profile.id); }}
                 >
-                  削除
+                  {t('common.delete')}
                 </Button>
               </div>
             </div>
@@ -124,6 +127,8 @@ interface ProfileEditorProps {
 }
 
 function ProfileEditor({ profile, onChange, onSave, onCancel }: ProfileEditorProps) {
+  const { t } = useTranslation();
+
   const updateField = <K extends keyof TranslationProfile>(
     field: K,
     value: TranslationProfile[K]
@@ -143,7 +148,7 @@ function ProfileEditor({ profile, onChange, onSave, onCancel }: ProfileEditorPro
         className="font-medium"
         style={{ color: 'var(--color-text-primary)' }}
       >
-        プロファイル編集
+        {t('common.edit')}
       </h4>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -152,7 +157,7 @@ function ProfileEditor({ profile, onChange, onSave, onCancel }: ProfileEditorPro
             className="mb-1 block text-sm font-medium"
             style={{ color: 'var(--color-text-secondary)' }}
           >
-            プロファイル名
+            {t('settings.api.profileName')}
           </label>
           <input
             type="text"
@@ -172,7 +177,7 @@ function ProfileEditor({ profile, onChange, onSave, onCancel }: ProfileEditorPro
             className="mb-1 block text-sm font-medium"
             style={{ color: 'var(--color-text-secondary)' }}
           >
-            モデル名
+            {t('settings.api.model')}
           </label>
           <input
             type="text"
@@ -192,7 +197,7 @@ function ProfileEditor({ profile, onChange, onSave, onCancel }: ProfileEditorPro
             className="mb-1 block text-sm font-medium"
             style={{ color: 'var(--color-text-secondary)' }}
           >
-            APIエンドポイント
+            {t('settings.api.endpoint')}
           </label>
           <input
             type="url"
@@ -212,7 +217,7 @@ function ProfileEditor({ profile, onChange, onSave, onCancel }: ProfileEditorPro
             className="mb-1 block text-sm font-medium"
             style={{ color: 'var(--color-text-secondary)' }}
           >
-            APIキー
+            {t('settings.api.apiKey')}
           </label>
           <input
             type="password"
@@ -232,7 +237,7 @@ function ProfileEditor({ profile, onChange, onSave, onCancel }: ProfileEditorPro
             className="mb-1 block text-sm font-medium"
             style={{ color: 'var(--color-text-secondary)' }}
           >
-            タイムアウト（秒）
+            {t('settings.api.timeout')}
           </label>
           <input
             type="number"
@@ -252,7 +257,7 @@ function ProfileEditor({ profile, onChange, onSave, onCancel }: ProfileEditorPro
             className="mb-1 block text-sm font-medium"
             style={{ color: 'var(--color-text-secondary)' }}
           >
-            デフォルトソース言語
+            {t('settings.api.sourceLanguage')}
           </label>
           <LanguageSelector
             value={profile.sourceLanguage}
@@ -266,7 +271,7 @@ function ProfileEditor({ profile, onChange, onSave, onCancel }: ProfileEditorPro
             className="mb-1 block text-sm font-medium"
             style={{ color: 'var(--color-text-secondary)' }}
           >
-            デフォルトターゲット言語
+            {t('settings.api.targetLanguage')}
           </label>
           <LanguageSelector
             value={profile.targetLanguage}
@@ -277,10 +282,10 @@ function ProfileEditor({ profile, onChange, onSave, onCancel }: ProfileEditorPro
 
       <div className="flex justify-end gap-2">
         <Button variant="ghost" onClick={onCancel}>
-          キャンセル
+          {t('common.cancel')}
         </Button>
         <Button variant="primary" onClick={onSave}>
-          保存
+          {t('common.save')}
         </Button>
       </div>
     </div>
@@ -292,6 +297,8 @@ interface ProfileViewerProps {
 }
 
 function ProfileViewer({ profile }: ProfileViewerProps) {
+  const { t } = useTranslation();
+
   return (
     <div
       className="rounded-md border p-4"
@@ -304,24 +311,24 @@ function ProfileViewer({ profile }: ProfileViewerProps) {
         className="mb-4 font-medium"
         style={{ color: 'var(--color-text-primary)' }}
       >
-        現在のプロファイル: {profile.name}
+        {t('settings.api.currentProfile')}: {profile.name}
       </h4>
 
       <dl className="grid gap-2 text-sm md:grid-cols-2">
         <div>
-          <dt style={{ color: 'var(--color-text-muted)' }}>エンドポイント</dt>
+          <dt style={{ color: 'var(--color-text-muted)' }}>{t('settings.api.endpoint')}</dt>
           <dd style={{ color: 'var(--color-text-primary)' }}>{profile.apiEndpoint}</dd>
         </div>
         <div>
-          <dt style={{ color: 'var(--color-text-muted)' }}>モデル</dt>
+          <dt style={{ color: 'var(--color-text-muted)' }}>{t('settings.api.model')}</dt>
           <dd style={{ color: 'var(--color-text-primary)' }}>{profile.model}</dd>
         </div>
         <div>
-          <dt style={{ color: 'var(--color-text-muted)' }}>タイムアウト</dt>
-          <dd style={{ color: 'var(--color-text-primary)' }}>{profile.timeout}秒</dd>
+          <dt style={{ color: 'var(--color-text-muted)' }}>{t('settings.api.timeout')}</dt>
+          <dd style={{ color: 'var(--color-text-primary)' }}>{profile.timeout}s</dd>
         </div>
         <div>
-          <dt style={{ color: 'var(--color-text-muted)' }}>言語</dt>
+          <dt style={{ color: 'var(--color-text-muted)' }}>{t('settings.api.sourceLanguage')} → {t('settings.api.targetLanguage')}</dt>
           <dd style={{ color: 'var(--color-text-primary)' }}>
             {profile.sourceLanguage} → {profile.targetLanguage}
           </dd>
@@ -330,4 +337,3 @@ function ProfileViewer({ profile }: ProfileViewerProps) {
     </div>
   );
 }
-
