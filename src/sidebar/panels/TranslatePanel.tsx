@@ -59,8 +59,35 @@ export function TranslatePanel() {
           stream: settings.streamingEnabled,
         },
       })
+      .then((response: unknown) => {
+        // Handle direct response from background (for non-streaming)
+        if (response && typeof response === 'object') {
+          const res = response as { type?: string; payload?: { translatedText?: string; requestId?: string; code?: string; message?: string } };
+          if (res.type === 'TRANSLATE_TEXT_RESULT' && res.payload?.translatedText) {
+            const { completeTranslation } = useTranslationStore.getState();
+            completeTranslation(res.payload.translatedText);
+            showSuccess(t('notifications.translationComplete'), '');
+          } else if (res.type === 'TRANSLATE_TEXT_ERROR' && res.payload) {
+            const { failTranslation } = useTranslationStore.getState();
+            failTranslation({
+              requestId,
+              code: (res.payload.code as 'API_ERROR' | 'NETWORK_ERROR' | 'TIMEOUT' | 'CANCELLED' | 'INVALID_RESPONSE' | 'UNKNOWN_ERROR') ?? 'UNKNOWN_ERROR',
+              message: res.payload.message ?? t('notifications.unknownError'),
+              timestamp: Date.now(),
+            });
+            showError(t('notifications.translationError'), res.payload.message ?? '');
+          }
+        }
+      })
       .catch((error: unknown) => {
         const message = error instanceof Error ? error.message : t('notifications.unknownError');
+        const { failTranslation } = useTranslationStore.getState();
+        failTranslation({
+          requestId,
+          code: 'UNKNOWN_ERROR',
+          message,
+          timestamp: Date.now(),
+        });
         showError(t('notifications.translationError'), message);
       });
   }, [
@@ -71,6 +98,7 @@ export function TranslatePanel() {
     settings.streamingEnabled,
     startTranslation,
     showError,
+    showSuccess,
     showInfo,
     t,
   ]);
