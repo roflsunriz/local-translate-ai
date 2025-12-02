@@ -8,12 +8,62 @@ import type { ExtensionMessage } from '@/types/messages';
 const MDI_CONTENT_COPY = 'M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z';
 const MDI_CHECK = 'M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z';
 const MDI_CLOSE = 'M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z';
+const MDI_TRANSLATE = 'M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12A6,6 0 0,0 12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18C12.33,18 12.65,17.97 12.97,17.93L14.12,19.08C13.41,19.56 12.53,20 11.5,20A7,7 0 0,1 4.5,13A7,7 0 0,1 11.5,6C12.53,6 13.41,6.44 14.12,6.92L12.97,8.05C12.65,8.03 12.33,8 12,8A5,5 0 0,0 7,13A5,5 0 0,0 12,18A5,5 0 0,0 17,13C17,12.67 16.97,12.35 16.95,12H17.97L19.43,12.97Z';
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
 
 /**
- * Create an inline SVG icon from MDI path
+ * Create an SVG icon element from MDI path using DOM API (safe from XSS)
  */
-function mdiSvg(path: string, size = 16, color = 'currentColor'): string {
-  return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" style="vertical-align: middle; margin-right: 4px;"><path fill="${color}" d="${path}"/></svg>`;
+function createSvgIcon(path: string, size = 16, color = 'currentColor'): SVGSVGElement {
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('width', String(size));
+  svg.setAttribute('height', String(size));
+  svg.style.verticalAlign = 'middle';
+  svg.style.marginRight = '4px';
+
+  const pathEl = document.createElementNS(SVG_NS, 'path');
+  pathEl.setAttribute('fill', color);
+  pathEl.setAttribute('d', path);
+
+  svg.appendChild(pathEl);
+  return svg;
+}
+
+/**
+ * Create a styled button element
+ */
+function createButton(
+  id: string,
+  text: string,
+  iconPath: string,
+  styles: Partial<CSSStyleDeclaration>,
+): HTMLButtonElement {
+  const btn = document.createElement('button');
+  btn.id = id;
+  Object.assign(btn.style, {
+    padding: '6px 12px',
+    border: 'none',
+    borderRadius: '4px',
+    fontSize: '12px',
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    ...styles,
+  });
+  btn.appendChild(createSvgIcon(iconPath, 14, 'currentColor'));
+  btn.appendChild(document.createTextNode(text));
+  return btn;
+}
+
+/**
+ * Update button content with icon and text (safe from XSS)
+ */
+function updateButtonContent(btn: HTMLButtonElement, iconPath: string, text: string): void {
+  btn.textContent = '';
+  btn.appendChild(createSvgIcon(iconPath, 14, 'currentColor'));
+  btn.appendChild(document.createTextNode(text));
 }
 
 // Translation popup element
@@ -193,7 +243,8 @@ function showTranslationButton(x: number, y: number, text: string): void {
 
   translationButton = document.createElement('button');
   translationButton.id = 'lta-translate-button';
-  translationButton.innerHTML = '🌐 翻訳';
+  translationButton.appendChild(createSvgIcon(MDI_TRANSLATE, 14, 'white'));
+  translationButton.appendChild(document.createTextNode('翻訳'));
   translationButton.style.cssText = `
     position: fixed;
     left: ${x + 10}px;
@@ -311,9 +362,15 @@ function updateTranslationPopupContent(content: string): void {
     return;
   }
 
-  translationPopup.innerHTML = `
-    <div style="white-space: pre-wrap; word-break: break-word;">${escapeHtml(content)}</div>
-  `;
+  // Clear existing content safely
+  translationPopup.textContent = '';
+
+  const contentDiv = document.createElement('div');
+  contentDiv.style.whiteSpace = 'pre-wrap';
+  contentDiv.style.wordBreak = 'break-word';
+  contentDiv.textContent = content;
+
+  translationPopup.appendChild(contentDiv);
 }
 
 function showTranslationResult(text: string): void {
@@ -324,75 +381,70 @@ function showTranslationResult(text: string): void {
   // Plain text: remove multiple newlines and trim
   const plainText = text.replace(/\n+/g, ' ').trim();
 
-  // Icon HTML for buttons
-  const copyIcon = mdiSvg(MDI_CONTENT_COPY, 14, 'currentColor');
-  const checkIcon = mdiSvg(MDI_CHECK, 14, 'currentColor');
-  const closeIcon = mdiSvg(MDI_CLOSE, 14, 'white');
+  // Clear existing content safely
+  translationPopup.textContent = '';
 
-  translationPopup.innerHTML = `
-    <div style="white-space: pre-wrap; word-break: break-word; margin-bottom: 12px;">${escapeHtml(text)}</div>
-    <div style="display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap;">
-      <button id="lta-copy-formatted-btn" style="
-        padding: 6px 12px;
-        background: #3b82f6;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        font-size: 12px;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-      ">${copyIcon}フォーマット済み</button>
-      <button id="lta-copy-plain-btn" style="
-        padding: 6px 12px;
-        background: #e5e7eb;
-        color: #374151;
-        border: none;
-        border-radius: 4px;
-        font-size: 12px;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-      ">${copyIcon}1行</button>
-      <button id="lta-close-btn" style="
-        padding: 6px 12px;
-        background: #ef4444;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        font-size: 12px;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-      ">${closeIcon}閉じる</button>
-    </div>
-  `;
+  // Create content div
+  const contentDiv = document.createElement('div');
+  contentDiv.style.whiteSpace = 'pre-wrap';
+  contentDiv.style.wordBreak = 'break-word';
+  contentDiv.style.marginBottom = '12px';
+  contentDiv.textContent = text;
+  translationPopup.appendChild(contentDiv);
 
-  const copyFormattedBtn = translationPopup.querySelector('#lta-copy-formatted-btn');
-  const copyPlainBtn = translationPopup.querySelector('#lta-copy-plain-btn');
-  const closeBtn = translationPopup.querySelector('#lta-close-btn');
+  // Create button container
+  const buttonContainer = document.createElement('div');
+  buttonContainer.style.display = 'flex';
+  buttonContainer.style.gap = '8px';
+  buttonContainer.style.justifyContent = 'flex-end';
+  buttonContainer.style.flexWrap = 'wrap';
 
-  copyFormattedBtn?.addEventListener('click', () => {
+  // Create buttons using DOM API
+  const copyFormattedBtn = createButton(
+    'lta-copy-formatted-btn',
+    'フォーマット済み',
+    MDI_CONTENT_COPY,
+    { background: '#3b82f6', color: 'white' },
+  );
+
+  const copyPlainBtn = createButton(
+    'lta-copy-plain-btn',
+    '1行',
+    MDI_CONTENT_COPY,
+    { background: '#e5e7eb', color: '#374151' },
+  );
+
+  const closeBtn = createButton(
+    'lta-close-btn',
+    '閉じる',
+    MDI_CLOSE,
+    { background: '#ef4444', color: 'white' },
+  );
+
+  // Add event listeners
+  copyFormattedBtn.addEventListener('click', () => {
     void navigator.clipboard.writeText(text);
-    if (copyFormattedBtn instanceof HTMLButtonElement) {
-      copyFormattedBtn.innerHTML = `${checkIcon}コピー完了!`;
-      setTimeout(() => {
-        copyFormattedBtn.innerHTML = `${copyIcon}フォーマット済み`;
-      }, 2000);
-    }
+    updateButtonContent(copyFormattedBtn, MDI_CHECK, 'コピー完了!');
+    setTimeout(() => {
+      updateButtonContent(copyFormattedBtn, MDI_CONTENT_COPY, 'フォーマット済み');
+    }, 2000);
   });
 
-  copyPlainBtn?.addEventListener('click', () => {
+  copyPlainBtn.addEventListener('click', () => {
     void navigator.clipboard.writeText(plainText);
-    if (copyPlainBtn instanceof HTMLButtonElement) {
-      copyPlainBtn.innerHTML = `${checkIcon}コピー完了!`;
-      setTimeout(() => {
-        copyPlainBtn.innerHTML = `${copyIcon}1行`;
-      }, 2000);
-    }
+    updateButtonContent(copyPlainBtn, MDI_CHECK, 'コピー完了!');
+    setTimeout(() => {
+      updateButtonContent(copyPlainBtn, MDI_CONTENT_COPY, '1行');
+    }, 2000);
   });
 
-  closeBtn?.addEventListener('click', hideTranslationUI);
+  closeBtn.addEventListener('click', hideTranslationUI);
+
+  // Append buttons to container
+  buttonContainer.appendChild(copyFormattedBtn);
+  buttonContainer.appendChild(copyPlainBtn);
+  buttonContainer.appendChild(closeBtn);
+  translationPopup.appendChild(buttonContainer);
 }
 
 function updateStreamingResult(text: string): void {
@@ -408,23 +460,29 @@ function showTranslationError(message: string): void {
     return;
   }
 
-  translationPopup.innerHTML = `
-    <div style="color: #dc2626; margin-bottom: 12px;">
-      <strong>エラー:</strong> ${escapeHtml(message)}
-    </div>
-    <button id="lta-close-btn" style="
-      padding: 6px 12px;
-      background: #ef4444;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      font-size: 12px;
-      cursor: pointer;
-    ">閉じる</button>
-  `;
+  // Clear existing content safely
+  translationPopup.textContent = '';
 
-  const closeBtn = translationPopup.querySelector('#lta-close-btn');
-  closeBtn?.addEventListener('click', hideTranslationUI);
+  // Create error message div
+  const errorDiv = document.createElement('div');
+  errorDiv.style.color = '#dc2626';
+  errorDiv.style.marginBottom = '12px';
+
+  const strongEl = document.createElement('strong');
+  strongEl.textContent = 'エラー:';
+  errorDiv.appendChild(strongEl);
+  errorDiv.appendChild(document.createTextNode(' ' + message));
+  translationPopup.appendChild(errorDiv);
+
+  // Create close button using DOM API
+  const closeBtn = createButton(
+    'lta-close-btn',
+    '閉じる',
+    MDI_CLOSE,
+    { background: '#ef4444', color: 'white' },
+  );
+  closeBtn.addEventListener('click', hideTranslationUI);
+  translationPopup.appendChild(closeBtn);
 }
 
 function hideTranslationUI(): void {
@@ -564,12 +622,6 @@ function removeProgressBar(): void {
       progressBar.remove();
     }, 500);
   }
-}
-
-function escapeHtml(text: string): string {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
 }
 
 // Initialize when DOM is ready
