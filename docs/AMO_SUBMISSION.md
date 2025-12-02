@@ -147,6 +147,58 @@ export WEB_EXT_API_SECRET=your-api-secret
 npx web-ext sign -s dist
 ```
 
+## 自動検証の警告について
+
+### innerHTML警告（React DOM内部コード）
+
+AMO自動検証で以下のような警告が表示される場合があります：
+
+```
+Unsafe assignment to innerHTML
+assets/global-*.js 行: XXXXX
+```
+
+**これはReact DOMライブラリ内部のコードが原因であり、本拡張機能のソースコードではありません。**
+
+#### 技術的詳細
+
+React DOMは`dangerouslySetInnerHTML`プロップを処理するために内部で`innerHTML`を使用します：
+
+```javascript
+// React DOM内部コード（ユーザーコードではない）
+case "dangerouslySetInnerHTML":
+  domElement.innerHTML = key;
+  break;
+```
+
+このコードは、アプリケーションが`dangerouslySetInnerHTML`を使用していなくてもReact DOMバンドルに含まれます。
+
+#### 本拡張機能の対応
+
+1. **`dangerouslySetInnerHTML`は一切使用していません** - ソースコード全体を検索しても該当なし
+2. **Content Scriptは安全なDOM APIを使用**:
+   - `document.createElement()` - 要素作成
+   - `element.textContent` - テキスト設定
+   - `element.appendChild()` - 子要素追加
+3. **DOMPurifyを依存関係に含む** - 将来的なHTML無害化に対応可能
+
+#### レビュアーへの説明
+
+```
+The innerHTML warnings are from React DOM's internal implementation
+for handling the dangerouslySetInnerHTML prop. This extension does
+NOT use dangerouslySetInnerHTML anywhere in its source code.
+
+All DOM manipulation in content scripts uses safe DOM APIs:
+- document.createElement()
+- element.textContent
+- element.appendChild()
+
+You can verify by searching the source code:
+- grep -r "dangerouslySetInnerHTML" src/  → No results
+- grep -r "innerHTML" src/  → No results
+```
+
 ## トラブルシューティング
 
 ### ビルドエラー
