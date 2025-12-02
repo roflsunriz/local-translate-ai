@@ -68,5 +68,5 @@ https://github.com/roflsunriz/local-translate-ai/issues
 
 ---
 
-最終更新日 / Last Updated: 2024-12-02
+最終更新日 / Last Updated: 2025-12-02
 
