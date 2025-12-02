@@ -3,7 +3,7 @@
 ## 一般
 ![General](./General.png)
 ## APIエンドポイント
-![API-Endpoint](./API-Endpoint.png)
+![API-EndPoint](./API-EndPoint.png)
 ## プロンプト
 ![Prompt](./Prompt.png)
 ## 詳細
