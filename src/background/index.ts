@@ -30,6 +30,30 @@ async function initializeServices(): Promise<void> {
 // Initialize on script load
 void initializeServices();
 
+/**
+ * Broadcast message to all contexts (sidebar, options, and content scripts)
+ */
+async function broadcastMessage(message: unknown): Promise<void> {
+  // Send to extension pages (sidebar, options)
+  void browser.runtime.sendMessage(message).catch(() => {
+    // Ignore errors when no listeners
+  });
+
+  // Send to content scripts in all tabs
+  try {
+    const tabs = await browser.tabs.query({});
+    for (const tab of tabs) {
+      if (tab.id !== undefined) {
+        void browser.tabs.sendMessage(tab.id, message).catch(() => {
+          // Ignore errors for tabs without content script
+        });
+      }
+    }
+  } catch {
+    // Ignore errors querying tabs
+  }
+}
+
 // Message handler - Firefox requires returning a Promise for async responses
 browser.runtime.onMessage.addListener((
   message: ExtensionMessage,
@@ -109,12 +133,10 @@ async function handleTranslateText(
         abortController.signal,
         (chunk, accumulated) => {
           // Send streaming chunk to all listeners (sidebar, content script)
-          void browser.runtime.sendMessage({
+          void broadcastMessage({
             type: 'TRANSLATE_TEXT_STREAM_CHUNK',
             timestamp: Date.now(),
             payload: { requestId, chunk, accumulated },
-          }).catch(() => {
-            // Ignore errors when sending to contexts that may not be listening
           });
         }
       );
@@ -152,9 +174,7 @@ async function handleTranslateText(
         };
 
         // Also broadcast to all contexts
-        void browser.runtime.sendMessage(response).catch(() => {
-          // Ignore errors when sending to contexts that may not be listening
-        });
+        void broadcastMessage(response);
 
         return response;
       }
@@ -189,9 +209,7 @@ async function handleTranslateText(
       };
 
       // Also broadcast to all contexts
-      void browser.runtime.sendMessage(response).catch(() => {
-        // Ignore errors when sending to contexts that may not be listening
-      });
+      void broadcastMessage(response);
 
       return response;
     }
@@ -279,8 +297,8 @@ async function handleTranslatePage(
       profile,
       abortController.signal,
       (completed, total, _result) => {
-        // Send progress update
-        void browser.runtime.sendMessage({
+        // Send progress update to all contexts including content script
+        void broadcastMessage({
           type: 'TRANSLATE_PAGE_PROGRESS',
           timestamp: Date.now(),
           payload: {
@@ -290,8 +308,6 @@ async function handleTranslatePage(
             status: 'translating',
             errors: [],
           },
-        }).catch(() => {
-          // Ignore errors when sending to contexts that may not be listening
         });
       }
     );
@@ -360,12 +376,10 @@ async function handleSaveSettings(
   historyService.setMaxItems(settings.historyMaxItems);
 
   // Notify all contexts about settings update
-  void browser.runtime.sendMessage({
+  void broadcastMessage({
     type: 'SETTINGS_UPDATED',
     timestamp: Date.now(),
     payload: { settings },
-  }).catch(() => {
-    // Ignore errors when sending to contexts that may not be listening
   });
 
   return { success: true, settings };
