@@ -150,8 +150,8 @@ export const DEFAULT_SETTINGS: Settings = {
   },
   exclusionPatterns: DEFAULT_EXCLUSION_PATTERNS,
   keyboardShortcuts: {
-    translateSelection: 'Alt+Shift+T',
-    toggleSidebar: 'Alt+Shift+S',
+    translateSelection: 'Alt+W',
+    toggleSidebar: 'Alt+Q',
   },
   historyMaxItems: 100,
   historyEnabled: true,

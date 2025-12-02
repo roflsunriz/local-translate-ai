@@ -1,6 +1,6 @@
 {
   "name": "local-translate-ai",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Firefox extension for translation using local LLM (llama.cpp)",
   "type": "module",
   "engines": {
@@ -52,7 +52,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/local-translate-ai"
+    "url": "https://github.com/roflsunriz/local-translate-ai"
   },
   "keywords": [
     "firefox-extension",

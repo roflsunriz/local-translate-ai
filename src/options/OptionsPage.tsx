@@ -134,7 +134,7 @@ export function OptionsPage() {
             onTabChange={(tab) => { setActiveTab(tab as TabId); }}
           />
 
-          <div className="p-6">
+          <div className="min-h-[600px] p-6">
             {activeTab === 'general' && <GeneralTab />}
             {activeTab === 'api' && <ApiTab />}
             {activeTab === 'prompt' && <PromptTab />}

@@ -89,6 +89,16 @@ function handleMessage(
       const selection = window.getSelection();
       const selectedText = selection?.toString().trim();
       if (selectedText) {
+        // Get selection position for popup placement
+        const range = selection?.getRangeAt(0);
+        const rect = range?.getBoundingClientRect();
+        const popupX = rect ? rect.left : window.innerWidth / 2 - 100;
+        const popupY = rect ? rect.bottom + 10 : window.innerHeight / 2;
+
+        // Show popup before sending translation request
+        showTranslationPopup(popupX, popupY);
+        updateTranslationPopupContent('翻訳中...');
+
         void browser.runtime.sendMessage({
           type: 'TRANSLATE_TEXT',
           timestamp: Date.now(),
