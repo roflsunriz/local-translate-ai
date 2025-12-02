@@ -1,14 +1,16 @@
+import { useTranslation } from '@/hooks/useTranslation';
 import { useSettingsStore } from '@/stores';
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_USER_PROMPT_TEMPLATE } from '@/types/settings';
 
 export function PromptTab() {
+  const { t } = useTranslation();
   const { updateProfile, getActiveProfile } = useSettingsStore();
   const activeProfile = getActiveProfile();
 
   if (!activeProfile) {
     return (
       <div style={{ color: 'var(--color-text-muted)' }}>
-        プロファイルが選択されていません
+        {t('settings.api.currentProfile')}: N/A
       </div>
     );
   }
@@ -36,14 +38,14 @@ export function PromptTab() {
             className="text-sm font-medium"
             style={{ color: 'var(--color-text-secondary)' }}
           >
-            システムプロンプト
+            {t('settings.prompt.systemPrompt')}
           </label>
           <button
             onClick={handleResetSystemPrompt}
             className="text-xs transition-colors hover:underline"
             style={{ color: 'var(--color-accent)' }}
           >
-            デフォルトにリセット
+            {t('settings.prompt.resetToDefault')}
           </button>
         </div>
         <textarea
@@ -65,14 +67,14 @@ export function PromptTab() {
             className="text-sm font-medium"
             style={{ color: 'var(--color-text-secondary)' }}
           >
-            ユーザープロンプトテンプレート
+            {t('settings.prompt.userPrompt')}
           </label>
           <button
             onClick={handleResetUserPrompt}
             className="text-xs transition-colors hover:underline"
             style={{ color: 'var(--color-accent)' }}
           >
-            デフォルトにリセット
+            {t('settings.prompt.resetToDefault')}
           </button>
         </div>
         <textarea
@@ -96,7 +98,7 @@ export function PromptTab() {
           className="mb-2 text-sm font-medium"
           style={{ color: 'var(--color-text-primary)' }}
         >
-          利用可能な変数
+          {t('settings.prompt.variables')}
         </h4>
         <ul
           className="list-inside list-disc space-y-1 text-sm"
@@ -106,29 +108,28 @@ export function PromptTab() {
             <code className="rounded bg-[var(--color-bg-secondary)] px-1">
               {'{{source_language}}'}
             </code>{' '}
-            - ソース言語
+            - {t('settings.prompt.variableSource')}
           </li>
           <li>
             <code className="rounded bg-[var(--color-bg-secondary)] px-1">
               {'{{target_language}}'}
             </code>{' '}
-            - ターゲット言語
+            - {t('settings.prompt.variableTarget')}
           </li>
           <li>
             <code className="rounded bg-[var(--color-bg-secondary)] px-1">
               {'{{input_text}}'}
             </code>{' '}
-            - 入力テキスト
+            - {t('settings.prompt.variableInput')}
           </li>
           <li>
             <code className="rounded bg-[var(--color-bg-secondary)] px-1">
               {'{{output_text}}'}
             </code>{' '}
-            - 出力テキスト（ポストプロセス用）
+            - {t('settings.prompt.variableOutput')}
           </li>
         </ul>
       </div>
     </div>
   );
 }
-

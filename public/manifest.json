@@ -17,7 +17,8 @@
     "activeTab",
     "storage",
     "contextMenus",
-    "notifications"
+    "notifications",
+    "<all_urls>"
   ],
 
   "icons": {

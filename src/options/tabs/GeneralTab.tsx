@@ -1,4 +1,6 @@
+import { useTranslation } from '@/hooks/useTranslation';
 import { useSettingsStore } from '@/stores';
+
 import type { UILanguage, ThemeMode } from '@/types/settings';
 
 const UI_LANGUAGES: { value: UILanguage; label: string }[] = [
@@ -17,14 +19,15 @@ const UI_LANGUAGES: { value: UILanguage; label: string }[] = [
   { value: 'id', label: 'Bahasa Indonesia' },
 ];
 
-const THEME_MODES: { value: ThemeMode; label: string }[] = [
-  { value: 'auto', label: '自動（システム設定に従う）' },
-  { value: 'light', label: 'ライト' },
-  { value: 'dark', label: 'ダーク' },
-];
-
 export function GeneralTab() {
+  const { t } = useTranslation();
   const { settings, updateSettings } = useSettingsStore();
+
+  const THEME_MODES: { value: ThemeMode; label: string }[] = [
+    { value: 'auto', label: t('settings.general.themeAuto') },
+    { value: 'light', label: t('settings.general.themeLight') },
+    { value: 'dark', label: t('settings.general.themeDark') },
+  ];
 
   return (
     <div className="space-y-6">
@@ -33,7 +36,7 @@ export function GeneralTab() {
           className="mb-4 text-lg font-medium"
           style={{ color: 'var(--color-text-primary)' }}
         >
-          表示設定
+          {t('settings.general.display')}
         </h3>
 
         <div className="space-y-4">
@@ -42,7 +45,7 @@ export function GeneralTab() {
               className="mb-1 block text-sm font-medium"
               style={{ color: 'var(--color-text-secondary)' }}
             >
-              表示言語
+              {t('settings.general.uiLanguage')}
             </label>
             <select
               value={settings.uiLanguage}
@@ -67,7 +70,7 @@ export function GeneralTab() {
               className="mb-1 block text-sm font-medium"
               style={{ color: 'var(--color-text-secondary)' }}
             >
-              テーマ
+              {t('settings.general.theme')}
             </label>
             <select
               value={settings.themeMode}
@@ -94,13 +97,13 @@ export function GeneralTab() {
           className="mb-4 text-lg font-medium"
           style={{ color: 'var(--color-text-primary)' }}
         >
-          米ドル換算機能
+          {t('settings.general.currency')}
         </h3>
         <p
           className="mb-4 text-sm"
           style={{ color: 'var(--color-text-muted)' }}
         >
-          英語→日本語翻訳時に、米ドル金額を日本円に換算して表示します
+          {t('settings.general.currencyDescription')}
         </p>
 
         <div className="space-y-4">
@@ -124,7 +127,7 @@ export function GeneralTab() {
               className="text-sm"
               style={{ color: 'var(--color-text-primary)' }}
             >
-              米ドル換算を有効にする
+              {t('settings.general.currencyEnabled')}
             </label>
           </div>
 
@@ -134,7 +137,7 @@ export function GeneralTab() {
                 className="mb-1 block text-sm font-medium"
                 style={{ color: 'var(--color-text-secondary)' }}
               >
-                1ドル = 何円
+                {t('settings.general.currencyRate')}
               </label>
               <input
                 type="number"
@@ -161,4 +164,3 @@ export function GeneralTab() {
     </div>
   );
 }
-

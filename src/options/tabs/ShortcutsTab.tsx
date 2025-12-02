@@ -1,6 +1,8 @@
+import { useTranslation } from '@/hooks/useTranslation';
 import { useSettingsStore } from '@/stores';
 
 export function ShortcutsTab() {
+  const { t } = useTranslation();
   const { settings, updateSettings } = useSettingsStore();
 
   const handleShortcutChange = (
@@ -22,13 +24,13 @@ export function ShortcutsTab() {
           className="mb-4 text-lg font-medium"
           style={{ color: 'var(--color-text-primary)' }}
         >
-          キーボードショートカット
+          {t('settings.shortcuts.title')}
         </h3>
         <p
           className="mb-4 text-sm"
           style={{ color: 'var(--color-text-muted)' }}
         >
-          ショートカットキーを設定します。Firefoxの設定でも変更できます。
+          {t('settings.shortcuts.description')}
         </p>
 
         <div className="space-y-4">
@@ -37,7 +39,7 @@ export function ShortcutsTab() {
               className="mb-1 block text-sm font-medium"
               style={{ color: 'var(--color-text-secondary)' }}
             >
-              選択テキストを翻訳
+              {t('settings.shortcuts.translateSelection')}
             </label>
             <input
               type="text"
@@ -51,12 +53,6 @@ export function ShortcutsTab() {
                 color: 'var(--color-text-primary)',
               }}
             />
-            <p
-              className="mt-1 text-xs"
-              style={{ color: 'var(--color-text-muted)' }}
-            >
-              選択したテキストをサイドバーに送信して翻訳します
-            </p>
           </div>
 
           <div>
@@ -64,7 +60,7 @@ export function ShortcutsTab() {
               className="mb-1 block text-sm font-medium"
               style={{ color: 'var(--color-text-secondary)' }}
             >
-              サイドバー表示/非表示
+              {t('settings.shortcuts.toggleSidebar')}
             </label>
             <input
               type="text"
@@ -78,12 +74,6 @@ export function ShortcutsTab() {
                 color: 'var(--color-text-primary)',
               }}
             />
-            <p
-              className="mt-1 text-xs"
-              style={{ color: 'var(--color-text-muted)' }}
-            >
-              翻訳サイドバーの表示/非表示を切り替えます
-            </p>
           </div>
         </div>
       </div>
@@ -96,21 +86,17 @@ export function ShortcutsTab() {
           className="mb-2 text-sm font-medium"
           style={{ color: 'var(--color-text-primary)' }}
         >
-          ヒント
+          {t('settings.shortcuts.hint')}
         </h4>
         <ul
           className="list-inside list-disc space-y-1 text-sm"
           style={{ color: 'var(--color-text-secondary)' }}
         >
-          <li>
-            Firefoxの設定 &gt; 拡張機能とテーマ &gt; ⚙️ &gt; アドオンのショートカットキーを管理
-            からも変更できます
-          </li>
-          <li>一部のキーの組み合わせはシステムや他の拡張機能で使用されている場合があります</li>
-          <li>設定を変更した場合、ページの再読み込みが必要な場合があります</li>
+          <li>{t('settings.shortcuts.hintFirefox')}</li>
+          <li>{t('settings.shortcuts.hintConflict')}</li>
+          <li>{t('settings.shortcuts.hintReload')}</li>
         </ul>
       </div>
     </div>
   );
 }
-

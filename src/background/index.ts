@@ -30,61 +30,53 @@ async function initializeServices(): Promise<void> {
 // Initialize on script load
 void initializeServices();
 
-// Message handler
+// Message handler - Firefox requires returning a Promise for async responses
 browser.runtime.onMessage.addListener((
   message: ExtensionMessage,
-  _sender: browser.runtime.MessageSender,
-  sendResponse: (response: unknown) => void
-): true | undefined => {
-  handleMessage(message, sendResponse).catch((error: unknown) => {
+  _sender: browser.runtime.MessageSender
+): Promise<unknown> | undefined => {
+  // Return a Promise for async handling (Firefox WebExtension pattern)
+  return handleMessage(message).catch((error: unknown) => {
     console.error('Message handler error:', error);
+    return { error: String(error) };
   });
-  return true; // Keep the message channel open for async response
 });
 
 async function handleMessage(
-  message: ExtensionMessage,
-  sendResponse: (response: unknown) => void
-): Promise<void> {
+  message: ExtensionMessage
+): Promise<unknown> {
   switch (message.type) {
     case 'TRANSLATE_TEXT':
-      await handleTranslateText(message, sendResponse);
-      break;
+      return handleTranslateText(message);
 
     case 'TRANSLATE_PAGE':
-      await handleTranslatePage(message, sendResponse);
-      break;
+      return handleTranslatePage(message);
 
     case 'CANCEL_TRANSLATION':
       handleCancelTranslation(message.payload.requestId);
-      sendResponse({ success: true });
-      break;
+      return { success: true };
 
     case 'GET_SETTINGS':
-      await handleGetSettings(sendResponse);
-      break;
+      return handleGetSettings();
 
     case 'SAVE_SETTINGS':
-      await handleSaveSettings(message.payload.settings, sendResponse);
-      break;
+      return handleSaveSettings(message.payload.settings);
 
     case 'GET_HISTORY':
-      await handleGetHistory(message.payload, sendResponse);
-      break;
+      return handleGetHistory(message.payload);
 
     case 'CLEAR_HISTORY':
-      await handleClearHistory(sendResponse);
-      break;
+      return handleClearHistory();
 
     default:
       console.warn('Unknown message type:', message.type);
+      return { error: 'Unknown message type' };
   }
 }
 
 async function handleTranslateText(
-  message: TranslateTextMessage,
-  sendResponse: (response: unknown) => void
-): Promise<void> {
+  message: TranslateTextMessage
+): Promise<unknown> {
   const { requestId, text, sourceLanguage, targetLanguage, profileId, stream } =
     message.payload;
 
@@ -121,6 +113,8 @@ async function handleTranslateText(
             type: 'TRANSLATE_TEXT_STREAM_CHUNK',
             timestamp: Date.now(),
             payload: { requestId, chunk, accumulated },
+          }).catch(() => {
+            // Ignore errors when sending to contexts that may not be listening
           });
         }
       );
@@ -157,11 +151,14 @@ async function handleTranslateText(
           },
         };
 
-        sendResponse(response);
-
         // Also broadcast to all contexts
-        void browser.runtime.sendMessage(response);
+        void browser.runtime.sendMessage(response).catch(() => {
+          // Ignore errors when sending to contexts that may not be listening
+        });
+
+        return response;
       }
+      return { success: true };
     } else {
       // Non-streaming translation
       const result = await translationService.translate(
@@ -191,14 +188,16 @@ async function handleTranslateText(
         payload: result,
       };
 
-      sendResponse(response);
-
       // Also broadcast to all contexts
-      void browser.runtime.sendMessage(response);
+      void browser.runtime.sendMessage(response).catch(() => {
+        // Ignore errors when sending to contexts that may not be listening
+      });
+
+      return response;
     }
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') {
-      sendResponse({
+      return {
         type: 'TRANSLATE_TEXT_ERROR',
         payload: {
           requestId,
@@ -206,20 +205,20 @@ async function handleTranslateText(
           message: 'Translation was cancelled',
           timestamp: Date.now(),
         },
-      });
+      };
     } else {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error('Translation error:', error);
-      sendResponse({
+      return {
         type: 'TRANSLATE_TEXT_ERROR',
         payload: {
           requestId,
           code: 'API_ERROR',
           message: errorMessage,
-          details: error,
+          details: String(error),
           timestamp: Date.now(),
         },
-      });
+      };
     }
   } finally {
     activeRequests.delete(requestId);
@@ -227,9 +226,8 @@ async function handleTranslateText(
 }
 
 async function handleTranslatePage(
-  message: TranslatePageMessage,
-  sendResponse: (response: unknown) => void
-): Promise<void> {
+  message: TranslatePageMessage
+): Promise<unknown> {
   const { requestId, targetLanguage, profileId } = message.payload;
 
   // Create abort controller
@@ -253,13 +251,13 @@ async function handleTranslatePage(
     }
 
     // Request text nodes from content script
-    const response = await browser.tabs.sendMessage(tab.id, {
+    const contentResponse = await browser.tabs.sendMessage(tab.id, {
       type: 'GET_PAGE_TEXT_NODES',
       timestamp: Date.now(),
     }) as { texts: string[]; nodeIds: string[] };
 
-    if (!response?.texts || response.texts.length === 0) {
-      sendResponse({
+    if (!contentResponse?.texts || contentResponse.texts.length === 0) {
+      return {
         type: 'TRANSLATE_PAGE_COMPLETE',
         timestamp: Date.now(),
         payload: {
@@ -267,16 +265,15 @@ async function handleTranslatePage(
           translatedNodes: 0,
           duration: 0,
         },
-      });
-      return;
+      };
     }
 
     const startTime = Date.now();
-    const totalNodes = response.texts.length;
+    const totalNodes = contentResponse.texts.length;
 
     // Translate in batches
     const translatedTexts = await translationService.translateBatch(
-      response.texts,
+      contentResponse.texts,
       'auto' as SupportedLanguage,
       targetLanguage,
       profile,
@@ -293,6 +290,8 @@ async function handleTranslatePage(
             status: 'translating',
             errors: [],
           },
+        }).catch(() => {
+          // Ignore errors when sending to contexts that may not be listening
         });
       }
     );
@@ -302,12 +301,12 @@ async function handleTranslatePage(
       type: 'APPLY_PAGE_TRANSLATION',
       timestamp: Date.now(),
       payload: {
-        nodeIds: response.nodeIds,
+        nodeIds: contentResponse.nodeIds,
         translatedTexts,
       },
     });
 
-    sendResponse({
+    return {
       type: 'TRANSLATE_PAGE_COMPLETE',
       timestamp: Date.now(),
       payload: {
@@ -315,20 +314,20 @@ async function handleTranslatePage(
         translatedNodes: totalNodes,
         duration: Date.now() - startTime,
       },
-    });
+    };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('Page translation error:', error);
-    sendResponse({
+    return {
       type: 'TRANSLATE_PAGE_ERROR',
       payload: {
         requestId,
         code: 'API_ERROR',
         message: errorMessage,
-        details: error,
+        details: String(error),
         timestamp: Date.now(),
       },
-    });
+    };
   } finally {
     activeRequests.delete(requestId);
   }
@@ -342,15 +341,14 @@ function handleCancelTranslation(requestId: string): void {
   }
 }
 
-async function handleGetSettings(sendResponse: (response: unknown) => void): Promise<void> {
+async function handleGetSettings(): Promise<unknown> {
   const settings = await settingsService.getSettings();
-  sendResponse({ settings });
+  return { settings };
 }
 
 async function handleSaveSettings(
-  partialSettings: Partial<Settings>,
-  sendResponse: (response: unknown) => void
-): Promise<void> {
+  partialSettings: Partial<Settings>
+): Promise<unknown> {
   await settingsService.updateSettings(partialSettings);
   const settings = await settingsService.getSettings();
 
@@ -361,28 +359,29 @@ async function handleSaveSettings(
   });
   historyService.setMaxItems(settings.historyMaxItems);
 
-  sendResponse({ success: true, settings });
-
   // Notify all contexts about settings update
   void browser.runtime.sendMessage({
     type: 'SETTINGS_UPDATED',
     timestamp: Date.now(),
     payload: { settings },
+  }).catch(() => {
+    // Ignore errors when sending to contexts that may not be listening
   });
+
+  return { success: true, settings };
 }
 
 async function handleGetHistory(
-  payload: { limit?: number; offset?: number },
-  sendResponse: (response: unknown) => void
-): Promise<void> {
+  payload: { limit?: number; offset?: number }
+): Promise<unknown> {
   const items = await historyService.getItems(payload.limit, payload.offset);
   const total = await historyService.getCount();
-  sendResponse({ items, total });
+  return { items, total };
 }
 
-async function handleClearHistory(sendResponse: (response: unknown) => void): Promise<void> {
+async function handleClearHistory(): Promise<unknown> {
   await historyService.clear();
-  sendResponse({ success: true });
+  return { success: true };
 }
 
 // Context menu setup
@@ -419,18 +418,15 @@ browser.contextMenus.onClicked.addListener((info, tab) => {
     });
   } else if (info.menuItemId === 'translate-page') {
     // Send message to background to handle page translation
-    void handleTranslatePage(
-      {
-        type: 'TRANSLATE_PAGE',
-        timestamp: Date.now(),
-        payload: {
-          requestId: crypto.randomUUID(),
-          targetLanguage: 'Japanese',
-          profileId: '',
-        },
+    void handleTranslatePage({
+      type: 'TRANSLATE_PAGE',
+      timestamp: Date.now(),
+      payload: {
+        requestId: crypto.randomUUID(),
+        targetLanguage: 'Japanese',
+        profileId: '',
       },
-      () => { /* Response handled internally */ }
-    );
+    });
   }
 });
 

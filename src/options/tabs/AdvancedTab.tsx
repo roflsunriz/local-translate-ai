@@ -1,10 +1,13 @@
 import { useState } from 'react';
 
 import { Button } from '@/components/Button';
+import { useTranslation } from '@/hooks/useTranslation';
 import { useSettingsStore, useUIStore } from '@/stores';
+
 import type { ExclusionPattern } from '@/types/settings';
 
 export function AdvancedTab() {
+  const { t } = useTranslation();
   const {
     settings,
     updateSettings,
@@ -29,7 +32,7 @@ export function AdvancedTab() {
 
     addExclusionPattern(pattern);
     setNewPattern({ name: '', pattern: '' });
-    showSuccess('追加完了', '除外パターンを追加しました');
+    showSuccess(t('common.success'), t('settings.advanced.addPattern'));
   };
 
   return (
@@ -39,7 +42,7 @@ export function AdvancedTab() {
           className="mb-4 text-lg font-medium"
           style={{ color: 'var(--color-text-primary)' }}
         >
-          翻訳設定
+          {t('settings.advanced.translationSettings')}
         </h3>
 
         <div className="space-y-4">
@@ -56,7 +59,7 @@ export function AdvancedTab() {
               className="text-sm"
               style={{ color: 'var(--color-text-primary)' }}
             >
-              ストリーミング翻訳を有効にする（逐次表示）
+              {t('settings.advanced.streamingEnabled')}
             </label>
           </div>
 
@@ -73,7 +76,7 @@ export function AdvancedTab() {
               className="text-sm"
               style={{ color: 'var(--color-text-primary)' }}
             >
-              翻訳履歴を保存する
+              {t('settings.advanced.historyEnabled')}
             </label>
           </div>
 
@@ -83,7 +86,7 @@ export function AdvancedTab() {
                 className="mb-1 block text-sm font-medium"
                 style={{ color: 'var(--color-text-secondary)' }}
               >
-                履歴保存件数
+                {t('settings.advanced.historyMaxItems')}
               </label>
               <input
                 type="number"
@@ -105,7 +108,7 @@ export function AdvancedTab() {
                 className="mb-1 block text-sm font-medium"
                 style={{ color: 'var(--color-text-secondary)' }}
               >
-                リトライ回数
+                {t('settings.advanced.retryCount')}
               </label>
               <input
                 type="number"
@@ -127,7 +130,7 @@ export function AdvancedTab() {
                 className="mb-1 block text-sm font-medium"
                 style={{ color: 'var(--color-text-secondary)' }}
               >
-                リトライ間隔（ミリ秒）
+                {t('settings.advanced.retryInterval')}
               </label>
               <input
                 type="number"
@@ -153,13 +156,13 @@ export function AdvancedTab() {
           className="mb-4 text-lg font-medium"
           style={{ color: 'var(--color-text-primary)' }}
         >
-          翻訳除外パターン
+          {t('settings.advanced.exclusionPatterns')}
         </h3>
         <p
           className="mb-4 text-sm"
           style={{ color: 'var(--color-text-muted)' }}
         >
-          正規表現パターンにマッチするテキストは翻訳されません
+          {t('settings.advanced.exclusionDescription')}
         </p>
 
         <div className="space-y-2">
@@ -196,7 +199,7 @@ export function AdvancedTab() {
                 size="sm"
                 onClick={() => { deleteExclusionPattern(pattern.id); }}
               >
-                削除
+                {t('common.delete')}
               </Button>
             </div>
           ))}
@@ -213,12 +216,12 @@ export function AdvancedTab() {
             className="mb-3 text-sm font-medium"
             style={{ color: 'var(--color-text-primary)' }}
           >
-            新しいパターンを追加
+            {t('settings.advanced.addPattern')}
           </h4>
           <div className="grid gap-3 md:grid-cols-2">
             <input
               type="text"
-              placeholder="パターン名"
+              placeholder={t('settings.advanced.patternName')}
               value={newPattern.name}
               onChange={(e) => { setNewPattern({ ...newPattern, name: e.target.value }); }}
               className="rounded-md border px-3 py-2 text-sm"
@@ -230,7 +233,7 @@ export function AdvancedTab() {
             />
             <input
               type="text"
-              placeholder="正規表現パターン"
+              placeholder={t('settings.advanced.patternRegex')}
               value={newPattern.pattern}
               onChange={(e) => { setNewPattern({ ...newPattern, pattern: e.target.value }); }}
               className="rounded-md border px-3 py-2 font-mono text-sm"
@@ -248,11 +251,10 @@ export function AdvancedTab() {
             className="mt-3"
             disabled={!newPattern.name.trim() || !newPattern.pattern.trim()}
           >
-            追加
+            {t('common.add')}
           </Button>
         </div>
       </div>
     </div>
   );
 }
-
