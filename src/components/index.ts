@@ -3,8 +3,11 @@
  */
 
 export { Button } from './Button';
+export { MdiIcon } from './Icon';
 export { LanguageSelector } from './LanguageSelector';
 export { TabBar } from './TabBar';
 export { TextArea } from './TextArea';
 export { ToastContainer } from './ToastContainer';
+
+export type { IconName } from './Icon';
 

@@ -1,13 +1,16 @@
 import { useEffect } from 'react';
 
+import { MdiIcon } from '@/components/Icon';
 import { TabBar } from '@/components/TabBar';
 import { ToastContainer } from '@/components/ToastContainer';
+import { useTranslation } from '@/hooks';
 import { useSettingsStore, useUIStore } from '@/stores';
 
 import { HistoryPanel } from './panels/HistoryPanel';
 import { TranslatePanel } from './panels/TranslatePanel';
 
 export function Sidebar() {
+  const { t } = useTranslation();
   const { sidebarTab, setSidebarTab } = useUIStore();
   const { loadFromStorage, settings } = useSettingsStore();
 
@@ -25,25 +28,38 @@ export function Sidebar() {
     }
   }, [themeMode]);
 
+  const tabs = [
+    {
+      id: 'translate',
+      label: t('sidebar.tabs.translate'),
+      icon: <MdiIcon name="translate" size={18} />,
+    },
+    {
+      id: 'history',
+      label: t('sidebar.tabs.history'),
+      icon: <MdiIcon name="history" size={18} />,
+    },
+  ];
+
   return (
     <div className="flex h-screen flex-col" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
       <header
         className="flex items-center justify-between border-b px-4 py-3"
         style={{ borderColor: 'var(--color-border)' }}
       >
-        <h1
-          className="text-lg font-semibold"
-          style={{ color: 'var(--color-text-primary)' }}
-        >
-          Local Translate AI
-        </h1>
+        <div className="flex items-center gap-2">
+          <MdiIcon name="globe" size={20} color="var(--color-accent)" />
+          <h1
+            className="text-lg font-semibold"
+            style={{ color: 'var(--color-text-primary)' }}
+          >
+            {t('sidebar.title')}
+          </h1>
+        </div>
       </header>
 
       <TabBar
-        tabs={[
-          { id: 'translate', label: '翻訳' },
-          { id: 'history', label: '履歴' },
-        ]}
+        tabs={tabs}
         activeTab={sidebarTab}
         onTabChange={(tab) => { setSidebarTab(tab as 'translate' | 'history'); }}
       />
@@ -57,4 +73,3 @@ export function Sidebar() {
     </div>
   );
 }
-

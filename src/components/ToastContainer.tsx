@@ -1,11 +1,14 @@
+import { MdiIcon } from '@/components/Icon';
 import { useUIStore } from '@/stores';
-import type { ToastNotification } from '@/types/ui';
 
-const typeStyles: Record<ToastNotification['type'], { bg: string; icon: string }> = {
-  success: { bg: 'var(--color-success)', icon: '✓' },
-  error: { bg: 'var(--color-error)', icon: '✕' },
-  warning: { bg: 'var(--color-warning)', icon: '⚠' },
-  info: { bg: 'var(--color-accent)', icon: 'ℹ' },
+import type { ToastNotification } from '@/types/ui';
+import type { IconName } from '@/components/Icon';
+
+const typeConfig: Record<ToastNotification['type'], { bg: string; icon: IconName }> = {
+  success: { bg: 'var(--color-success)', icon: 'check' },
+  error: { bg: 'var(--color-error)', icon: 'error' },
+  warning: { bg: 'var(--color-warning)', icon: 'warning' },
+  info: { bg: 'var(--color-accent)', icon: 'info' },
 };
 
 export function ToastContainer() {
@@ -30,30 +33,32 @@ interface ToastProps {
 }
 
 function Toast({ toast, onDismiss }: ToastProps) {
-  const style = typeStyles[toast.type];
+  const config = typeConfig[toast.type];
 
   return (
     <div
       className="pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-lg p-4 shadow-lg animate-in slide-in-from-bottom-5"
       style={{
         backgroundColor: 'var(--color-bg-secondary)',
-        border: `1px solid ${style.bg}`,
+        border: `1px solid ${config.bg}`,
       }}
       role="alert"
     >
       <span
-        className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-sm text-white"
-        style={{ backgroundColor: style.bg }}
+        className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-white"
+        style={{ backgroundColor: config.bg }}
       >
-        {style.icon}
+        <MdiIcon name={config.icon} size={14} color="white" />
       </span>
       <div className="flex-1">
         <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
           {toast.title}
         </p>
-        <p className="mt-1 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-          {toast.message}
-        </p>
+        {toast.message && (
+          <p className="mt-1 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+            {toast.message}
+          </p>
+        )}
       </div>
       <button
         onClick={onDismiss}
@@ -61,11 +66,8 @@ function Toast({ toast, onDismiss }: ToastProps) {
         style={{ color: 'var(--color-text-muted)' }}
         aria-label="閉じる"
       >
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-        </svg>
+        <MdiIcon name="close" size={16} />
       </button>
     </div>
   );
 }
-

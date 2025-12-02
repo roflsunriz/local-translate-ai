@@ -102,7 +102,7 @@ translation
 export const DEFAULT_PROFILE: TranslationProfile = {
   id: 'default-plamo2-llama-cpp',
   name: 'Default-PLaMo2-Llama-cpp',
-  apiEndpoint: 'https://localhost:3002/v1/chat/completions',
+  apiEndpoint: 'http://localhost:3002/v1/chat/completions',
   apiKey: 'test',
   model: 'plamo-2-translate-gguf',
   timeout: 600,

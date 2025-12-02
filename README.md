@@ -52,7 +52,7 @@ pnpm preview
 
 | 項目 | デフォルト値 |
 |------|-------------|
-| APIエンドポイント | `https://localhost:3002/v1/chat/completions` |
+| APIエンドポイント | `http://localhost:3002/v1/chat/completions` |
 | APIキー | `test` |
 | モデル | `plamo-2-translate-gguf` |
 | タイムアウト | 600秒 |

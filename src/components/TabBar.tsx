@@ -1,7 +1,9 @@
+import type { ReactNode } from 'react';
+
 interface Tab {
   id: string;
   label: string;
-  icon?: string;
+  icon?: ReactNode;
 }
 
 interface TabBarProps {
@@ -26,7 +28,7 @@ export function TabBar({ tabs, activeTab, onTabChange }: TabBarProps) {
             aria-selected={isActive}
             onClick={() => { onTabChange(tab.id); }}
             className={`
-              flex-1 px-4 py-3 text-sm font-medium transition-colors
+              flex flex-1 items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors
               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset
               focus-visible:ring-[var(--color-accent)]
             `}
@@ -40,12 +42,11 @@ export function TabBar({ tabs, activeTab, onTabChange }: TabBarProps) {
               backgroundColor: 'transparent',
             }}
           >
-            {tab.icon && <span className="mr-1">{tab.icon}</span>}
-            {tab.label}
+            {tab.icon && <span className="flex-shrink-0">{tab.icon}</span>}
+            <span>{tab.label}</span>
           </button>
         );
       })}
     </div>
   );
 }
-

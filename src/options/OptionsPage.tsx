@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 
+import { MdiIcon } from '@/components/Icon';
 import { TabBar } from '@/components/TabBar';
 import { ToastContainer } from '@/components/ToastContainer';
+import { useTranslation } from '@/hooks';
 import { useSettingsStore, useUIStore } from '@/stores';
 
 import { AdvancedTab } from './tabs/AdvancedTab';
@@ -10,17 +12,26 @@ import { GeneralTab } from './tabs/GeneralTab';
 import { PromptTab } from './tabs/PromptTab';
 import { ShortcutsTab } from './tabs/ShortcutsTab';
 
+import type { IconName } from '@/components/Icon';
+
 type TabId = 'general' | 'api' | 'prompt' | 'advanced' | 'shortcuts';
 
-const TABS = [
-  { id: 'general', label: '⚙️ 一般' },
-  { id: 'api', label: '🔌 API' },
-  { id: 'prompt', label: '💬 プロンプト' },
-  { id: 'advanced', label: '🔧 詳細' },
-  { id: 'shortcuts', label: '⌨️ ショートカット' },
+interface TabConfig {
+  id: TabId;
+  labelKey: string;
+  icon: IconName;
+}
+
+const TAB_CONFIGS: TabConfig[] = [
+  { id: 'general', labelKey: 'settings.tabs.general', icon: 'settings' },
+  { id: 'api', labelKey: 'settings.tabs.api', icon: 'api' },
+  { id: 'prompt', labelKey: 'settings.tabs.prompt', icon: 'message' },
+  { id: 'advanced', labelKey: 'settings.tabs.advanced', icon: 'tune' },
+  { id: 'shortcuts', labelKey: 'settings.tabs.shortcuts', icon: 'keyboard' },
 ];
 
 export function OptionsPage() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabId>('general');
   const { loadFromStorage, settings, saveToStorage } = useSettingsStore();
   const { showSuccess, showError } = useUIStore();
@@ -39,12 +50,18 @@ export function OptionsPage() {
     }
   }, [themeMode]);
 
+  const tabs = TAB_CONFIGS.map((config) => ({
+    id: config.id,
+    label: t(config.labelKey),
+    icon: <MdiIcon name={config.icon} size={18} />,
+  }));
+
   const handleSave = async () => {
     try {
       await saveToStorage();
-      showSuccess('保存完了', '設定を保存しました');
+      showSuccess(t('common.success'), t('settings.saved'));
     } catch {
-      showError('保存失敗', '設定の保存に失敗しました');
+      showError(t('common.error'), t('settings.saveFailed'));
     }
   };
 
@@ -57,7 +74,7 @@ export function OptionsPage() {
     a.download = 'local-translate-ai-settings.json';
     a.click();
     URL.revokeObjectURL(url);
-    showSuccess('エクスポート完了', '設定をエクスポートしました');
+    showSuccess(t('common.success'), t('settings.exported'));
   };
 
   const handleImport = () => {
@@ -75,9 +92,9 @@ export function OptionsPage() {
         const imported = JSON.parse(text) as Partial<typeof settings>;
         useSettingsStore.getState().setSettings({ ...settings, ...imported });
         await saveToStorage();
-        showSuccess('インポート完了', '設定をインポートしました');
+        showSuccess(t('common.success'), t('settings.imported'));
       } catch {
-        showError('インポート失敗', '設定ファイルの読み込みに失敗しました');
+        showError(t('common.error'), t('settings.importFailed'));
       }
     };
     input.click();
@@ -94,13 +111,13 @@ export function OptionsPage() {
             className="text-2xl font-bold"
             style={{ color: 'var(--color-text-primary)' }}
           >
-            Local Translate AI 設定
+            {t('settings.title')}
           </h1>
           <p
             className="mt-2 text-sm"
             style={{ color: 'var(--color-text-secondary)' }}
           >
-            翻訳拡張機能の設定を管理します
+            {t('settings.description')}
           </p>
         </header>
 
@@ -112,7 +129,7 @@ export function OptionsPage() {
           }}
         >
           <TabBar
-            tabs={TABS}
+            tabs={tabs}
             activeTab={activeTab}
             onTabChange={(tab) => { setActiveTab(tab as TabId); }}
           />
@@ -132,47 +149,51 @@ export function OptionsPage() {
             <div className="flex gap-2">
               <button
                 onClick={handleExport}
-                className="rounded-md px-4 py-2 text-sm font-medium transition-colors"
+                className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors"
                 style={{
                   backgroundColor: 'var(--color-bg-tertiary)',
                   color: 'var(--color-text-primary)',
                 }}
               >
-                エクスポート
+                <MdiIcon name="export" size={16} />
+                {t('common.export')}
               </button>
               <button
                 onClick={handleImport}
-                className="rounded-md px-4 py-2 text-sm font-medium transition-colors"
+                className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors"
                 style={{
                   backgroundColor: 'var(--color-bg-tertiary)',
                   color: 'var(--color-text-primary)',
                 }}
               >
-                インポート
+                <MdiIcon name="import" size={16} />
+                {t('common.import')}
               </button>
             </div>
             <button
               onClick={() => { void handleSave(); }}
-              className="rounded-md px-6 py-2 text-sm font-medium text-white transition-colors"
+              className="inline-flex items-center gap-2 rounded-md px-6 py-2 text-sm font-medium text-white transition-colors"
               style={{ backgroundColor: 'var(--color-accent)' }}
             >
-              保存
+              <MdiIcon name="check" size={16} />
+              {t('common.save')}
             </button>
           </div>
         </div>
 
         <footer
-          className="mt-8 text-center text-sm"
+          className="mt-8 flex items-center justify-center gap-2 text-sm"
           style={{ color: 'var(--color-text-muted)' }}
         >
+          <MdiIcon name="github" size={16} />
           <a
-            href="https://github.com/your-username/local-translate-ai/issues"
+            href="https://github.com/roflsunriz/local-translate-ai/issues"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:underline"
             style={{ color: 'var(--color-accent)' }}
           >
-            問題を報告 (GitHub Issues)
+            {t('settings.reportIssue')}
           </a>
         </footer>
       </div>
@@ -181,4 +202,3 @@ export function OptionsPage() {
     </div>
   );
 }
-

@@ -1,10 +1,14 @@
 import { useEffect, useCallback } from 'react';
 
 import { Button } from '@/components/Button';
+import { MdiIcon } from '@/components/Icon';
+import { useTranslation } from '@/hooks';
 import { useTranslationStore, useUIStore } from '@/stores';
+
 import type { TranslationHistoryItem } from '@/types/translation';
 
 export function HistoryPanel() {
+  const { t } = useTranslation();
   const { history, setHistory, setHistoryLoading, historyLoading, clearHistory } =
     useTranslationStore();
   const { showSuccess, showError } = useUIStore();
@@ -38,12 +42,12 @@ export function HistoryPanel() {
       })
       .then(() => {
         clearHistory();
-        showSuccess('履歴削除', '翻訳履歴を削除しました');
+        showSuccess(t('common.success'), t('notifications.historyCleared'));
       })
       .catch(() => {
-        showError('エラー', '履歴の削除に失敗しました');
+        showError(t('common.error'), t('notifications.unknownError'));
       });
-  }, [clearHistory, showSuccess, showError]);
+  }, [clearHistory, showSuccess, showError, t]);
 
   const handleUseHistoryItem = useCallback((item: TranslationHistoryItem) => {
     const { setInputText, setOutputText, setSourceLanguage, setTargetLanguage } =
@@ -60,11 +64,11 @@ export function HistoryPanel() {
   const handleCopyItem = useCallback(async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      showSuccess('コピー完了', 'クリップボードにコピーしました');
+      showSuccess(t('common.copied'), t('notifications.copySuccess'));
     } catch {
-      showError('コピー失敗', 'クリップボードへのコピーに失敗しました');
+      showError(t('common.error'), t('notifications.copyFailed'));
     }
-  }, [showSuccess, showError]);
+  }, [showSuccess, showError, t]);
 
   if (historyLoading) {
     return (
@@ -72,7 +76,8 @@ export function HistoryPanel() {
         className="flex h-full items-center justify-center"
         style={{ color: 'var(--color-text-muted)' }}
       >
-        読み込み中...
+        <MdiIcon name="refresh" size={24} className="animate-spin" />
+        <span className="ml-2">{t('common.loading')}</span>
       </div>
     );
   }
@@ -83,8 +88,8 @@ export function HistoryPanel() {
         className="flex h-full flex-col items-center justify-center gap-2 p-4"
         style={{ color: 'var(--color-text-muted)' }}
       >
-        <span className="text-4xl">📝</span>
-        <p>翻訳履歴がありません</p>
+        <MdiIcon name="history" size={48} />
+        <p>{t('sidebar.history.empty')}</p>
       </div>
     );
   }
@@ -93,10 +98,11 @@ export function HistoryPanel() {
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between border-b px-4 py-2" style={{ borderColor: 'var(--color-border)' }}>
         <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-          {history.length}件の履歴
+          {t('sidebar.history.itemCount', { count: history.length })}
         </span>
         <Button variant="ghost" size="sm" onClick={handleClearHistory}>
-          全て削除
+          <MdiIcon name="delete" size={16} />
+          <span className="ml-1">{t('sidebar.history.clearAll')}</span>
         </Button>
       </div>
 
@@ -121,6 +127,8 @@ interface HistoryItemProps {
 }
 
 function HistoryItem({ item, onUse, onCopy }: HistoryItemProps) {
+  const { t } = useTranslation();
+
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp);
     return date.toLocaleDateString('ja-JP', {
@@ -153,9 +161,10 @@ function HistoryItem({ item, onUse, onCopy }: HistoryItemProps) {
       }}
     >
       <div className="mb-1 flex items-center justify-between">
-        <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-          {item.sourceLanguage} → {item.targetLanguage}
-        </span>
+        <div className="flex items-center gap-1 text-xs" style={{ color: 'var(--color-text-muted)' }}>
+          <MdiIcon name="swap" size={12} />
+          <span>{item.sourceLanguage} → {item.targetLanguage}</span>
+        </div>
         <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
           {formatDate(item.timestamp)}
         </span>
@@ -174,13 +183,14 @@ function HistoryItem({ item, onUse, onCopy }: HistoryItemProps) {
 
       <div className="flex gap-2">
         <Button variant="ghost" size="sm" onClick={onUse}>
-          使用
+          <MdiIcon name="chevronRight" size={14} />
+          <span className="ml-1">{t('sidebar.history.use')}</span>
         </Button>
         <Button variant="ghost" size="sm" onClick={onCopy}>
-          コピー
+          <MdiIcon name="copy" size={14} />
+          <span className="ml-1">{t('common.copy')}</span>
         </Button>
       </div>
     </div>
   );
 }
-

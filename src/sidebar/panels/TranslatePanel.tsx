@@ -1,12 +1,16 @@
 import { useCallback } from 'react';
 
 import { Button } from '@/components/Button';
+import { MdiIcon } from '@/components/Icon';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { TextArea } from '@/components/TextArea';
+import { useTranslation } from '@/hooks';
 import { useSettingsStore, useTranslationStore, useUIStore } from '@/stores';
+
 import type { SupportedLanguage } from '@/types/settings';
 
 export function TranslatePanel() {
+  const { t } = useTranslation();
   const {
     inputText,
     outputText,
@@ -33,13 +37,13 @@ export function TranslatePanel() {
 
   const handleTranslate = useCallback(() => {
     if (!inputText.trim()) {
-      showError('エラー', '翻訳するテキストを入力してください');
+      showError(t('common.error'), t('sidebar.translate.inputPlaceholder'));
       return;
     }
 
     const requestId = crypto.randomUUID();
     startTranslation(requestId);
-    showInfo('翻訳開始', '翻訳を開始しました...');
+    showInfo(t('notifications.translationStarted'), '');
 
     // Send message to background script
     browser.runtime
@@ -56,8 +60,8 @@ export function TranslatePanel() {
         },
       })
       .catch((error: unknown) => {
-        const message = error instanceof Error ? error.message : '不明なエラー';
-        showError('API エラー', message);
+        const message = error instanceof Error ? error.message : t('notifications.unknownError');
+        showError(t('notifications.translationError'), message);
       });
   }, [
     inputText,
@@ -68,6 +72,7 @@ export function TranslatePanel() {
     startTranslation,
     showError,
     showInfo,
+    t,
   ]);
 
   const handleCancel = useCallback(() => {
@@ -81,19 +86,19 @@ export function TranslatePanel() {
         })
         .catch(console.error);
       cancelTranslation();
-      showInfo('キャンセル', '翻訳をキャンセルしました');
+      showInfo(t('notifications.translationCancelled'), '');
     }
-  }, [showInfo]);
+  }, [showInfo, t]);
 
   const handleCopy = useCallback(async (formatted: boolean) => {
     const text = formatted ? displayText : displayText.replace(/\n+/g, ' ').trim();
     try {
       await navigator.clipboard.writeText(text);
-      showSuccess('コピー完了', 'クリップボードにコピーしました');
+      showSuccess(t('common.copied'), t('notifications.copySuccess'));
     } catch {
-      showError('コピー失敗', 'クリップボードへのコピーに失敗しました');
+      showError(t('common.error'), t('notifications.copyFailed'));
     }
-  }, [displayText, showSuccess, showError]);
+  }, [displayText, showSuccess, showError, t]);
 
   const handleClear = useCallback(() => {
     clearTexts();
@@ -107,7 +112,7 @@ export function TranslatePanel() {
           className="mb-1 block text-sm font-medium"
           style={{ color: 'var(--color-text-secondary)' }}
         >
-          ソース言語
+          {t('sidebar.translate.sourceLanguage')}
         </label>
         <LanguageSelector
           value={effectiveSourceLang}
@@ -122,12 +127,12 @@ export function TranslatePanel() {
           className="mb-1 block text-sm font-medium"
           style={{ color: 'var(--color-text-secondary)' }}
         >
-          入力テキスト
+          {t('sidebar.translate.inputPlaceholder').split('...')[0]}
         </label>
         <TextArea
           value={inputText}
           onChange={setInputText}
-          placeholder="翻訳するテキストを入力..."
+          placeholder={t('sidebar.translate.inputPlaceholder')}
           className="h-32 w-full resize-none"
           disabled={isTranslating}
         />
@@ -137,7 +142,8 @@ export function TranslatePanel() {
       <div className="flex gap-2">
         {isTranslating ? (
           <Button variant="secondary" onClick={handleCancel} className="flex-1">
-            キャンセル
+            <MdiIcon name="cancel" size={16} />
+            <span className="ml-2">{t('common.cancel')}</span>
           </Button>
         ) : (
           <Button
@@ -146,11 +152,12 @@ export function TranslatePanel() {
             disabled={!inputText.trim()}
             className="flex-1"
           >
-            翻訳
+            <MdiIcon name="send" size={16} />
+            <span className="ml-2">{t('sidebar.translate.translateButton')}</span>
           </Button>
         )}
         <Button variant="ghost" onClick={handleClear} disabled={isTranslating}>
-          クリア
+          <MdiIcon name="delete" size={16} />
         </Button>
       </div>
 
@@ -160,7 +167,7 @@ export function TranslatePanel() {
           className="mb-1 block text-sm font-medium"
           style={{ color: 'var(--color-text-secondary)' }}
         >
-          ターゲット言語
+          {t('sidebar.translate.targetLanguage')}
         </label>
         <LanguageSelector
           value={effectiveTargetLang}
@@ -174,12 +181,12 @@ export function TranslatePanel() {
           className="mb-1 block text-sm font-medium"
           style={{ color: 'var(--color-text-secondary)' }}
         >
-          翻訳結果
+          {isTranslating ? t('sidebar.translate.translating') : t('sidebar.translate.outputPlaceholder').split(' ')[0]}
         </label>
         <TextArea
           value={displayText}
           readOnly
-          placeholder={isTranslating ? '翻訳中...' : '翻訳結果がここに表示されます'}
+          placeholder={isTranslating ? t('sidebar.translate.translating') : t('sidebar.translate.outputPlaceholder')}
           className="h-32 w-full resize-none"
         />
       </div>
@@ -192,18 +199,19 @@ export function TranslatePanel() {
             onClick={() => { void handleCopy(true); }}
             className="flex-1"
           >
-            コピー（フォーマット済み）
+            <MdiIcon name="copy" size={16} />
+            <span className="ml-2">{t('sidebar.translate.copyFormatted')}</span>
           </Button>
           <Button
             variant="secondary"
             onClick={() => { void handleCopy(false); }}
             className="flex-1"
           >
-            コピー（1行）
+            <MdiIcon name="copy" size={16} />
+            <span className="ml-2">{t('sidebar.translate.copyPlain')}</span>
           </Button>
         </div>
       )}
     </div>
   );
 }
-

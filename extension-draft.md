@@ -69,7 +69,7 @@
 - [✅️] インポート・エクスポート機能
 - [✅️] 自動→日本語、英語→日本語限定で変換結果の米ドルとAIモデルのパラメータ数換算結果付与機能オン・オフと1ドル何円の設定
 - [✅️] プロファイル切り替え(デフォルト：Default-PLaMo2-Llama-cpp)
-- [✅️] APIエンドポイント設定(デフォルト：https://localhost:3002/v1/chat/completions)
+- [✅️] APIエンドポイント設定(デフォルト：http://localhost:3002/v1/chat/completions)
 - [✅️] APIキー設定(デフォルト：test)
 - [✅️] モデル設定(デフォルト：plamo-2-translate-gguf)
 - [✅️] タイムアウト設定(デフォルト：600秒)
