@@ -1,0 +1,73 @@
+{
+  "manifest_version": 2,
+  "name": "Local Translate AI",
+  "version": "0.1.0",
+  "description": "Translate text using local LLM (llama.cpp with OpenAI-compatible API)",
+  "author": "Your Name",
+  "homepage_url": "https://github.com/your-username/local-translate-ai",
+
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "local-translate-ai@example.com",
+      "strict_min_version": "109.0"
+    }
+  },
+
+  "permissions": [
+    "activeTab",
+    "storage",
+    "contextMenus",
+    "notifications"
+  ],
+
+  "icons": {
+    "48": "icons/icon-48.svg",
+    "96": "icons/icon-96.svg"
+  },
+
+  "background": {
+    "scripts": ["background.js"],
+    "type": "module"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+
+  "sidebar_action": {
+    "default_title": "Local Translate AI",
+    "default_panel": "src/sidebar/index.html",
+    "default_icon": {
+      "48": "icons/icon-48.svg",
+      "96": "icons/icon-96.svg"
+    }
+  },
+
+  "options_ui": {
+    "page": "src/options/index.html",
+    "open_in_tab": true
+  },
+
+  "commands": {
+    "translate-selection": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+T"
+      },
+      "description": "Translate selected text"
+    },
+    "toggle-sidebar": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+S"
+      },
+      "description": "Toggle sidebar"
+    }
+  },
+
+  "content_security_policy": "script-src 'self'; object-src 'self'; connect-src https://localhost:* http://localhost:* https://*;"
+}
+

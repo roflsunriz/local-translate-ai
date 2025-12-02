@@ -1,0 +1,27 @@
+/* Content script styles */
+
+#lta-translate-button,
+#lta-translation-popup {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  box-sizing: border-box;
+}
+
+#lta-translate-button:focus,
+#lta-translation-popup button:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  #lta-translation-popup {
+    background: #1f2937 !important;
+    color: #f3f4f6 !important;
+  }
+
+  #lta-copy-btn {
+    background: #374151 !important;
+    color: #f3f4f6 !important;
+  }
+}
+
