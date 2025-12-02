@@ -453,4 +453,14 @@ browser.browserAction?.onClicked?.addListener(() => {
   void browser.runtime.openOptionsPage();
 });
 
+// Listen for storage changes to clear settings cache
+// This ensures settings changes from options page are reflected in background
+browser.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName === 'local' && changes['settings']) {
+    // Clear the settings cache so next getSettings() reads fresh data
+    settingsService.clearCache();
+    console.info('Settings cache cleared due to storage change');
+  }
+});
+
 console.info('Local Translate AI background script loaded');
