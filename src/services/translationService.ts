@@ -6,8 +6,23 @@ import type { TranslationProfile, SupportedLanguage } from '@/types/settings';
 import type { TranslationResult } from '@/types/translation';
 import type { ChatCompletionRequest, ChatCompletionResponse, ChatCompletionChunk } from '@/types/api';
 
+export interface RetryConfig {
+  maxRetries: number;
+  retryInterval: number;
+}
+
+const DEFAULT_RETRY_CONFIG: RetryConfig = {
+  maxRetries: 3,
+  retryInterval: 1000,
+};
+
 export class TranslationService {
   private lastResult: string = '';
+  private retryConfig: RetryConfig = DEFAULT_RETRY_CONFIG;
+
+  setRetryConfig(config: Partial<RetryConfig>): void {
+    this.retryConfig = { ...this.retryConfig, ...config };
+  }
 
   async translate(
     text: string,
@@ -28,18 +43,22 @@ export class TranslationService {
       stream: false,
     };
 
-    const response = await this.fetchWithTimeout(
-      profile.apiEndpoint,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${profile.apiKey}`,
+    // Execute with retry
+    const response = await this.executeWithRetry(
+      () => this.fetchWithTimeout(
+        profile.apiEndpoint,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${profile.apiKey}`,
+          },
+          body: JSON.stringify(request),
+          signal: signal ?? null,
         },
-        body: JSON.stringify(request),
-        signal: signal ?? null,
-      },
-      profile.timeout * 1000
+        profile.timeout * 1000
+      ),
+      signal
     );
 
     if (!response.ok) {
@@ -83,18 +102,22 @@ export class TranslationService {
       stream: true,
     };
 
-    const response = await this.fetchWithTimeout(
-      profile.apiEndpoint,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${profile.apiKey}`,
+    // Execute with retry
+    const response = await this.executeWithRetry(
+      () => this.fetchWithTimeout(
+        profile.apiEndpoint,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${profile.apiKey}`,
+          },
+          body: JSON.stringify(request),
+          signal,
         },
-        body: JSON.stringify(request),
-        signal,
-      },
-      profile.timeout * 1000
+        profile.timeout * 1000
+      ),
+      signal
     );
 
     if (!response.ok) {
@@ -147,6 +170,53 @@ export class TranslationService {
     this.lastResult = accumulated;
   }
 
+  /**
+   * Translate multiple texts in batch (for page translation)
+   */
+  async translateBatch(
+    texts: string[],
+    sourceLanguage: SupportedLanguage,
+    targetLanguage: SupportedLanguage,
+    profile: TranslationProfile,
+    signal: AbortSignal,
+    onProgress: (completed: number, total: number, result: string) => void
+  ): Promise<string[]> {
+    const results: string[] = [];
+    const total = texts.length;
+
+    for (let i = 0; i < texts.length; i++) {
+      if (signal.aborted) {
+        throw new Error('Translation cancelled');
+      }
+
+      const text = texts[i];
+      if (!text || text.trim().length === 0) {
+        results.push('');
+        onProgress(i + 1, total, '');
+        continue;
+      }
+
+      try {
+        const result = await this.translate(
+          text,
+          sourceLanguage,
+          targetLanguage,
+          profile,
+          signal
+        );
+        results.push(result.translatedText);
+        onProgress(i + 1, total, result.translatedText);
+      } catch (error) {
+        // On error, keep original text
+        console.error(`Failed to translate text at index ${i}:`, error);
+        results.push(text);
+        onProgress(i + 1, total, text);
+      }
+    }
+
+    return results;
+  }
+
   getLastResult(): string {
     return this.lastResult;
   }
@@ -161,6 +231,45 @@ export class TranslationService {
       .replace(/\{\{source_language\}\}/g, sourceLanguage)
       .replace(/\{\{target_language\}\}/g, targetLanguage)
       .replace(/\{\{input_text\}\}/g, text);
+  }
+
+  private async executeWithRetry<T>(
+    fn: () => Promise<T>,
+    signal?: AbortSignal
+  ): Promise<T> {
+    let lastError: Error | null = null;
+
+    for (let attempt = 0; attempt <= this.retryConfig.maxRetries; attempt++) {
+      if (signal?.aborted) {
+        throw new Error('Request was cancelled');
+      }
+
+      try {
+        return await fn();
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+
+        // Don't retry on abort
+        if (lastError.name === 'AbortError' || signal?.aborted) {
+          throw lastError;
+        }
+
+        // Don't retry on last attempt
+        if (attempt === this.retryConfig.maxRetries) {
+          break;
+        }
+
+        // Wait before retry
+        await this.delay(this.retryConfig.retryInterval);
+        console.warn(`Retry attempt ${attempt + 1}/${this.retryConfig.maxRetries}`);
+      }
+    }
+
+    throw lastError ?? new Error('Unknown error during retry');
+  }
+
+  private delay(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   private async fetchWithTimeout(
@@ -186,4 +295,3 @@ export class TranslationService {
     }
   }
 }
-

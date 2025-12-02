@@ -1,11 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
   <defs>
-    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="bg-gradient-48" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:#3b82f6"/>
+      <stop offset="50%" style="stop-color:#2563eb"/>
       <stop offset="100%" style="stop-color:#1d4ed8"/>
     </linearGradient>
+    <filter id="shadow-48" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="1" stdDeviation="1" flood-color="#000" flood-opacity="0.2"/>
+    </filter>
   </defs>
-  <rect width="48" height="48" rx="8" fill="url(#bg-gradient)"/>
-  <text x="24" y="32" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="white" text-anchor="middle">翻</text>
+  <!-- Background -->
+  <rect width="48" height="48" rx="10" fill="url(#bg-gradient-48)" filter="url(#shadow-48)"/>
+  <!-- Globe icon -->
+  <circle cx="24" cy="20" r="10" fill="none" stroke="white" stroke-width="1.5" opacity="0.9"/>
+  <ellipse cx="24" cy="20" rx="10" ry="4" fill="none" stroke="white" stroke-width="1" opacity="0.7"/>
+  <line x1="24" y1="10" x2="24" y2="30" stroke="white" stroke-width="1" opacity="0.7"/>
+  <line x1="14" y1="20" x2="34" y2="20" stroke="white" stroke-width="1" opacity="0.7"/>
+  <!-- Translation arrows -->
+  <path d="M16 34 L20 38 L16 42" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M32 34 L28 38 L32 42" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="20" y1="38" x2="28" y2="38" stroke="white" stroke-width="2" stroke-linecap="round"/>
 </svg>
-

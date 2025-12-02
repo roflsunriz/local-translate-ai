@@ -25,6 +25,14 @@
     "96": "icons/icon-96.svg"
   },
 
+  "browser_action": {
+    "default_icon": {
+      "48": "icons/icon-48.svg",
+      "96": "icons/icon-96.svg"
+    },
+    "default_title": "Local Translate AI - 設定を開く"
+  },
+
   "background": {
     "scripts": ["background.js"],
     "type": "module"

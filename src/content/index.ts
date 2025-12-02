@@ -8,6 +8,9 @@ import type { ExtensionMessage } from '@/types/messages';
 let translationPopup: HTMLDivElement | null = null;
 let translationButton: HTMLButtonElement | null = null;
 
+// Page translation state
+const translatedNodes = new Map<string, { node: Text; originalText: string }>();
+
 // Initialize content script
 function init(): void {
   // Listen for text selection
@@ -21,10 +24,54 @@ function init(): void {
   document.addEventListener('scroll', hideTranslationUI, { passive: true });
   window.addEventListener('resize', hideTranslationUI, { passive: true });
 
+  // Inject styles for translated elements
+  injectTranslationStyles();
+
   console.info('Local Translate AI content script loaded');
 }
 
-function handleMessage(message: ExtensionMessage): void {
+function injectTranslationStyles(): void {
+  const style = document.createElement('style');
+  style.id = 'lta-styles';
+  style.textContent = `
+    .lta-translated {
+      position: relative;
+      background-color: rgba(59, 130, 246, 0.05);
+      border-bottom: 1px dotted rgba(59, 130, 246, 0.3);
+    }
+    .lta-translated:hover::after {
+      content: attr(data-original);
+      position: absolute;
+      bottom: 100%;
+      left: 0;
+      background: #1f2937;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      line-height: 1.4;
+      white-space: pre-wrap;
+      max-width: 400px;
+      z-index: 2147483646;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      pointer-events: none;
+    }
+    .lta-progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #3b82f6, #60a5fa);
+      z-index: 2147483647;
+      transition: width 0.3s ease;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+function handleMessage(
+  message: ExtensionMessage | { type: string; payload?: unknown },
+): boolean | void | Promise<unknown> {
   switch (message.type) {
     case 'GET_SELECTION': {
       const selection = window.getSelection();
@@ -47,23 +94,48 @@ function handleMessage(message: ExtensionMessage): void {
     }
 
     case 'TRANSLATE_PAGE':
-      void translatePage(message.payload.targetLanguage);
+      void startPageTranslation();
       break;
 
-    case 'TRANSLATE_TEXT_RESULT':
-      showTranslationResult(message.payload.translatedText);
-      break;
+    case 'GET_PAGE_TEXT_NODES':
+      return Promise.resolve(getPageTextNodes());
 
-    case 'TRANSLATE_TEXT_STREAM_CHUNK':
-      updateStreamingResult(message.payload.accumulated);
+    case 'APPLY_PAGE_TRANSLATION': {
+      const applyPayload = (message as { payload: { nodeIds: string[]; translatedTexts: string[] } }).payload;
+      applyPageTranslation(applyPayload.nodeIds, applyPayload.translatedTexts);
       break;
+    }
 
-    case 'TRANSLATE_TEXT_STREAM_END':
-      finalizeTranslationResult(message.payload.translatedText);
+    case 'TRANSLATE_PAGE_PROGRESS': {
+      const progressPayload = (message as { payload: { translatedNodes: number; totalNodes: number } }).payload;
+      updateProgressBar(progressPayload.translatedNodes, progressPayload.totalNodes);
       break;
+    }
+
+    case 'TRANSLATE_TEXT_RESULT': {
+      const resultPayload = (message as ExtensionMessage & { type: 'TRANSLATE_TEXT_RESULT' }).payload;
+      showTranslationResult(resultPayload.translatedText);
+      break;
+    }
+
+    case 'TRANSLATE_TEXT_STREAM_CHUNK': {
+      const chunkPayload = (message as ExtensionMessage & { type: 'TRANSLATE_TEXT_STREAM_CHUNK' }).payload;
+      updateStreamingResult(chunkPayload.accumulated);
+      break;
+    }
+
+    case 'TRANSLATE_TEXT_STREAM_END': {
+      const endPayload = (message as ExtensionMessage & { type: 'TRANSLATE_TEXT_STREAM_END' }).payload;
+      finalizeTranslationResult(endPayload.translatedText);
+      break;
+    }
 
     case 'TRANSLATE_TEXT_ERROR':
-      showTranslationError(message.payload.message);
+      showTranslationError((message as ExtensionMessage & { type: 'TRANSLATE_TEXT_ERROR' }).payload.message);
+      break;
+
+    default:
+      // Unknown message type
       break;
   }
 }
@@ -145,12 +217,15 @@ async function translateSelectedText(text: string): Promise<void> {
   showTranslationPopup(buttonRect.left, buttonRect.bottom + 10);
   updateTranslationPopupContent('翻訳中...');
 
+  const requestId = crypto.randomUUID();
+
   try {
+    // Send to background script for translation and sidebar sync
     await browser.runtime.sendMessage({
       type: 'TRANSLATE_TEXT',
       timestamp: Date.now(),
       payload: {
-        requestId: crypto.randomUUID(),
+        requestId,
         text,
         sourceLanguage: 'auto',
         targetLanguage: 'Japanese',
@@ -307,24 +382,32 @@ function hideTranslationUI(): void {
   }
 }
 
-async function translatePage(targetLanguage: string): Promise<void> {
-  // Get all text nodes in the document
+// Page translation functions
+function getPageTextNodes(): { texts: string[]; nodeIds: string[] } {
+  const texts: string[] = [];
+  const nodeIds: string[] = [];
+
   const walker = document.createTreeWalker(
     document.body,
     NodeFilter.SHOW_TEXT,
     {
       acceptNode: (node) => {
-        // Skip script and style elements
         const parent = node.parentElement;
         if (!parent) {
           return NodeFilter.FILTER_REJECT;
         }
         const tagName = parent.tagName.toLowerCase();
-        if (['script', 'style', 'noscript', 'code', 'pre'].includes(tagName)) {
+        // Skip non-translatable elements
+        if (['script', 'style', 'noscript', 'code', 'pre', 'textarea', 'input'].includes(tagName)) {
           return NodeFilter.FILTER_REJECT;
         }
         // Skip empty or whitespace-only nodes
-        if (!node.textContent?.trim()) {
+        const text = node.textContent?.trim();
+        if (!text || text.length === 0) {
+          return NodeFilter.FILTER_REJECT;
+        }
+        // Skip very short text (likely punctuation or numbers only)
+        if (text.length < 2) {
           return NodeFilter.FILTER_REJECT;
         }
         return NodeFilter.FILTER_ACCEPT;
@@ -332,28 +415,99 @@ async function translatePage(targetLanguage: string): Promise<void> {
     }
   );
 
-  const textNodes: Text[] = [];
+  let nodeIndex = 0;
   let node: Node | null;
   while ((node = walker.nextNode())) {
-    if (node instanceof Text) {
-      textNodes.push(node);
+    if (node instanceof Text && node.textContent) {
+      const nodeId = `lta-node-${nodeIndex++}`;
+      texts.push(node.textContent.trim());
+      nodeIds.push(nodeId);
+      translatedNodes.set(nodeId, { node, originalText: node.textContent });
     }
   }
 
-  // Show progress notification
+  return { texts, nodeIds };
+}
+
+function applyPageTranslation(nodeIds: string[], translatedTexts: string[]): void {
+  for (let i = 0; i < nodeIds.length; i++) {
+    const nodeId = nodeIds[i];
+    const translatedText = translatedTexts[i];
+    const nodeData = translatedNodes.get(nodeId ?? '');
+
+    if (nodeData && translatedText && nodeId) {
+      const { node, originalText } = nodeData;
+
+      // Replace text content
+      node.textContent = translatedText;
+
+      // Add wrapper span with original text for hover display
+      const parent = node.parentElement;
+      if (parent && !parent.classList.contains('lta-translated')) {
+        parent.classList.add('lta-translated');
+        parent.setAttribute('data-original', originalText);
+      }
+    }
+  }
+
+  removeProgressBar();
+
+  // Show completion notification
   void browser.runtime.sendMessage({
     type: 'NOTIFICATION',
     timestamp: Date.now(),
     payload: {
       id: crypto.randomUUID(),
-      notificationType: 'info',
-      title: 'ページ翻訳',
-      message: `${textNodes.length}個のテキストノードを翻訳中...`,
+      notificationType: 'success',
+      title: 'ページ翻訳完了',
+      message: `${nodeIds.length}個のテキストを翻訳しました`,
     },
   });
+}
 
-  // TODO: Implement batch translation with progress updates
-  console.info(`Found ${textNodes.length} text nodes to translate to ${targetLanguage}`);
+async function startPageTranslation(): Promise<void> {
+  // Show progress bar
+  showProgressBar();
+
+  // Request translation from background
+  await browser.runtime.sendMessage({
+    type: 'TRANSLATE_PAGE',
+    timestamp: Date.now(),
+    payload: {
+      requestId: crypto.randomUUID(),
+      targetLanguage: 'Japanese',
+      profileId: '',
+    },
+  });
+}
+
+function showProgressBar(): void {
+  let progressBar = document.getElementById('lta-progress-bar');
+  if (!progressBar) {
+    progressBar = document.createElement('div');
+    progressBar.id = 'lta-progress-bar';
+    progressBar.className = 'lta-progress-bar';
+    progressBar.style.width = '0%';
+    document.body.appendChild(progressBar);
+  }
+}
+
+function updateProgressBar(completed: number, total: number): void {
+  const progressBar = document.getElementById('lta-progress-bar');
+  if (progressBar) {
+    const percent = Math.round((completed / total) * 100);
+    progressBar.style.width = `${percent}%`;
+  }
+}
+
+function removeProgressBar(): void {
+  const progressBar = document.getElementById('lta-progress-bar');
+  if (progressBar) {
+    progressBar.style.width = '100%';
+    setTimeout(() => {
+      progressBar.remove();
+    }, 500);
+  }
 }
 
 function escapeHtml(text: string): string {
@@ -368,4 +522,3 @@ if (document.readyState === 'loading') {
 } else {
   init();
 }
-

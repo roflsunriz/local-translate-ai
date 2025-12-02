@@ -6,8 +6,8 @@ import { HistoryService } from '@/services/historyService';
 import { SettingsService } from '@/services/settingsService';
 import { TranslationService } from '@/services/translationService';
 
-import type { ExtensionMessage, TranslateTextMessage } from '@/types/messages';
-import type { Settings } from '@/types/settings';
+import type { ExtensionMessage, TranslateTextMessage, TranslatePageMessage } from '@/types/messages';
+import type { Settings, SupportedLanguage } from '@/types/settings';
 
 // Initialize services
 const translationService = new TranslationService();
@@ -16,6 +16,19 @@ const settingsService = new SettingsService();
 
 // Active translation requests (for cancellation)
 const activeRequests = new Map<string, AbortController>();
+
+// Initialize retry config from settings
+async function initializeServices(): Promise<void> {
+  const settings = await settingsService.getSettings();
+  translationService.setRetryConfig({
+    maxRetries: settings.retryCount,
+    retryInterval: settings.retryInterval,
+  });
+  historyService.setMaxItems(settings.historyMaxItems);
+}
+
+// Initialize on script load
+void initializeServices();
 
 // Message handler
 browser.runtime.onMessage.addListener((
@@ -36,6 +49,10 @@ async function handleMessage(
   switch (message.type) {
     case 'TRANSLATE_TEXT':
       await handleTranslateText(message, sendResponse);
+      break;
+
+    case 'TRANSLATE_PAGE':
+      await handleTranslatePage(message, sendResponse);
       break;
 
     case 'CANCEL_TRANSLATION':
@@ -77,11 +94,18 @@ async function handleTranslateText(
 
   try {
     const settings = await settingsService.getSettings();
-    const profile = settings.profiles.find((p) => p.id === profileId);
+    const effectiveProfileId = profileId || settings.activeProfileId;
+    const profile = settings.profiles.find((p) => p.id === effectiveProfileId) ?? settings.profiles[0];
 
     if (!profile) {
       throw new Error('Profile not found');
     }
+
+    // Update retry config
+    translationService.setRetryConfig({
+      maxRetries: settings.retryCount,
+      retryInterval: settings.retryInterval,
+    });
 
     if (stream && settings.streamingEnabled) {
       // Streaming translation
@@ -92,7 +116,7 @@ async function handleTranslateText(
         profile,
         abortController.signal,
         (chunk, accumulated) => {
-          // Send streaming chunk to sidebar
+          // Send streaming chunk to all listeners (sidebar, content script)
           void browser.runtime.sendMessage({
             type: 'TRANSLATE_TEXT_STREAM_CHUNK',
             timestamp: Date.now(),
@@ -104,19 +128,22 @@ async function handleTranslateText(
       // Get final result
       const result = translationService.getLastResult();
       if (result) {
-        // Save to history
-        await historyService.addItem({
-          id: requestId,
-          sourceText: text,
-          translatedText: result,
-          sourceLanguage,
-          targetLanguage,
-          timestamp: Date.now(),
-          profileId,
-        });
+        // Save to history if enabled
+        if (settings.historyEnabled) {
+          await historyService.addItem({
+            id: requestId,
+            sourceText: text,
+            translatedText: result,
+            sourceLanguage,
+            targetLanguage,
+            timestamp: Date.now(),
+            profileId: profile.id,
+          });
+        }
 
-        sendResponse({
+        const response = {
           type: 'TRANSLATE_TEXT_STREAM_END',
+          timestamp: Date.now(),
           payload: {
             id: crypto.randomUUID(),
             requestId,
@@ -128,7 +155,12 @@ async function handleTranslateText(
             duration: 0,
             fromCache: false,
           },
-        });
+        };
+
+        sendResponse(response);
+
+        // Also broadcast to all contexts
+        void browser.runtime.sendMessage(response);
       }
     } else {
       // Non-streaming translation
@@ -140,21 +172,29 @@ async function handleTranslateText(
         abortController.signal
       );
 
-      // Save to history
-      await historyService.addItem({
-        id: requestId,
-        sourceText: text,
-        translatedText: result.translatedText,
-        sourceLanguage,
-        targetLanguage,
-        timestamp: Date.now(),
-        profileId,
-      });
+      // Save to history if enabled
+      if (settings.historyEnabled) {
+        await historyService.addItem({
+          id: requestId,
+          sourceText: text,
+          translatedText: result.translatedText,
+          sourceLanguage,
+          targetLanguage,
+          timestamp: Date.now(),
+          profileId: profile.id,
+        });
+      }
 
-      sendResponse({
+      const response = {
         type: 'TRANSLATE_TEXT_RESULT',
+        timestamp: Date.now(),
         payload: result,
-      });
+      };
+
+      sendResponse(response);
+
+      // Also broadcast to all contexts
+      void browser.runtime.sendMessage(response);
     }
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') {
@@ -186,6 +226,114 @@ async function handleTranslateText(
   }
 }
 
+async function handleTranslatePage(
+  message: TranslatePageMessage,
+  sendResponse: (response: unknown) => void
+): Promise<void> {
+  const { requestId, targetLanguage, profileId } = message.payload;
+
+  // Create abort controller
+  const abortController = new AbortController();
+  activeRequests.set(requestId, abortController);
+
+  try {
+    const settings = await settingsService.getSettings();
+    const effectiveProfileId = profileId || settings.activeProfileId;
+    const profile = settings.profiles.find((p) => p.id === effectiveProfileId) ?? settings.profiles[0];
+
+    if (!profile) {
+      throw new Error('Profile not found');
+    }
+
+    // Get active tab
+    const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+    const tab = tabs[0];
+    if (!tab?.id) {
+      throw new Error('No active tab');
+    }
+
+    // Request text nodes from content script
+    const response = await browser.tabs.sendMessage(tab.id, {
+      type: 'GET_PAGE_TEXT_NODES',
+      timestamp: Date.now(),
+    }) as { texts: string[]; nodeIds: string[] };
+
+    if (!response?.texts || response.texts.length === 0) {
+      sendResponse({
+        type: 'TRANSLATE_PAGE_COMPLETE',
+        timestamp: Date.now(),
+        payload: {
+          requestId,
+          translatedNodes: 0,
+          duration: 0,
+        },
+      });
+      return;
+    }
+
+    const startTime = Date.now();
+    const totalNodes = response.texts.length;
+
+    // Translate in batches
+    const translatedTexts = await translationService.translateBatch(
+      response.texts,
+      'auto' as SupportedLanguage,
+      targetLanguage,
+      profile,
+      abortController.signal,
+      (completed, total, _result) => {
+        // Send progress update
+        void browser.runtime.sendMessage({
+          type: 'TRANSLATE_PAGE_PROGRESS',
+          timestamp: Date.now(),
+          payload: {
+            totalNodes: total,
+            translatedNodes: completed,
+            currentNodeIndex: completed,
+            status: 'translating',
+            errors: [],
+          },
+        });
+      }
+    );
+
+    // Send translated texts back to content script
+    await browser.tabs.sendMessage(tab.id, {
+      type: 'APPLY_PAGE_TRANSLATION',
+      timestamp: Date.now(),
+      payload: {
+        nodeIds: response.nodeIds,
+        translatedTexts,
+      },
+    });
+
+    sendResponse({
+      type: 'TRANSLATE_PAGE_COMPLETE',
+      timestamp: Date.now(),
+      payload: {
+        requestId,
+        translatedNodes: totalNodes,
+        duration: Date.now() - startTime,
+      },
+    });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Page translation error:', error);
+    sendResponse({
+      type: 'TRANSLATE_PAGE_ERROR',
+      payload: {
+        requestId,
+        code: 'API_ERROR',
+        message: errorMessage,
+        details: error,
+        timestamp: Date.now(),
+      },
+    });
+  } finally {
+    activeRequests.delete(requestId);
+  }
+}
+
 function handleCancelTranslation(requestId: string): void {
   const controller = activeRequests.get(requestId);
   if (controller) {
@@ -205,6 +353,14 @@ async function handleSaveSettings(
 ): Promise<void> {
   await settingsService.updateSettings(partialSettings);
   const settings = await settingsService.getSettings();
+
+  // Update service configs
+  translationService.setRetryConfig({
+    maxRetries: settings.retryCount,
+    retryInterval: settings.retryInterval,
+  });
+  historyService.setMaxItems(settings.historyMaxItems);
+
   sendResponse({ success: true, settings });
 
   // Notify all contexts about settings update
@@ -248,7 +404,7 @@ browser.contextMenus.onClicked.addListener((info, tab) => {
   }
 
   if (info.menuItemId === 'translate-selection' && info.selectionText) {
-    // Send selected text to sidebar for translation
+    // Send selected text for translation
     void browser.runtime.sendMessage({
       type: 'TRANSLATE_TEXT',
       timestamp: Date.now(),
@@ -262,16 +418,19 @@ browser.contextMenus.onClicked.addListener((info, tab) => {
       },
     });
   } else if (info.menuItemId === 'translate-page') {
-    // Send message to content script to translate page
-    void browser.tabs.sendMessage(tab.id, {
-      type: 'TRANSLATE_PAGE',
-      timestamp: Date.now(),
-      payload: {
-        requestId: crypto.randomUUID(),
-        targetLanguage: 'Japanese',
-        profileId: '',
+    // Send message to background to handle page translation
+    void handleTranslatePage(
+      {
+        type: 'TRANSLATE_PAGE',
+        timestamp: Date.now(),
+        payload: {
+          requestId: crypto.randomUUID(),
+          targetLanguage: 'Japanese',
+          profileId: '',
+        },
       },
-    });
+      () => { /* Response handled internally */ }
+    );
   }
 });
 
@@ -293,5 +452,9 @@ browser.commands.onCommand.addListener((command) => {
   }
 });
 
-console.info('Local Translate AI background script loaded');
+// Browser action (toolbar button) click handler
+browser.browserAction?.onClicked?.addListener(() => {
+  void browser.runtime.openOptionsPage();
+});
 
+console.info('Local Translate AI background script loaded');
