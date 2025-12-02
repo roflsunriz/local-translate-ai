@@ -2,10 +2,20 @@
  * i18n (Internationalization) module
  */
 
-import { ja } from './locales/ja';
-import { en } from './locales/en';
-
 import type { UILanguage } from '@/types/settings';
+
+import { ar } from './locales/ar';
+import { bn } from './locales/bn';
+import { en } from './locales/en';
+import { es } from './locales/es';
+import { fr } from './locales/fr';
+import { hi } from './locales/hi';
+import { id } from './locales/id';
+import { ja } from './locales/ja';
+import { ko } from './locales/ko';
+import { pt } from './locales/pt';
+import { ru } from './locales/ru';
+import { zh } from './locales/zh';
 
 export type TranslationKey = string;
 
@@ -18,17 +28,16 @@ export type Translations = typeof ja;
 const locales: Record<string, DeepPartial<Translations>> = {
   ja,
   en,
-  // Other languages will fallback to English
-  zh: en,
-  ko: en,
-  es: en,
-  pt: en,
-  ru: en,
-  hi: en,
-  ar: en,
-  fr: en,
-  bn: en,
-  id: en,
+  zh,
+  ko,
+  es,
+  pt,
+  ru,
+  hi,
+  ar,
+  fr,
+  bn,
+  id,
 };
 
 /**
@@ -105,5 +114,4 @@ export function createTranslator(lang: string) {
   return (key: TranslationKey, params?: Record<string, string | number>) => t(key, lang, params);
 }
 
-export { ja, en };
-
+export { ar, bn, en, es, fr, hi, id, ja, ko, pt, ru, zh };
