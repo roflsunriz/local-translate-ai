@@ -1,8 +1,11 @@
 /**
  * Settings store using Zustand
+ * API keys are encrypted before storage and decrypted on retrieval
  */
 
 import { create } from 'zustand';
+
+import { encrypt, decrypt, isEncrypted } from '@/services/cryptoService';
 
 import type {
   Settings,
@@ -47,6 +50,68 @@ interface SettingsState {
   // Persistence
   loadFromStorage: () => Promise<void>;
   saveToStorage: () => Promise<void>;
+}
+
+/**
+ * Decrypt API key if encrypted
+ */
+async function decryptApiKey(apiKey: string): Promise<string> {
+  if (!apiKey) {
+    return apiKey;
+  }
+  if (!isEncrypted(apiKey)) {
+    return apiKey;
+  }
+
+  try {
+    return await decrypt(apiKey);
+  } catch (error) {
+    console.error('Failed to decrypt API key:', error);
+    return apiKey;
+  }
+}
+
+/**
+ * Encrypt API key if not already encrypted
+ */
+async function encryptApiKey(apiKey: string): Promise<string> {
+  if (!apiKey) {
+    return apiKey;
+  }
+  if (isEncrypted(apiKey)) {
+    return apiKey;
+  }
+
+  try {
+    return await encrypt(apiKey);
+  } catch (error) {
+    console.error('Failed to encrypt API key:', error);
+    return apiKey;
+  }
+}
+
+/**
+ * Decrypt all API keys in profiles
+ */
+async function decryptProfiles(profiles: TranslationProfile[]): Promise<TranslationProfile[]> {
+  return Promise.all(
+    profiles.map(async (profile) => ({
+      ...profile,
+      apiKey: await decryptApiKey(profile.apiKey),
+    }))
+  );
+}
+
+/**
+ * Encrypt all API keys in profiles
+ */
+async function encryptProfiles(profiles: TranslationProfile[]): Promise<TranslationProfile[]> {
+  return Promise.all(
+    profiles.map(async (profile) => ({
+      ...profile,
+      apiKey: await encryptApiKey(profile.apiKey),
+    }))
+  );
 }
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({
@@ -194,8 +259,13 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       const result = await browser.storage.local.get('settings');
       if (result['settings']) {
         const stored = result['settings'] as Partial<Settings>;
+        
+        // Decrypt API keys in profiles
+        let profiles = stored.profiles ?? DEFAULT_SETTINGS.profiles;
+        profiles = await decryptProfiles(profiles);
+
         set((state) => ({
-          settings: { ...state.settings, ...stored },
+          settings: { ...state.settings, ...stored, profiles },
           isLoading: false,
         }));
       } else {
@@ -210,11 +280,14 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   saveToStorage: async () => {
     const { settings } = get();
     try {
-      await browser.storage.local.set({ settings });
+      // Encrypt API keys before saving
+      const encryptedProfiles = await encryptProfiles(settings.profiles);
+      const settingsToSave = { ...settings, profiles: encryptedProfiles };
+      
+      await browser.storage.local.set({ settings: settingsToSave });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to save settings';
       set({ error: message });
     }
   },
 }));
-
