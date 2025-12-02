@@ -2,7 +2,16 @@
  * Content Script - Handles text selection and translation popup
  */
 
+import { mdiContentCopy, mdiCheck, mdiClose } from '@mdi/js';
+
 import type { ExtensionMessage } from '@/types/messages';
+
+/**
+ * Create an inline SVG icon from MDI path
+ */
+function mdiSvg(path: string, size = 16, color = 'currentColor'): string {
+  return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" style="vertical-align: middle; margin-right: 4px;"><path fill="${color}" d="${path}"/></svg>`;
+}
 
 // Translation popup element
 let translationPopup: HTMLDivElement | null = null;
@@ -302,6 +311,11 @@ function showTranslationResult(text: string): void {
   // Plain text: remove multiple newlines and trim
   const plainText = text.replace(/\n+/g, ' ').trim();
 
+  // Icon HTML for buttons
+  const copyIcon = mdiSvg(mdiContentCopy, 14, 'currentColor');
+  const checkIcon = mdiSvg(mdiCheck, 14, 'currentColor');
+  const closeIcon = mdiSvg(mdiClose, 14, 'white');
+
   translationPopup.innerHTML = `
     <div style="white-space: pre-wrap; word-break: break-word; margin-bottom: 12px;">${escapeHtml(text)}</div>
     <div style="display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap;">
@@ -313,7 +327,9 @@ function showTranslationResult(text: string): void {
         border-radius: 4px;
         font-size: 12px;
         cursor: pointer;
-      ">📋 フォーマット済み</button>
+        display: inline-flex;
+        align-items: center;
+      ">${copyIcon}フォーマット済み</button>
       <button id="lta-copy-plain-btn" style="
         padding: 6px 12px;
         background: #e5e7eb;
@@ -322,7 +338,9 @@ function showTranslationResult(text: string): void {
         border-radius: 4px;
         font-size: 12px;
         cursor: pointer;
-      ">📋 1行</button>
+        display: inline-flex;
+        align-items: center;
+      ">${copyIcon}1行</button>
       <button id="lta-close-btn" style="
         padding: 6px 12px;
         background: #ef4444;
@@ -331,7 +349,9 @@ function showTranslationResult(text: string): void {
         border-radius: 4px;
         font-size: 12px;
         cursor: pointer;
-      ">閉じる</button>
+        display: inline-flex;
+        align-items: center;
+      ">${closeIcon}閉じる</button>
     </div>
   `;
 
@@ -342,10 +362,9 @@ function showTranslationResult(text: string): void {
   copyFormattedBtn?.addEventListener('click', () => {
     void navigator.clipboard.writeText(text);
     if (copyFormattedBtn instanceof HTMLButtonElement) {
-      const original = copyFormattedBtn.textContent;
-      copyFormattedBtn.textContent = '✓ コピー完了!';
+      copyFormattedBtn.innerHTML = `${checkIcon}コピー完了!`;
       setTimeout(() => {
-        copyFormattedBtn.textContent = original;
+        copyFormattedBtn.innerHTML = `${copyIcon}フォーマット済み`;
       }, 2000);
     }
   });
@@ -353,10 +372,9 @@ function showTranslationResult(text: string): void {
   copyPlainBtn?.addEventListener('click', () => {
     void navigator.clipboard.writeText(plainText);
     if (copyPlainBtn instanceof HTMLButtonElement) {
-      const original = copyPlainBtn.textContent;
-      copyPlainBtn.textContent = '✓ コピー完了!';
+      copyPlainBtn.innerHTML = `${checkIcon}コピー完了!`;
       setTimeout(() => {
-        copyPlainBtn.textContent = original;
+        copyPlainBtn.innerHTML = `${copyIcon}1行`;
       }, 2000);
     }
   });
