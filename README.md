@@ -2,6 +2,10 @@
 
 llama.cppでホストしたローカルLLMを使用して翻訳を行うFirefox拡張機能です。OpenAI互換APIに対応しています。
 
+![Cover](./images/General.png)
+
+イメージギャラリー : [Image Gallery](./images/gallery.md)
+
 ## 機能
 
 - 🔤 **テキスト選択翻訳**: テキストを選択すると翻訳ボタンが表示され、ワンクリックで翻訳
@@ -14,7 +18,7 @@ llama.cppでホストしたローカルLLMを使用して翻訳を行うFirefox�
 
 ## 必要環境
 
-- Firefox 109.0 以上
+- Firefox 142.0 以上
 - Node.js 20.0.0 以上
 - pnpm (corepack経由で有効化)
 - llama.cpp サーバー (OpenAI互換API)
@@ -95,14 +99,18 @@ pnpm test
 ```
 src/
 ├── background/     # Background Script
-├── content/        # Content Script
-├── sidebar/        # サイドバーUI（React）
-├── options/        # 設定画面UI（React）
 ├── components/     # 共通Reactコンポーネント
-├── stores/         # Zustand stores
+├── content/        # Content Script
+├── hooks/          # カスタムフック
+├── i18n/           # 国際化リソース
+├── options/        # 設定画面UI（React）
 ├── services/       # API通信・ストレージ等
+├── sidebar/        # サイドバーUI（React）
+├── stores/         # Zustand stores
+├── styles/         # グローバルCSS
 ├── types/          # TypeScript型定義
-└── styles/         # グローバルCSS
+├── utils/          # ユーティリティ
+└── vite.config.ts  # Vite設定
 ```
 
 ## ライセンス
