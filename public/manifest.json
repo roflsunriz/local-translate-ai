@@ -65,13 +65,13 @@
   "commands": {
     "translate-selection": {
       "suggested_key": {
-        "default": "Ctrl+Shift+T"
+        "default": "Alt+Shift+T"
       },
       "description": "Translate selected text"
     },
     "toggle-sidebar": {
       "suggested_key": {
-        "default": "Ctrl+Shift+S"
+        "default": "Alt+Shift+S"
       },
       "description": "Toggle sidebar"
     }

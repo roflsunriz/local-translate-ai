@@ -45,7 +45,7 @@ export function ShortcutsTab() {
               type="text"
               value={settings.keyboardShortcuts.translateSelection}
               onChange={(e) => { handleShortcutChange('translateSelection', e.target.value); }}
-              placeholder="Ctrl+Shift+T"
+              placeholder="Alt+Shift+T"
               className="w-full rounded-md border px-3 py-2 font-mono text-sm"
               style={{
                 backgroundColor: 'var(--color-bg-tertiary)',
@@ -66,7 +66,7 @@ export function ShortcutsTab() {
               type="text"
               value={settings.keyboardShortcuts.toggleSidebar}
               onChange={(e) => { handleShortcutChange('toggleSidebar', e.target.value); }}
-              placeholder="Ctrl+Shift+S"
+              placeholder="Alt+Shift+S"
               className="w-full rounded-md border px-3 py-2 font-mono text-sm"
               style={{
                 backgroundColor: 'var(--color-bg-tertiary)',
