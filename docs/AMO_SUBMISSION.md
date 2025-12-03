@@ -16,13 +16,13 @@
 
 ### 1. プロダクションビルド
 
-```bash
+```powershell
 npm run build
 ```
 
 ### 2. 拡張機能のパッケージング
 
-```bash
+```powershell
 # web-ext を使用してパッケージを作成
 npx web-ext build -s dist -a web-ext-artifacts
 ```
@@ -33,7 +33,7 @@ npx web-ext build -s dist -a web-ext-artifacts
 
 AMO レビューでは、ビルドされたコードと一緒にソースコードの提出が求められます：
 
-```bash
+```powershell
 # ソースコードを zip 化（node_modules を除外）
 git archive --format=zip --output=source-code.zip HEAD
 ```
@@ -96,7 +96,7 @@ PRIVACY_POLICY.md の内容を入力
 2. `source-code.zip` をアップロード
 3. ビルド手順を記載：
 
-```
+```powershell
 # Node.js 20.x が必要です
 
 # 依存関係のインストール
@@ -137,15 +137,20 @@ npm run build
 
 AMO を経由せずに署名する場合：
 
-```bash
+```powershell
 # API キーを取得（https://addons.mozilla.org/developers/addon/api/key/）
 # 環境変数を設定
-export WEB_EXT_API_KEY=your-api-key
-export WEB_EXT_API_SECRET=your-api-secret
+$env:WEB_EXT_API_KEY = "your-api-key"
+$env:WEB_EXT_API_SECRET = "your-api-secret"
 
 # 署名
-npx web-ext sign -s dist
+npx web-ext sign -s dist --channel "unlisted"
 ```
+# 自己配布用（審査不要）
+npx web-ext sign -s dist --channel "unlisted"
+
+# 注意: --channel "listed"はAMO審査完了後の更新時に使用します
+# 初回提出時や審査中は使用できません
 
 ## 自動検証の警告について
 
@@ -195,24 +200,24 @@ All DOM manipulation in content scripts uses safe DOM APIs:
 - element.appendChild()
 
 You can verify by searching the source code:
-- grep -r "dangerouslySetInnerHTML" src/  → No results
-- grep -r "innerHTML" src/  → No results
+- Select-String -Path src\* -Pattern "dangerouslySetInnerHTML" -Recurse  → No results
+- Select-String -Path src\* -Pattern "innerHTML" -Recurse  → No results
 ```
 
 ## トラブルシューティング
 
 ### ビルドエラー
 
-```bash
+```powershell
 # キャッシュをクリアして再ビルド
-rm -rf dist node_modules
+Remove-Item -Recurse -Force dist, node_modules -ErrorAction SilentlyContinue
 npm install
 npm run build
 ```
 
 ### 検証エラー
 
-```bash
+```powershell
 # 事前検証
 npx web-ext lint -s dist
 ```
