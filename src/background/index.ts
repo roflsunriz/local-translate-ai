@@ -378,6 +378,17 @@ async function handleTranslatePage(
     const startTime = Date.now();
     const totalNodes = contentResponse.texts.length;
 
+    // Build conversion options from settings (same as handleTranslateText)
+    const conversionOptions = {
+      usdToJpy: {
+        enabled: settings.currencyConversion.enabled,
+        rate: settings.currencyConversion.usdToJpyRate,
+      },
+      paramConversion: {
+        enabled: settings.paramConversion?.enabled ?? false,
+      },
+    };
+
     // Translate with progressive rendering (each node applied immediately after translation)
     const translatedTexts = await translationService.translateBatch(
       contentResponse.texts,
@@ -389,8 +400,9 @@ async function handleTranslatePage(
         // Get the nodeId for the just-completed translation
         const nodeId = contentResponse.nodeIds[completed - 1];
         if (nodeId && result) {
-          // Sanitize the result before sending to content script
-          const sanitizedResult = sanitizeAccumulatedResult(result);
+          // Apply conversions and sanitize the result before sending to content script
+          const convertedResult = applyConversions(result, conversionOptions);
+          const sanitizedResult = sanitizeAccumulatedResult(convertedResult);
 
           // Send single node translation to content script for immediate rendering
           void browser.tabs.sendMessage(activeTabId, {
@@ -422,13 +434,19 @@ async function handleTranslatePage(
       }
     );
 
+    // Apply conversions and sanitization to final translated texts
+    const processedTexts = translatedTexts.map(text => {
+      const converted = applyConversions(text, conversionOptions);
+      return sanitizeAccumulatedResult(converted);
+    });
+
     // Send final completion message (all translations already applied progressively)
     await browser.tabs.sendMessage(activeTabId, {
       type: 'APPLY_PAGE_TRANSLATION',
       timestamp: Date.now(),
       payload: {
         nodeIds: contentResponse.nodeIds,
-        translatedTexts,
+        translatedTexts: processedTexts,
       },
     });
 
