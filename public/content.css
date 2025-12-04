@@ -12,14 +12,70 @@
   outline-offset: 2px;
 }
 
+/* Popup draggable border styles */
+#lta-translation-popup {
+  cursor: grab;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+#lta-translation-popup:hover {
+  border-color: #2563eb !important;
+}
+
+#lta-translation-popup:active,
+#lta-translation-popup.lta-dragging {
+  cursor: grabbing;
+}
+
+/* Header styles (non-draggable, just visual) */
+#lta-popup-header {
+  pointer-events: none;
+}
+
+/* Content area - not draggable */
+#lta-popup-content {
+  cursor: default;
+}
+
+/* Text content - selectable */
+#lta-popup-text-content {
+  cursor: text;
+  user-select: text;
+}
+
+/* Dragging state */
+#lta-translation-popup.lta-dragging {
+  opacity: 0.95;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  border-color: #1d4ed8 !important;
+}
+
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
   #lta-translation-popup {
     background: #1f2937 !important;
     color: #f3f4f6 !important;
+    border-color: #3b82f6 !important;
   }
 
-  #lta-copy-btn {
+  #lta-translation-popup:hover {
+    border-color: #60a5fa !important;
+  }
+
+  #lta-translation-popup.lta-dragging {
+    border-color: #93c5fd !important;
+  }
+
+  #lta-popup-header {
+    background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%) !important;
+  }
+
+  #lta-popup-content {
+    border-color: #374151 !important;
+  }
+
+  #lta-copy-btn,
+  #lta-copy-plain-btn {
     background: #374151 !important;
     color: #f3f4f6 !important;
   }
