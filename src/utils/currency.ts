@@ -66,14 +66,14 @@ function formatJapaneseNumber(value: number, includeYen: boolean): string {
   if (absValue >= 1e12) {
     const cho = value / 1e12;
     const formatted = cho % 1 === 0 ? cho.toFixed(0) : cho.toFixed(2).replace(/\.?0+$/, '');
-    return `${formatted}兆${includeYen ? '円' : ''}`;
+    return `${Number(formatted).toLocaleString('ja-JP')}兆${includeYen ? '円' : ''}`;
   }
 
   // 億 (10^8)
   if (absValue >= 1e8) {
     const oku = value / 1e8;
     const formatted = oku % 1 === 0 ? oku.toFixed(0) : oku.toFixed(2).replace(/\.?0+$/, '');
-    return `${formatted}億${includeYen ? '円' : ''}`;
+    return `${Number(formatted).toLocaleString('ja-JP')}億${includeYen ? '円' : ''}`;
   }
 
   // 万 (10^4)
