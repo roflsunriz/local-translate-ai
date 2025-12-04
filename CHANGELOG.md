@@ -7,6 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2025-12-04
+
+### Added
+
+- USD to JPY currency conversion feature in translation results
+- AI model parameter conversion (B/M to Japanese units: 億/万)
+- Conversion options toggle in settings
+- Progress bar display for sidebar, page-wide, and text selection translation
+- Toast notifications for translation status across all translation modes
+
+### Changed
+
+- Enhanced currency formatting for Japanese locale
+- Improved translation process with conversion options and sanitization
+- Page-wide translation now processes paragraphs sequentially for better UX
+
+## [1.0.0] - 2025-12-04
+
+### Added
+
+- Multi-language support (13 languages: Japanese, English, Chinese, Korean, Spanish, French, Portuguese, Russian, Arabic, Hindi, Bengali, Indonesian)
+- Material Design Icons throughout the UI
+- Two copy buttons in text selection translation popup (original/translated)
+- New 96x96 icon for better visual representation
+- AMO submission documentation
+
+### Changed
+
+- Replaced emojis with MDI icons in translation popup
+- Updated keyboard shortcuts in manifest and settings
+- Enhanced translation popup with improved DOM manipulation
+- Updated data collection permissions in manifest.json
+- Updated package dependencies and added pnpm lockfile
+
+### Fixed
+
+- Settings not syncing between frontend and background
+- Sidebar message handling for translation responses
+- Broadcast translation results to content scripts
+- CORS, Promise handling, and i18n issues
+- Inline MDI icon paths in content script
+
 ## [0.1.0] - 2024-12-02
 
 ### Added
@@ -43,6 +85,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - DOM sanitization for translated content
 - HTTPS enforcement for external endpoints
 
-[Unreleased]: https://github.com/roflsunriz/local-translate-ai/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/roflsunriz/local-translate-ai/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/roflsunriz/local-translate-ai/compare/v0.1.0...v1.0.0
 [0.1.0]: https://github.com/roflsunriz/local-translate-ai/releases/tag/v0.1.0
 
