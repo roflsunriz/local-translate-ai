@@ -5,6 +5,7 @@
 import type { TranslationProfile, SupportedLanguage } from '@/types/settings';
 import type { TranslationResult } from '@/types/translation';
 import type { ChatCompletionRequest, ChatCompletionResponse, ChatCompletionChunk } from '@/types/api';
+import { sanitizeTranslationResult, sanitizeAccumulatedResult } from '@/utils/sanitize';
 
 export interface RetryConfig {
   maxRetries: number;
@@ -15,6 +16,32 @@ const DEFAULT_RETRY_CONFIG: RetryConfig = {
   maxRetries: 3,
   retryInterval: 1000,
 };
+
+/**
+ * Safety limits for streaming translation to prevent infinite loops
+ */
+const STREAMING_SAFETY_LIMITS = {
+  /** Maximum output length as a multiplier of input length */
+  maxOutputLengthMultiplier: 10,
+  /** Minimum maximum output length (for very short inputs) */
+  minMaxOutputLength: 1000,
+  /** Maximum number of consecutive repeated patterns to detect loops */
+  maxConsecutiveRepeats: 5,
+  /** Minimum pattern length to consider for repetition detection */
+  minPatternLength: 10,
+  /** Maximum time (ms) without receiving new content before aborting */
+  contentTimeoutMs: 30000,
+};
+
+/**
+ * Error thrown when streaming loop is detected
+ */
+export class StreamingLoopError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'StreamingLoopError';
+  }
+}
 
 export class TranslationService {
   private lastResult: string = '';
@@ -67,7 +94,10 @@ export class TranslationService {
     }
 
     const data = await response.json() as ChatCompletionResponse;
-    const translatedText = data.choices[0]?.message.content ?? '';
+    const rawTranslatedText = data.choices[0]?.message.content ?? '';
+
+    // Sanitize the translation result to remove any chat template tokens
+    const translatedText = sanitizeTranslationResult(rawTranslatedText);
 
     this.lastResult = translatedText;
 
@@ -133,8 +163,22 @@ export class TranslationService {
     const decoder = new TextDecoder();
     let accumulated = '';
 
+    // Safety limits
+    const maxOutputLength = Math.max(
+      text.length * STREAMING_SAFETY_LIMITS.maxOutputLengthMultiplier,
+      STREAMING_SAFETY_LIMITS.minMaxOutputLength
+    );
+    let lastContentTime = Date.now();
+    let lastChunks: string[] = [];
+
     try {
       while (true) {
+        // Check for content timeout
+        if (Date.now() - lastContentTime > STREAMING_SAFETY_LIMITS.contentTimeoutMs) {
+          console.warn('Streaming translation timeout: no content received');
+          break;
+        }
+
         const { done, value } = await reader.read();
         if (done) {
           break;
@@ -154,20 +198,94 @@ export class TranslationService {
               const parsed = JSON.parse(data) as ChatCompletionChunk;
               const content = parsed.choices[0]?.delta.content ?? '';
               if (content) {
+                // Update last content time
+                lastContentTime = Date.now();
+
+                // Check for maximum output length
+                if (accumulated.length + content.length > maxOutputLength) {
+                  console.warn(`Streaming translation exceeded max length (${maxOutputLength}), truncating`);
+                  // Add truncated content and stop
+                  const remaining = maxOutputLength - accumulated.length;
+                  if (remaining > 0) {
+                    accumulated += content.slice(0, remaining);
+                    onChunk(content.slice(0, remaining), accumulated);
+                  }
+                  throw new StreamingLoopError(`Output exceeded maximum length of ${maxOutputLength} characters`);
+                }
+
+                // Check for repetition loop
+                if (this.detectRepetitionLoop(content, lastChunks, accumulated)) {
+                  console.warn('Streaming translation loop detected, stopping');
+                  throw new StreamingLoopError('Repetition loop detected in translation output');
+                }
+
+                // Track recent chunks for loop detection
+                lastChunks.push(content);
+                if (lastChunks.length > STREAMING_SAFETY_LIMITS.maxConsecutiveRepeats * 2) {
+                  lastChunks = lastChunks.slice(-STREAMING_SAFETY_LIMITS.maxConsecutiveRepeats * 2);
+                }
+
                 accumulated += content;
                 onChunk(content, accumulated);
               }
-            } catch {
+            } catch (e) {
+              // Re-throw StreamingLoopError
+              if (e instanceof StreamingLoopError) {
+                throw e;
+              }
               // Ignore parsing errors for incomplete JSON
             }
           }
         }
       }
+    } catch (e) {
+      // Handle StreamingLoopError gracefully - we still have partial results
+      if (e instanceof StreamingLoopError) {
+        console.warn('Streaming stopped due to safety limit:', e.message);
+        // Continue with the accumulated result so far
+      } else {
+        throw e;
+      }
     } finally {
       reader.releaseLock();
     }
 
-    this.lastResult = accumulated;
+    // Sanitize the final accumulated result
+    this.lastResult = sanitizeAccumulatedResult(accumulated);
+  }
+
+  /**
+   * Detect repetition loops in streaming output
+   */
+  private detectRepetitionLoop(
+    newContent: string,
+    recentChunks: string[],
+    accumulated: string
+  ): boolean {
+    // Method 1: Check if the same chunk is repeated consecutively
+    if (recentChunks.length >= STREAMING_SAFETY_LIMITS.maxConsecutiveRepeats) {
+      const lastN = recentChunks.slice(-STREAMING_SAFETY_LIMITS.maxConsecutiveRepeats);
+      if (lastN.every(chunk => chunk === newContent) && newContent.length > 0) {
+        return true;
+      }
+    }
+
+    // Method 2: Check for repeating patterns in accumulated text
+    if (accumulated.length >= STREAMING_SAFETY_LIMITS.minPatternLength * 3) {
+      const tail = accumulated.slice(-STREAMING_SAFETY_LIMITS.minPatternLength * 3);
+      // Check if the tail consists of repeating patterns
+      for (let patternLen = STREAMING_SAFETY_LIMITS.minPatternLength; patternLen <= tail.length / 3; patternLen++) {
+        const pattern = tail.slice(-patternLen);
+        const prevPattern1 = tail.slice(-patternLen * 2, -patternLen);
+        const prevPattern2 = tail.slice(-patternLen * 3, -patternLen * 2);
+
+        if (pattern === prevPattern1 && pattern === prevPattern2) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
   /**

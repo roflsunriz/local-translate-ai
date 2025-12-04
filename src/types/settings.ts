@@ -64,6 +64,10 @@ export interface CurrencyConversionSettings {
   usdToJpyRate: number;
 }
 
+export interface ParamConversionSettings {
+  enabled: boolean;
+}
+
 export interface Settings {
   // UI Settings
   uiLanguage: UILanguage;
@@ -75,6 +79,7 @@ export interface Settings {
 
   // Feature Settings
   currencyConversion: CurrencyConversionSettings;
+  paramConversion: ParamConversionSettings;
   exclusionPatterns: ExclusionPattern[];
   keyboardShortcuts: KeyboardShortcuts;
 
@@ -147,6 +152,9 @@ export const DEFAULT_SETTINGS: Settings = {
   currencyConversion: {
     enabled: false,
     usdToJpyRate: 150,
+  },
+  paramConversion: {
+    enabled: false,
   },
   exclusionPatterns: DEFAULT_EXCLUSION_PATTERNS,
   keyboardShortcuts: {

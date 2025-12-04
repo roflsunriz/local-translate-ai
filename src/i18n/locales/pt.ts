@@ -60,9 +60,12 @@ export const pt = {
       themeLight: 'Claro',
       themeDark: 'Escuro',
       currency: 'Conversão de USD',
-      currencyDescription: 'Converter valores em USD para JPY ao traduzir para japonês',
+      currencyDescription: 'Converter valores em USD para JPY ao traduzir para japonês (ex: $100K → $100K (1,550万円))',
       currencyEnabled: 'Ativar conversão de USD',
       currencyRate: '1 USD = JPY',
+      paramConversion: 'Conversão de tamanho de parâmetros',
+      paramConversionDescription: 'Converter tamanhos de parâmetros de modelos AI (B/M/T) para unidades japonesas (ex: 140B → 140B (1,400億))',
+      paramConversionEnabled: 'Ativar conversão de tamanho de parâmetros',
     },
     api: {
       profiles: 'Perfis',

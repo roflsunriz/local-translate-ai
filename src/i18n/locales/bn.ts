@@ -60,9 +60,12 @@ export const bn = {
       themeLight: 'লাইট',
       themeDark: 'ডার্ক',
       currency: 'USD রূপান্তর',
-      currencyDescription: 'জাপানি ভাষায় অনুবাদ করার সময় USD পরিমাণ JPY-তে রূপান্তর করুন',
+      currencyDescription: 'জাপানি ভাষায় অনুবাদ করার সময় USD পরিমাণ JPY-তে রূপান্তর করুন (উদা: $100K → $100K (1,550万円))',
       currencyEnabled: 'USD রূপান্তর সক্রিয় করুন',
       currencyRate: '1 USD = JPY',
+      paramConversion: 'প্যারামিটার আকার রূপান্তর',
+      paramConversionDescription: 'AI মডেল প্যারামিটার আকার (B/M/T) জাপানি ইউনিটে রূপান্তর করুন (উদা: 140B → 140B (1,400億))',
+      paramConversionEnabled: 'প্যারামিটার আকার রূপান্তর সক্রিয় করুন',
     },
     api: {
       profiles: 'প্রোফাইল',

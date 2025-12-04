@@ -60,9 +60,12 @@ export const id = {
       themeLight: 'Terang',
       themeDark: 'Gelap',
       currency: 'Konversi USD',
-      currencyDescription: 'Konversi jumlah USD ke JPY saat menerjemahkan ke Jepang',
+      currencyDescription: 'Konversi jumlah USD ke JPY saat menerjemahkan ke Jepang (contoh: $100K → $100K (1,550万円))',
       currencyEnabled: 'Aktifkan konversi USD',
       currencyRate: '1 USD = JPY',
+      paramConversion: 'Konversi Ukuran Parameter',
+      paramConversionDescription: 'Konversi ukuran parameter model AI (B/M/T) ke unit Jepang (contoh: 140B → 140B (1,400億))',
+      paramConversionEnabled: 'Aktifkan konversi ukuran parameter',
     },
     api: {
       profiles: 'Profil',

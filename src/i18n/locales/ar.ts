@@ -60,9 +60,12 @@ export const ar = {
       themeLight: 'فاتح',
       themeDark: 'داكن',
       currency: 'تحويل الدولار',
-      currencyDescription: 'تحويل مبالغ الدولار إلى الين عند الترجمة إلى اليابانية',
+      currencyDescription: 'تحويل مبالغ الدولار إلى الين عند الترجمة إلى اليابانية (مثال: $100K → $100K (1,550万円))',
       currencyEnabled: 'تفعيل تحويل الدولار',
       currencyRate: '1 دولار = ين',
+      paramConversion: 'تحويل حجم المعلمات',
+      paramConversionDescription: 'تحويل أحجام معلمات نماذج AI (B/M/T) إلى الوحدات اليابانية (مثال: 140B → 140B (1,400億))',
+      paramConversionEnabled: 'تفعيل تحويل حجم المعلمات',
     },
     api: {
       profiles: 'الملفات الشخصية',

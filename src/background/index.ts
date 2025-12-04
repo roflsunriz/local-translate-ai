@@ -5,6 +5,8 @@
 import { HistoryService } from '@/services/historyService';
 import { SettingsService } from '@/services/settingsService';
 import { TranslationService } from '@/services/translationService';
+import { applyConversions } from '@/utils/currency';
+import { sanitizeAccumulatedResult } from '@/utils/sanitize';
 
 import type { ExtensionMessage, TranslateTextMessage, TranslatePageMessage } from '@/types/messages';
 import type { Settings, SupportedLanguage } from '@/types/settings';
@@ -48,6 +50,23 @@ async function broadcastMessage(message: unknown): Promise<void> {
           // Ignore errors for tabs without content script
         });
       }
+    }
+  } catch {
+    // Ignore errors querying tabs
+  }
+}
+
+/**
+ * Send message to active tab's content script only
+ */
+async function sendToActiveTab(message: unknown): Promise<void> {
+  try {
+    const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+    const tab = tabs[0];
+    if (tab?.id !== undefined) {
+      void browser.tabs.sendMessage(tab.id, message).catch(() => {
+        // Ignore errors for tabs without content script
+      });
     }
   } catch {
     // Ignore errors querying tabs
@@ -108,6 +127,14 @@ async function handleTranslateText(
   const abortController = new AbortController();
   activeRequests.set(requestId, abortController);
 
+  // Show progress bar on active tab (indeterminate mode for text translation)
+  // Also includes translationKind for toast notification
+  void sendToActiveTab({
+    type: 'SHOW_PROGRESS_BAR',
+    timestamp: Date.now(),
+    payload: { indeterminate: true, translationKind: 'selection' },
+  });
+
   try {
     const settings = await settingsService.getSettings();
     const effectiveProfileId = profileId || settings.activeProfileId;
@@ -123,6 +150,17 @@ async function handleTranslateText(
       retryInterval: settings.retryInterval,
     });
 
+    // Build conversion options from settings
+    const conversionOptions = {
+      usdToJpy: {
+        enabled: settings.currencyConversion.enabled,
+        rate: settings.currencyConversion.usdToJpyRate,
+      },
+      paramConversion: {
+        enabled: settings.paramConversion?.enabled ?? false,
+      },
+    };
+
     if (stream && settings.streamingEnabled) {
       // Streaming translation
       await translationService.translateStreaming(
@@ -132,17 +170,25 @@ async function handleTranslateText(
         profile,
         abortController.signal,
         (chunk, accumulated) => {
+          // Apply conversions and sanitize accumulated text for display
+          const convertedAccumulated = sanitizeAccumulatedResult(
+            applyConversions(accumulated, conversionOptions)
+          );
+
           // Send streaming chunk to all listeners (sidebar, content script)
           void broadcastMessage({
             type: 'TRANSLATE_TEXT_STREAM_CHUNK',
             timestamp: Date.now(),
-            payload: { requestId, chunk, accumulated },
+            payload: { requestId, chunk, accumulated: convertedAccumulated },
           });
         }
       );
 
-      // Get final result
-      const result = translationService.getLastResult();
+      // Get final result, apply conversions and sanitize
+      const rawResult = translationService.getLastResult();
+      const result = rawResult
+        ? sanitizeAccumulatedResult(applyConversions(rawResult, conversionOptions))
+        : null;
       if (result) {
         // Save to history if enabled
         if (settings.historyEnabled) {
@@ -156,6 +202,12 @@ async function handleTranslateText(
             profileId: profile.id,
           });
         }
+
+        // Hide progress bar
+        void sendToActiveTab({
+          type: 'HIDE_PROGRESS_BAR',
+          timestamp: Date.now(),
+        });
 
         const response = {
           type: 'TRANSLATE_TEXT_STREAM_END',
@@ -178,10 +230,17 @@ async function handleTranslateText(
 
         return response;
       }
+
+      // Hide progress bar even if no result
+      void sendToActiveTab({
+        type: 'HIDE_PROGRESS_BAR',
+        timestamp: Date.now(),
+      });
+
       return { success: true };
     } else {
       // Non-streaming translation
-      const result = await translationService.translate(
+      const rawResult = await translationService.translate(
         text,
         sourceLanguage,
         targetLanguage,
@@ -189,12 +248,17 @@ async function handleTranslateText(
         abortController.signal
       );
 
-      // Save to history if enabled
+      // Apply conversions and sanitize result
+      const convertedText = sanitizeAccumulatedResult(
+        applyConversions(rawResult.translatedText, conversionOptions)
+      );
+
+      // Save to history if enabled (with converted text)
       if (settings.historyEnabled) {
         await historyService.addItem({
           id: requestId,
           sourceText: text,
-          translatedText: result.translatedText,
+          translatedText: convertedText,
           sourceLanguage,
           targetLanguage,
           timestamp: Date.now(),
@@ -202,10 +266,19 @@ async function handleTranslateText(
         });
       }
 
+      // Hide progress bar
+      void sendToActiveTab({
+        type: 'HIDE_PROGRESS_BAR',
+        timestamp: Date.now(),
+      });
+
       const response = {
         type: 'TRANSLATE_TEXT_RESULT',
         timestamp: Date.now(),
-        payload: result,
+        payload: {
+          ...rawResult,
+          translatedText: convertedText,
+        },
       };
 
       // Also broadcast to all contexts
@@ -214,6 +287,12 @@ async function handleTranslateText(
       return response;
     }
   } catch (error) {
+    // Hide progress bar on error
+    void sendToActiveTab({
+      type: 'HIDE_PROGRESS_BAR',
+      timestamp: Date.now(),
+    });
+
     if (error instanceof Error && error.name === 'AbortError') {
       return {
         type: 'TRANSLATE_TEXT_ERROR',
@@ -267,9 +346,19 @@ async function handleTranslatePage(
     if (!tab?.id) {
       throw new Error('No active tab');
     }
+    const activeTabId = tab.id;
+
+    // Show progress bar (indeterminate until first translation completes) and toast notification
+    void browser.tabs.sendMessage(activeTabId, {
+      type: 'SHOW_PROGRESS_BAR',
+      timestamp: Date.now(),
+      payload: { indeterminate: true, translationKind: 'page' },
+    }).catch(() => {
+      // Ignore errors if content script is not ready
+    });
 
     // Request text nodes from content script
-    const contentResponse = await browser.tabs.sendMessage(tab.id, {
+    const contentResponse = await browser.tabs.sendMessage(activeTabId, {
       type: 'GET_PAGE_TEXT_NODES',
       timestamp: Date.now(),
     }) as { texts: string[]; nodeIds: string[] };
@@ -289,15 +378,36 @@ async function handleTranslatePage(
     const startTime = Date.now();
     const totalNodes = contentResponse.texts.length;
 
-    // Translate in batches
+    // Translate with progressive rendering (each node applied immediately after translation)
     const translatedTexts = await translationService.translateBatch(
       contentResponse.texts,
       'auto' as SupportedLanguage,
       targetLanguage,
       profile,
       abortController.signal,
-      (completed, total, _result) => {
-        // Send progress update to all contexts including content script
+      (completed, total, result) => {
+        // Get the nodeId for the just-completed translation
+        const nodeId = contentResponse.nodeIds[completed - 1];
+        if (nodeId && result) {
+          // Sanitize the result before sending to content script
+          const sanitizedResult = sanitizeAccumulatedResult(result);
+
+          // Send single node translation to content script for immediate rendering
+          void browser.tabs.sendMessage(activeTabId, {
+            type: 'APPLY_SINGLE_NODE_TRANSLATION',
+            timestamp: Date.now(),
+            payload: {
+              nodeId,
+              translatedText: sanitizedResult,
+              translatedNodes: completed,
+              totalNodes: total,
+            },
+          }).catch(() => {
+            // Ignore errors if tab is closed
+          });
+        }
+
+        // Also send progress update to all contexts
         void broadcastMessage({
           type: 'TRANSLATE_PAGE_PROGRESS',
           timestamp: Date.now(),
@@ -312,8 +422,8 @@ async function handleTranslatePage(
       }
     );
 
-    // Send translated texts back to content script
-    await browser.tabs.sendMessage(tab.id, {
+    // Send final completion message (all translations already applied progressively)
+    await browser.tabs.sendMessage(activeTabId, {
       type: 'APPLY_PAGE_TRANSLATION',
       timestamp: Date.now(),
       payload: {
@@ -332,6 +442,12 @@ async function handleTranslatePage(
       },
     };
   } catch (error) {
+    // Hide progress bar on page translation error
+    void sendToActiveTab({
+      type: 'HIDE_PROGRESS_BAR',
+      timestamp: Date.now(),
+    });
+
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('Page translation error:', error);
     return {
@@ -354,6 +470,12 @@ function handleCancelTranslation(requestId: string): void {
   if (controller) {
     controller.abort();
     activeRequests.delete(requestId);
+
+    // Hide progress bar when translation is cancelled
+    void sendToActiveTab({
+      type: 'HIDE_PROGRESS_BAR',
+      timestamp: Date.now(),
+    });
   }
 }
 

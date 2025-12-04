@@ -19,6 +19,7 @@ export type MessageType =
   | 'TRANSLATE_PAGE_ERROR'
   | 'GET_PAGE_TEXT_NODES'
   | 'APPLY_PAGE_TRANSLATION'
+  | 'APPLY_SINGLE_NODE_TRANSLATION'
   | 'CANCEL_TRANSLATION'
   | 'GET_SETTINGS'
   | 'GET_SETTINGS_RESULT'
@@ -29,7 +30,9 @@ export type MessageType =
   | 'CLEAR_HISTORY'
   | 'TOGGLE_SIDEBAR'
   | 'GET_SELECTION'
-  | 'NOTIFICATION';
+  | 'NOTIFICATION'
+  | 'SHOW_PROGRESS_BAR'
+  | 'HIDE_PROGRESS_BAR';
 
 // Base message interface
 export interface BaseMessage {
@@ -101,6 +104,16 @@ export interface TranslatePageCompleteMessage extends BaseMessage {
 export interface TranslatePageErrorMessage extends BaseMessage {
   type: 'TRANSLATE_PAGE_ERROR';
   payload: TranslationError;
+}
+
+export interface ApplySingleNodeTranslationMessage extends BaseMessage {
+  type: 'APPLY_SINGLE_NODE_TRANSLATION';
+  payload: {
+    nodeId: string;
+    translatedText: string;
+    translatedNodes: number;
+    totalNodes: number;
+  };
 }
 
 // Cancel message
@@ -181,6 +194,22 @@ export interface NotificationMessage extends BaseMessage {
   };
 }
 
+// Progress bar messages
+export type TranslationKind = 'page' | 'selection';
+
+export interface ShowProgressBarMessage extends BaseMessage {
+  type: 'SHOW_PROGRESS_BAR';
+  payload: {
+    indeterminate: boolean;
+    /** Type of translation for toast notification */
+    translationKind?: TranslationKind | undefined;
+  };
+}
+
+export interface HideProgressBarMessage extends BaseMessage {
+  type: 'HIDE_PROGRESS_BAR';
+}
+
 // Union type for all messages
 export type ExtensionMessage =
   | TranslateTextMessage
@@ -192,6 +221,7 @@ export type ExtensionMessage =
   | TranslatePageProgressMessage
   | TranslatePageCompleteMessage
   | TranslatePageErrorMessage
+  | ApplySingleNodeTranslationMessage
   | CancelTranslationMessage
   | GetSettingsMessage
   | GetSettingsResultMessage
@@ -202,7 +232,9 @@ export type ExtensionMessage =
   | ClearHistoryMessage
   | ToggleSidebarMessage
   | GetSelectionMessage
-  | NotificationMessage;
+  | NotificationMessage
+  | ShowProgressBarMessage
+  | HideProgressBarMessage;
 
 // Type guard helpers
 export function isTranslateTextMessage(msg: ExtensionMessage): msg is TranslateTextMessage {

@@ -60,9 +60,12 @@ export const ja = {
       themeLight: 'ライト',
       themeDark: 'ダーク',
       currency: '米ドル換算機能',
-      currencyDescription: '英語→日本語翻訳時に、米ドル金額を日本円に換算して表示します',
+      currencyDescription: '英語→日本語翻訳時に、米ドル金額を日本円に換算して表示します（例: $100K → $100K (1,550万円)）',
       currencyEnabled: '米ドル換算を有効にする',
       currencyRate: '1ドル = 何円',
+      paramConversion: 'パラメータサイズ変換',
+      paramConversionDescription: 'AIモデルのパラメータサイズ（B/M/T）を日本語の億・万単位に変換して表示します（例: 140B → 140B (1,400億)）',
+      paramConversionEnabled: 'パラメータサイズ変換を有効にする',
     },
     api: {
       profiles: 'プロファイル',

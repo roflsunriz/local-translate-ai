@@ -2,7 +2,21 @@
  * Content Script - Handles text selection and translation popup
  */
 
-import type { ExtensionMessage } from '@/types/messages';
+import type { ExtensionMessage, ApplySingleNodeTranslationMessage } from '@/types/messages';
+import {
+  injectProgressBarStyles,
+  showProgressBar,
+  updateProgressBar,
+  removeProgressBar,
+} from '@/utils/progressBar';
+import {
+  injectToastStyles,
+  showToast,
+  updateToast,
+} from '@/utils/toast';
+
+// Constants for toast IDs
+const TRANSLATION_TOAST_ID = 'lta-translation-progress';
 
 // MDI icon paths (inlined to avoid bundling issues with content scripts)
 const MDI_CONTENT_COPY = 'M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z';
@@ -93,6 +107,13 @@ function init(): void {
 }
 
 function injectTranslationStyles(): void {
+  // Inject progress bar styles (from utility)
+  injectProgressBarStyles();
+
+  // Inject toast styles (from utility)
+  injectToastStyles();
+
+  // Inject translation-specific styles
   const style = document.createElement('style');
   style.id = 'lta-styles';
   style.textContent = `
@@ -118,15 +139,6 @@ function injectTranslationStyles(): void {
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
       pointer-events: none;
     }
-    .lta-progress-bar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      height: 3px;
-      background: linear-gradient(90deg, #3b82f6, #60a5fa);
-      z-index: 2147483647;
-      transition: width 0.3s ease;
-    }
   `;
   document.head.appendChild(style);
 }
@@ -149,6 +161,17 @@ function handleMessage(
         showTranslationPopup(popupX, popupY);
         updateTranslationPopupContent('翻訳中...');
 
+        // Show indeterminate progress bar during translation
+        showProgressBar(true);
+
+        // Show toast notification for selection translation
+        showToast({
+          id: TRANSLATION_TOAST_ID,
+          title: 'テキスト選択翻訳を開始しました…',
+          type: 'info',
+          duration: 0, // Persistent until translation completes
+        });
+
         void browser.runtime.sendMessage({
           type: 'TRANSLATE_TEXT',
           timestamp: Date.now(),
@@ -166,6 +189,13 @@ function handleMessage(
     }
 
     case 'TRANSLATE_PAGE':
+      // Show toast notification for page translation start
+      showToast({
+        id: TRANSLATION_TOAST_ID,
+        title: 'ページ全体翻訳を開始しました…',
+        type: 'info',
+        duration: 0, // Persistent until translation completes
+      });
       void startPageTranslation();
       break;
 
@@ -181,6 +211,23 @@ function handleMessage(
     case 'TRANSLATE_PAGE_PROGRESS': {
       const progressPayload = (message as { payload: { translatedNodes: number; totalNodes: number } }).payload;
       updateProgressBar(progressPayload.translatedNodes, progressPayload.totalNodes);
+      // Update toast with progress
+      updateToast(TRANSLATION_TOAST_ID, {
+        title: '翻訳処理中…',
+        message: `${progressPayload.translatedNodes} / ${progressPayload.totalNodes} 段落`,
+      });
+      break;
+    }
+
+    case 'APPLY_SINGLE_NODE_TRANSLATION': {
+      const singlePayload = (message as ApplySingleNodeTranslationMessage).payload;
+      applySingleNodeTranslation(singlePayload.nodeId, singlePayload.translatedText);
+      updateProgressBar(singlePayload.translatedNodes, singlePayload.totalNodes);
+      // Update toast with progress
+      updateToast(TRANSLATION_TOAST_ID, {
+        title: '翻訳処理中…',
+        message: `${singlePayload.translatedNodes} / ${singlePayload.totalNodes} 段落`,
+      });
       break;
     }
 
@@ -199,11 +246,52 @@ function handleMessage(
     case 'TRANSLATE_TEXT_STREAM_END': {
       const endPayload = (message as ExtensionMessage & { type: 'TRANSLATE_TEXT_STREAM_END' }).payload;
       finalizeTranslationResult(endPayload.translatedText);
+      // Show completion toast
+      updateToast(TRANSLATION_TOAST_ID, {
+        title: '翻訳が完了しました',
+        type: 'success',
+        duration: 3000, // Auto-dismiss after 3 seconds
+      });
       break;
     }
 
     case 'TRANSLATE_TEXT_ERROR':
+      removeProgressBar();
       showTranslationError((message as ExtensionMessage & { type: 'TRANSLATE_TEXT_ERROR' }).payload.message);
+      // Show error toast
+      updateToast(TRANSLATION_TOAST_ID, {
+        title: '翻訳エラー',
+        message: (message as ExtensionMessage & { type: 'TRANSLATE_TEXT_ERROR' }).payload.message,
+        type: 'error',
+        duration: 5000,
+      });
+      break;
+
+    case 'SHOW_PROGRESS_BAR': {
+      const showPayload = (message as { payload: { indeterminate: boolean; translationKind?: 'page' | 'selection' } }).payload;
+      showProgressBar(showPayload.indeterminate);
+
+      // Show toast notification based on translation kind
+      if (showPayload.translationKind === 'selection') {
+        showToast({
+          id: TRANSLATION_TOAST_ID,
+          title: 'テキスト選択翻訳を開始しました…',
+          type: 'info',
+          duration: 0, // Persistent until translation completes
+        });
+      } else if (showPayload.translationKind === 'page') {
+        showToast({
+          id: TRANSLATION_TOAST_ID,
+          title: 'ページ全体翻訳を開始しました…',
+          type: 'info',
+          duration: 0, // Persistent until translation completes
+        });
+      }
+      break;
+    }
+
+    case 'HIDE_PROGRESS_BAR':
+      removeProgressBar();
       break;
 
     default:
@@ -290,6 +378,17 @@ async function translateSelectedText(text: string): Promise<void> {
   showTranslationPopup(buttonRect.left, buttonRect.bottom + 10);
   updateTranslationPopupContent('翻訳中...');
 
+  // Show indeterminate progress bar during translation
+  showProgressBar(true);
+
+  // Show toast notification for selection translation
+  showToast({
+    id: TRANSLATION_TOAST_ID,
+    title: 'テキスト選択翻訳を開始しました…',
+    type: 'info',
+    duration: 0, // Persistent until translation completes
+  });
+
   const requestId = crypto.randomUUID();
 
   try {
@@ -309,6 +408,7 @@ async function translateSelectedText(text: string): Promise<void> {
   } catch (error) {
     const message = error instanceof Error ? error.message : '不明なエラー';
     showTranslationError(message);
+    removeProgressBar();
   }
 
   // Hide the button after clicking
@@ -452,6 +552,7 @@ function updateStreamingResult(text: string): void {
 }
 
 function finalizeTranslationResult(text: string): void {
+  removeProgressBar();
   showTranslationResult(text);
 }
 
@@ -493,6 +594,28 @@ function hideTranslationUI(): void {
   if (translationPopup) {
     translationPopup.remove();
     translationPopup = null;
+  }
+}
+
+/**
+ * Apply translation to a single node (for progressive rendering)
+ */
+function applySingleNodeTranslation(nodeId: string, translatedText: string): void {
+  const nodeData = translatedNodes.get(nodeId);
+  if (!nodeData || !translatedText) {
+    return;
+  }
+
+  const { node, originalText } = nodeData;
+
+  // Replace text content
+  node.textContent = translatedText;
+
+  // Add wrapper span with original text for hover display
+  const parent = node.parentElement;
+  if (parent && !parent.classList.contains('lta-translated')) {
+    parent.classList.add('lta-translated');
+    parent.setAttribute('data-original', originalText);
   }
 }
 
@@ -566,22 +689,18 @@ function applyPageTranslation(nodeIds: string[], translatedTexts: string[]): voi
 
   removeProgressBar();
 
-  // Show completion notification
-  void browser.runtime.sendMessage({
-    type: 'NOTIFICATION',
-    timestamp: Date.now(),
-    payload: {
-      id: crypto.randomUUID(),
-      notificationType: 'success',
-      title: 'ページ翻訳完了',
-      message: `${nodeIds.length}個のテキストを翻訳しました`,
-    },
+  // Show completion toast notification
+  updateToast(TRANSLATION_TOAST_ID, {
+    title: '翻訳が完了しました',
+    message: `${nodeIds.length}個のテキストを翻訳しました`,
+    type: 'success',
+    duration: 4000, // Auto-dismiss after 4 seconds
   });
 }
 
 async function startPageTranslation(): Promise<void> {
-  // Show progress bar
-  showProgressBar();
+  // Show progress bar (determinate mode for page translation)
+  showProgressBar(false);
 
   // Request translation from background
   await browser.runtime.sendMessage({
@@ -593,35 +712,6 @@ async function startPageTranslation(): Promise<void> {
       profileId: '',
     },
   });
-}
-
-function showProgressBar(): void {
-  let progressBar = document.getElementById('lta-progress-bar');
-  if (!progressBar) {
-    progressBar = document.createElement('div');
-    progressBar.id = 'lta-progress-bar';
-    progressBar.className = 'lta-progress-bar';
-    progressBar.style.width = '0%';
-    document.body.appendChild(progressBar);
-  }
-}
-
-function updateProgressBar(completed: number, total: number): void {
-  const progressBar = document.getElementById('lta-progress-bar');
-  if (progressBar) {
-    const percent = Math.round((completed / total) * 100);
-    progressBar.style.width = `${percent}%`;
-  }
-}
-
-function removeProgressBar(): void {
-  const progressBar = document.getElementById('lta-progress-bar');
-  if (progressBar) {
-    progressBar.style.width = '100%';
-    setTimeout(() => {
-      progressBar.remove();
-    }, 500);
-  }
 }
 
 // Initialize when DOM is ready

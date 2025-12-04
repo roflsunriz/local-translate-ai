@@ -60,9 +60,12 @@ export const zh = {
       themeLight: '浅色',
       themeDark: '深色',
       currency: '美元换算功能',
-      currencyDescription: '翻译成日语时，将美元金额换算为日元显示',
+      currencyDescription: '翻译成日语时，将美元金额换算为日元显示（例：$100K → $100K (1,550万円)）',
       currencyEnabled: '启用美元换算',
       currencyRate: '1美元 = 多少日元',
+      paramConversion: '参数规模转换',
+      paramConversionDescription: '将AI模型参数规模（B/M/T）转换为日语单位显示（例：140B → 140B (1,400億)）',
+      paramConversionEnabled: '启用参数规模转换',
     },
     api: {
       profiles: '配置文件',

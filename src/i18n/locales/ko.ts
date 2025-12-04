@@ -60,9 +60,12 @@ export const ko = {
       themeLight: '라이트',
       themeDark: '다크',
       currency: 'USD 환산 기능',
-      currencyDescription: '일본어로 번역 시 달러 금액을 엔화로 환산하여 표시',
+      currencyDescription: '일본어로 번역 시 달러 금액을 엔화로 환산하여 표시 (예: $100K → $100K (1,550만円))',
       currencyEnabled: 'USD 환산 활성화',
       currencyRate: '1달러 = 엔',
+      paramConversion: '파라미터 크기 변환',
+      paramConversionDescription: 'AI 모델 파라미터 크기 (B/M/T)를 일본어 단위로 변환하여 표시 (예: 140B → 140B (1,400億))',
+      paramConversionEnabled: '파라미터 크기 변환 활성화',
     },
     api: {
       profiles: '프로필',

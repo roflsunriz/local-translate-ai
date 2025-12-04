@@ -60,9 +60,12 @@ export const hi = {
       themeLight: 'लाइट',
       themeDark: 'डार्क',
       currency: 'USD रूपांतरण',
-      currencyDescription: 'जापानी में अनुवाद करते समय USD राशि को JPY में बदलें',
+      currencyDescription: 'जापानी में अनुवाद करते समय USD राशि को JPY में बदलें (उदा: $100K → $100K (1,550万円))',
       currencyEnabled: 'USD रूपांतरण सक्षम करें',
       currencyRate: '1 USD = JPY',
+      paramConversion: 'पैरामीटर आकार रूपांतरण',
+      paramConversionDescription: 'AI मॉडल पैरामीटर आकार (B/M/T) को जापानी इकाइयों में बदलें (उदा: 140B → 140B (1,400億))',
+      paramConversionEnabled: 'पैरामीटर आकार रूपांतरण सक्षम करें',
     },
     api: {
       profiles: 'प्रोफाइल',

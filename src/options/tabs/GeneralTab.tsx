@@ -161,6 +161,46 @@ export function GeneralTab() {
           )}
         </div>
       </div>
+
+      <div>
+        <h3
+          className="mb-4 text-lg font-medium"
+          style={{ color: 'var(--color-text-primary)' }}
+        >
+          {t('settings.general.paramConversion')}
+        </h3>
+        <p
+          className="mb-4 text-sm"
+          style={{ color: 'var(--color-text-muted)' }}
+        >
+          {t('settings.general.paramConversionDescription')}
+        </p>
+
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="paramEnabled"
+              checked={settings.paramConversion?.enabled ?? false}
+              onChange={(e) => {
+                updateSettings({
+                  paramConversion: {
+                    enabled: e.target.checked,
+                  },
+                });
+              }}
+              className="h-4 w-4 rounded border-gray-300"
+            />
+            <label
+              htmlFor="paramEnabled"
+              className="text-sm"
+              style={{ color: 'var(--color-text-primary)' }}
+            >
+              {t('settings.general.paramConversionEnabled')}
+            </label>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
