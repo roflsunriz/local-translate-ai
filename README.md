@@ -58,6 +58,21 @@ pnpm preview
 
 または、`about:debugging` → `このFirefox` → `一時的なアドオンを読み込む` から `dist/manifest.json` を選択。
 
+## llama.cppのセットアップ概要
+
+詳細な手順は `llama-cpp.md` を参照してください。ここでは最小限の流れだけ記載します。
+
+1. [llama.cppのReleases](https://github.com/ggerganov/llama.cpp/releases) からお使いの環境に合ったアーカイブをダウンロードし、展開して `llama-server` (Windowsは `llama-server.exe`) を取得する。GPU利用時はCUDA対応ビルドを選択。
+2. 展開先直下に `models` ディレクトリを作成し、Hugging Face Hub から `plamo-2-translate.Q4_K_M.gguf` を配置する。
+3. 以下のようにサーバーを起動する（ポートやパスは環境に合わせて調整）。
+   ```bash
+   # macOS / Linux / Windows(ビルドした場合)
+   ./llama-server -m ./models/plamo-2-translate.Q4_K_M.gguf --port 3002 --host 0.0.0.0 -c 4096
+   # Windowsで配布バイナリを利用する場合の一例（modelsを上の階層に置いた場合）
+   ./llama-server.exe -m ../models/plamo-2-translate.Q4_K_M.gguf --port 3002 --host 0.0.0.0 -c 4096
+   ```
+4. 拡張機能の設定でAPIエンドポイントを `http://localhost:3002/v1/chat/completions` に設定し、モデル名に `plamo-2-translate-gguf` を指定する。
+
 ## 設定
 
 ### デフォルト設定
