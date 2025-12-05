@@ -16,7 +16,11 @@
     "type-check": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "zip:source": "git archive --format=zip --output=source-code.zip HEAD",
+    "zip:dist": "web-ext build -s dist -a web-ext-artifacts --overwrite-dest",
+    "sign:unlisted": "web-ext sign -s dist --channel 'unlisted'",
+    "sign:listed": "web-ext sign -s dist --channel 'listed'"
   },
   "dependencies": {
     "@mdi/js": "^7.4.47",
