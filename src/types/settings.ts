@@ -33,10 +33,12 @@ export type UILanguage =
   | 'id';
 
 export type ThemeMode = 'auto' | 'light' | 'dark';
+export type ApiType = 'openai' | 'anthropic';
 
 export interface TranslationProfile {
   id: string;
   name: string;
+  apiType: ApiType;
   apiEndpoint: string;
   apiKey: string;
   model: string;
@@ -107,6 +109,7 @@ translation
 export const DEFAULT_PROFILE: TranslationProfile = {
   id: 'default-plamo2-llama-cpp',
   name: 'Default-PLaMo2-Llama-cpp',
+  apiType: 'openai',
   apiEndpoint: 'http://localhost:3002/v1/chat/completions',
   apiKey: 'test',
   model: 'plamo-2-translate-gguf',

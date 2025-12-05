@@ -6,7 +6,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useSettingsStore, useUIStore } from '@/stores';
 import { DEFAULT_PROFILE } from '@/types/settings';
 
-import type { TranslationProfile, SupportedLanguage } from '@/types/settings';
+import type { ApiType, TranslationProfile, SupportedLanguage } from '@/types/settings';
 
 export function ApiTab() {
   const { t } = useTranslation();
@@ -177,6 +177,28 @@ function ProfileEditor({ profile, onChange, onSave, onCancel }: ProfileEditorPro
             className="mb-1 block text-sm font-medium"
             style={{ color: 'var(--color-text-secondary)' }}
           >
+            {t('settings.api.apiType')}
+          </label>
+          <select
+            value={profile.apiType}
+            onChange={(e) => { updateField('apiType', e.target.value as ApiType); }}
+            className="w-full rounded-md border px-3 py-2 text-sm"
+            style={{
+              backgroundColor: 'var(--color-bg-secondary)',
+              borderColor: 'var(--color-border)',
+              color: 'var(--color-text-primary)',
+            }}
+          >
+            <option value="openai">{t('settings.api.apiTypeOpenAI')}</option>
+            <option value="anthropic">{t('settings.api.apiTypeAnthropic')}</option>
+          </select>
+        </div>
+
+        <div>
+          <label
+            className="mb-1 block text-sm font-medium"
+            style={{ color: 'var(--color-text-secondary)' }}
+          >
             {t('settings.api.model')}
           </label>
           <input
@@ -318,6 +340,14 @@ function ProfileViewer({ profile }: ProfileViewerProps) {
         <div>
           <dt style={{ color: 'var(--color-text-muted)' }}>{t('settings.api.endpoint')}</dt>
           <dd style={{ color: 'var(--color-text-primary)' }}>{profile.apiEndpoint}</dd>
+        </div>
+        <div>
+          <dt style={{ color: 'var(--color-text-muted)' }}>{t('settings.api.apiType')}</dt>
+          <dd style={{ color: 'var(--color-text-primary)' }}>
+            {profile.apiType === 'anthropic'
+              ? t('settings.api.apiTypeAnthropic')
+              : t('settings.api.apiTypeOpenAI')}
+          </dd>
         </div>
         <div>
           <dt style={{ color: 'var(--color-text-muted)' }}>{t('settings.api.model')}</dt>

@@ -53,6 +53,63 @@ export interface ApiError {
   details?: unknown;
 }
 
+/**
+ * Anthropic API types
+ */
+export interface AnthropicMessageContentBlock {
+  type: 'text';
+  text: string;
+}
+
+export interface AnthropicMessageRequest {
+  model: string;
+  system?: string;
+  messages: {
+    role: 'user' | 'assistant';
+    content: string | AnthropicMessageContentBlock[];
+  }[];
+  max_tokens: number;
+  temperature?: number;
+  stream?: boolean;
+  stop_sequences?: string[];
+}
+
+export interface AnthropicUsage {
+  input_tokens: number;
+  output_tokens: number;
+}
+
+export interface AnthropicMessageResponse {
+  id: string;
+  type: 'message';
+  role: 'assistant';
+  model: string;
+  content: AnthropicMessageContentBlock[];
+  stop_reason: 'end_turn' | 'max_tokens' | 'stop_sequence' | null;
+  stop_sequence?: string | null;
+  usage?: AnthropicUsage;
+}
+
+export type AnthropicStreamEventType =
+  | 'message_start'
+  | 'message_delta'
+  | 'message_stop'
+  | 'content_block_start'
+  | 'content_block_delta'
+  | 'content_block_stop'
+  | 'error';
+
+export interface AnthropicStreamChunk {
+  type: AnthropicStreamEventType;
+  delta?: { text?: string };
+  content_block?: AnthropicMessageContentBlock;
+  message?: AnthropicMessageResponse;
+  error?: {
+    type: string;
+    message: string;
+  };
+}
+
 export type ApiResult<T> =
   | { success: true; data: T }
   | { success: false; error: ApiError };

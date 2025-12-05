@@ -1,6 +1,6 @@
 # Local Translate AI
 
-llama.cppでホストしたローカルLLMを使用して翻訳を行うFirefox拡張機能です。OpenAI互換APIに対応しています。
+llama.cppでホストしたローカルLLMを使用して翻訳を行うFirefox拡張機能です。OpenAI互換APIとAnthropic Messages APIに対応しています。
 
 ![Cover](./images/General.png)
 
@@ -81,6 +81,7 @@ pnpm preview
 
 | 項目 | デフォルト値 | 備考 |
 |------|-------------|------|
+| API種別 | OpenAI互換 | Anthropic Messages API を利用する場合は設定から切り替えてください。 |
 | APIエンドポイント | `http://localhost:3002/v1/chat/completions` | OpenRouterやCerebrasなどのOpenAI互換APIを使用できます。 |
 | APIキー | `test` | ローカルではAPIキーは不要ですが、クラウド翻訳する場合は必須です。 |
 | モデル | `plamo-2-translate-gguf` | 翻訳モデルの名前を設定します。llama.cppの名前と合わせてください。クラウド翻訳する場合はモデル名の指定を行います。例:`tngtech/deepseek-r1t2-chimera:free`や`zai-glm-4.6`など |
@@ -96,6 +97,13 @@ pnpm preview
 # PLaMo-2-Translateモデルを使用する場合
 ./llama-server -m plamo-2-translate.gguf --port 3002 --host 0.0.0.0
 ```
+
+### Anthropic Messages APIを使う場合
+
+1. 設定 > API で「API種別」を「Anthropic Messages API」に変更する
+2. APIエンドポイントを `https://api.anthropic.com/v1/messages` に設定する
+3. AnthropicのAPIキーを入力する
+4. モデル名に `claude-4-5-sonnet-latest` など利用したいClaudeモデルを指定する
 
 ## 開発
 

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2025-12-06
+
+### Added
+
+- Anthropic Messages API形式での翻訳に対応（設定でAPI種別を切り替え可能）
+- API設定画面にAPI種別の表示と編集を追加
+- READMEにAnthropic利用手順を追記
+
 ## [1.2.0] - 2025-12-04
 
 ### Added
@@ -91,7 +99,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - DOM sanitization for translated content
 - HTTPS enforcement for external endpoints
 
-[Unreleased]: https://github.com/roflsunriz/local-translate-ai/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/roflsunriz/local-translate-ai/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/roflsunriz/local-translate-ai/compare/v0.1.0...v1.0.0

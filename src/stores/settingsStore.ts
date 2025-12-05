@@ -16,6 +16,10 @@ import type {
 } from '@/types/settings';
 import { DEFAULT_SETTINGS } from '@/types/settings';
 
+function withApiType(profile: TranslationProfile): TranslationProfile {
+  return { ...profile, apiType: profile.apiType ?? 'openai' };
+}
+
 interface SettingsState {
   settings: Settings;
   isLoading: boolean;
@@ -96,7 +100,7 @@ async function encryptApiKey(apiKey: string): Promise<string> {
 async function decryptProfiles(profiles: TranslationProfile[]): Promise<TranslationProfile[]> {
   return Promise.all(
     profiles.map(async (profile) => ({
-      ...profile,
+      ...withApiType(profile),
       apiKey: await decryptApiKey(profile.apiKey),
     }))
   );
@@ -108,7 +112,7 @@ async function decryptProfiles(profiles: TranslationProfile[]): Promise<Translat
 async function encryptProfiles(profiles: TranslationProfile[]): Promise<TranslationProfile[]> {
   return Promise.all(
     profiles.map(async (profile) => ({
-      ...profile,
+      ...withApiType(profile),
       apiKey: await encryptApiKey(profile.apiKey),
     }))
   );
@@ -120,12 +124,18 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   error: null,
 
   setSettings: (settings) => {
-    set({ settings });
+    set({ settings: { ...settings, profiles: settings.profiles.map(withApiType) } });
   },
 
   updateSettings: (partial) => {
     set((state) => ({
-      settings: { ...state.settings, ...partial },
+      settings: {
+        ...state.settings,
+        ...partial,
+        profiles: partial.profiles
+          ? partial.profiles.map(withApiType)
+          : state.settings.profiles,
+      },
     }));
   },
 
@@ -134,10 +144,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   },
 
   addProfile: (profile) => {
+    const profileWithDefaults = withApiType(profile);
     set((state) => ({
       settings: {
         ...state.settings,
-        profiles: [...state.settings.profiles, profile],
+        profiles: [...state.settings.profiles, profileWithDefaults],
       },
     }));
   },
@@ -147,7 +158,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       settings: {
         ...state.settings,
         profiles: state.settings.profiles.map((p) =>
-          p.id === id ? { ...p, ...updates } : p
+          p.id === id ? withApiType({ ...p, ...updates }) : p
         ),
       },
     }));

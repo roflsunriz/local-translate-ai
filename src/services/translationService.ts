@@ -2,9 +2,16 @@
  * Translation Service - Handles API communication with llama.cpp server
  */
 
-import type { TranslationProfile, SupportedLanguage } from '@/types/settings';
+import type { ApiType, TranslationProfile, SupportedLanguage } from '@/types/settings';
 import type { TranslationResult } from '@/types/translation';
-import type { ChatCompletionRequest, ChatCompletionResponse, ChatCompletionChunk } from '@/types/api';
+import type {
+  AnthropicMessageRequest,
+  AnthropicMessageResponse,
+  AnthropicStreamChunk,
+  ChatCompletionRequest,
+  ChatCompletionResponse,
+  ChatCompletionChunk,
+} from '@/types/api';
 import { sanitizeTranslationResult, sanitizeAccumulatedResult } from '@/utils/sanitize';
 
 export interface RetryConfig {
@@ -17,6 +24,9 @@ const DEFAULT_RETRY_CONFIG: RetryConfig = {
   retryInterval: 1000,
 };
 
+const ANTHROPIC_VERSION = '2023-06-01';
+const ANTHROPIC_MIN_MAX_TOKENS = 1024;
+const ANTHROPIC_MAX_TOKENS = 4096;
 /**
  * Safety limits for streaming translation to prevent infinite loops
  */
@@ -61,14 +71,7 @@ export class TranslationService {
     const startTime = Date.now();
 
     const prompt = this.buildPrompt(text, sourceLanguage, targetLanguage, profile);
-    const request: ChatCompletionRequest = {
-      model: profile.model,
-      messages: [
-        { role: 'system', content: profile.systemPrompt.replace('{{target_language}}', targetLanguage) },
-        { role: 'user', content: prompt },
-      ],
-      stream: false,
-    };
+    const request = this.buildRequestPayload(prompt, targetLanguage, profile, false);
 
     // Execute with retry
     const response = await this.executeWithRetry(
@@ -76,10 +79,7 @@ export class TranslationService {
         profile.apiEndpoint,
         {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${profile.apiKey}`,
-          },
+          headers: this.buildHeaders(profile),
           body: JSON.stringify(request),
           signal: signal ?? null,
         },
@@ -93,8 +93,9 @@ export class TranslationService {
       throw new Error(`API error: ${response.status} - ${errorText}`);
     }
 
-    const data = await response.json() as ChatCompletionResponse;
-    const rawTranslatedText = data.choices[0]?.message.content ?? '';
+    const rawTranslatedText = profile.apiType === 'anthropic'
+      ? this.extractAnthropicContent(await response.json() as AnthropicMessageResponse)
+      : this.extractOpenAIContent(await response.json() as ChatCompletionResponse);
 
     // Sanitize the translation result to remove any chat template tokens
     const translatedText = sanitizeTranslationResult(rawTranslatedText);
@@ -123,14 +124,7 @@ export class TranslationService {
     onChunk: (chunk: string, accumulated: string) => void
   ): Promise<void> {
     const prompt = this.buildPrompt(text, sourceLanguage, targetLanguage, profile);
-    const request: ChatCompletionRequest = {
-      model: profile.model,
-      messages: [
-        { role: 'system', content: profile.systemPrompt.replace('{{target_language}}', targetLanguage) },
-        { role: 'user', content: prompt },
-      ],
-      stream: true,
-    };
+    const request = this.buildRequestPayload(prompt, targetLanguage, profile, true);
 
     // Execute with retry
     const response = await this.executeWithRetry(
@@ -138,10 +132,7 @@ export class TranslationService {
         profile.apiEndpoint,
         {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${profile.apiKey}`,
-          },
+          headers: this.buildHeaders(profile),
           body: JSON.stringify(request),
           signal,
         },
@@ -190,13 +181,13 @@ export class TranslationService {
         for (const line of lines) {
           if (line.startsWith('data: ')) {
             const data = line.slice(6);
-            if (data === '[DONE]') {
+            if (data === '[DONE]' && profile.apiType === 'openai') {
               continue;
             }
 
             try {
-              const parsed = JSON.parse(data) as ChatCompletionChunk;
-              const content = parsed.choices[0]?.delta.content ?? '';
+              const parsed = JSON.parse(data) as ChatCompletionChunk | AnthropicStreamChunk;
+              const content = this.extractStreamContent(parsed, profile.apiType);
               if (content) {
                 // Update last content time
                 lastContentTime = Date.now();
@@ -337,6 +328,95 @@ export class TranslationService {
 
   getLastResult(): string {
     return this.lastResult;
+  }
+
+  private buildRequestPayload(
+    prompt: string,
+    targetLanguage: SupportedLanguage,
+    profile: TranslationProfile,
+    stream: boolean
+  ): ChatCompletionRequest | AnthropicMessageRequest {
+    if (profile.apiType === 'anthropic') {
+      return {
+        model: profile.model,
+        system: profile.systemPrompt.replace('{{target_language}}', targetLanguage),
+        messages: [
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        max_tokens: this.calculateAnthropicMaxTokens(prompt),
+        temperature: 0,
+        stream,
+      };
+    }
+
+    return {
+      model: profile.model,
+      messages: [
+        { role: 'system', content: profile.systemPrompt.replace('{{target_language}}', targetLanguage) },
+        { role: 'user', content: prompt },
+      ],
+      stream,
+    };
+  }
+
+  private buildHeaders(profile: TranslationProfile): Record<string, string> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    if (profile.apiType === 'anthropic') {
+      headers['anthropic-version'] = ANTHROPIC_VERSION;
+      if (profile.apiKey) {
+        headers['x-api-key'] = profile.apiKey;
+      }
+      return headers;
+    }
+
+    if (profile.apiKey) {
+      headers['Authorization'] = `Bearer ${profile.apiKey}`;
+    }
+
+    return headers;
+  }
+
+  private calculateAnthropicMaxTokens(prompt: string): number {
+    const estimatedTokens = Math.ceil(prompt.length / 2);
+    const boundedByMinimum = Math.max(estimatedTokens, ANTHROPIC_MIN_MAX_TOKENS);
+    return Math.min(boundedByMinimum, ANTHROPIC_MAX_TOKENS);
+  }
+
+  private extractOpenAIContent(response: ChatCompletionResponse): string {
+    return response.choices[0]?.message.content ?? '';
+  }
+
+  private extractAnthropicContent(response: AnthropicMessageResponse): string {
+    return response.content
+      .filter((block) => block.type === 'text')
+      .map((block) => block.text)
+      .join('');
+  }
+
+  private extractStreamContent(
+    parsed: ChatCompletionChunk | AnthropicStreamChunk,
+    apiType: ApiType
+  ): string {
+    if (apiType === 'anthropic') {
+      const anthropicChunk = parsed as AnthropicStreamChunk;
+      if (anthropicChunk.type === 'error') {
+        const message = anthropicChunk.error?.message ?? 'Anthropic streaming error';
+        throw new Error(message);
+      }
+      if (anthropicChunk.type === 'content_block_delta') {
+        return anthropicChunk.delta?.text ?? '';
+      }
+      return '';
+    }
+
+    const openAiChunk = parsed as ChatCompletionChunk;
+    return openAiChunk.choices[0]?.delta.content ?? '';
   }
 
   private buildPrompt(

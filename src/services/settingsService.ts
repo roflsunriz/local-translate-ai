@@ -33,8 +33,13 @@ export class SettingsService {
     }
 
     // Decrypt API keys in profiles
+    const profilesWithDefaults = settings.profiles.map((profile) => ({
+      ...profile,
+      apiType: profile.apiType ?? 'openai',
+    }));
+
     settings.profiles = await Promise.all(
-      settings.profiles.map(async (profile) => ({
+      profilesWithDefaults.map(async (profile) => ({
         ...profile,
         apiKey: await this.decryptApiKey(profile.apiKey),
       }))
@@ -53,8 +58,13 @@ export class SettingsService {
 
     // If profiles are being updated, encrypt API keys before storage
     if (partial.profiles) {
+      const profilesWithDefaults = partial.profiles.map((profile) => ({
+        ...profile,
+        apiType: profile.apiType ?? 'openai',
+      }));
+
       updated.profiles = await Promise.all(
-        partial.profiles.map(async (profile) => ({
+        profilesWithDefaults.map(async (profile) => ({
           ...profile,
           apiKey: await this.encryptApiKey(profile.apiKey),
         }))
@@ -69,6 +79,7 @@ export class SettingsService {
       updated.profiles = await Promise.all(
         updated.profiles.map(async (profile) => ({
           ...profile,
+          apiType: profile.apiType ?? 'openai',
           apiKey: await this.decryptApiKey(profile.apiKey),
         }))
       );
