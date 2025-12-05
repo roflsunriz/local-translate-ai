@@ -29,6 +29,8 @@ llama.cppでホストしたローカルLLMを使用して翻訳を行うFirefox�
 
 ## インストール
 
+[Mozilla Add-ons](https://addons.mozilla.org/ja/firefox/addon/local-translate-ai/)からインストール
+
 [リリースページ](https://github.com/roflsunriz/local-translate-ai/releases)からインストール
 
 Firefoxのメニューを開き、「拡張機能とテーマ」を選び、ギア（⚙）アイコンをクリック。「ファイルからアドオンをインストール」でダウンロードした`.xpi`ファイルを選択してインストール。
