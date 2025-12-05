@@ -1,0 +1,52 @@
+name: 機能要望
+description: 新機能や改善の提案はこちら
+labels:
+  - enhancement
+  - needs triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        新しいアイデアや改善点を教えてください。背景や目的が分かると検討しやすくなります。
+  - type: input
+    id: title
+    attributes:
+      label: タイトル
+      description: 簡潔な件名を入力してください
+      placeholder: 例）翻訳結果のコピーをワンクリックにしたい
+    validations:
+      required: true
+  - type: textarea
+    id: background
+    attributes:
+      label: 背景・課題
+      description: どんな状況で困っているのか、解決したい問題を教えてください
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 提案する解決策
+      description: 実現したい挙動やUI案、設定項目などを具体的に記載してください
+    validations:
+      required: true
+  - type: textarea
+    id: benefit
+    attributes:
+      label: 期待される効果
+      description: 利用者にとってのメリットや改善点を教えてください
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 代替案・検討したこと
+      description: 他に試した方法や既存の回避策があれば記載してください
+  - type: textarea
+    id: scope
+    attributes:
+      label: スコープ・影響範囲
+      description: 対象ページ、設定、モデル、ブラウザなどの影響範囲を明示してください
+  - type: textarea
+    id: notes
+    attributes:
+      label: 備考
+      description: 追加情報や関連Issue/PRがあれば記載してください

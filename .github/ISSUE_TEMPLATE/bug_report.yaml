@@ -1,0 +1,70 @@
+name: バグ報告
+description: 不具合の報告はこちら
+labels:
+  - bug
+  - needs triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ありがとうございます。再現手順や環境情報をできるだけ詳しく共有してください。
+  - type: input
+    id: title
+    attributes:
+      label: タイトル
+      description: 簡潔な件名を入力してください
+      placeholder: 例）翻訳が途中で止まりエラーになる
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: 概要
+      description: 発生した問題を短く説明してください
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 再現手順
+      description: 手順を番号付きで記載してください
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期待する動作
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 実際の動作
+      description: 必要に応じてエラーメッセージを含めてください
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: 環境情報
+      description: OS・Firefox・拡張機能のバージョン、モデル設定などを記載してください
+      placeholder: |
+        - OS:
+        - Firefox:
+        - 拡張機能バージョン:
+        - LLM/モデル:
+        - その他:
+  - type: textarea
+    id: logs
+    attributes:
+      label: ログ・スクリーンショット
+      description: コンソール出力やスクリーンショットがあれば貼り付けてください
+  - type: textarea
+    id: notes
+    attributes:
+      label: 備考
+      description: 発生頻度、影響範囲、暫定回避策などがあれば記載してください
