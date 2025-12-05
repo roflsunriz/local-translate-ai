@@ -1,6 +1,6 @@
 # llama.cpp セットアップガイド
 
-このドキュメントは、[llama.cpp](https://github.com/ggerganov/llama.cpp) をセットアップし、[PLaMo-2-Translate](https://huggingface.co/mmnga/plamo-2-translate-gguf) モデルを使用して翻訳サーバーを起動する手順を説明します。
+このドキュメントは、[llama.cpp](https://github.com/ggml-org/llama.cpp) をセットアップし、[PLaMo-2-Translate](https://huggingface.co/mmnga/plamo-2-translate-gguf) モデルを使用して翻訳サーバーを起動する手順を説明します。
 
 ## 0. 前提条件
 
@@ -37,7 +37,7 @@
 まず、`llama.cpp` のソースコードをGitHubからクローンします。(Gitがインストールされている必要があります)
 
 ```bash
-git clone https://github.com/ggerganov/llama.cpp.git
+git clone https://github.com/ggml-org/llama.cpp.git
 cd llama.cpp
 ```
 

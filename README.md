@@ -62,7 +62,7 @@ pnpm preview
 
 詳細な手順は [llama-cpp.md](./llama-cpp.md) を参照してください。ここでは最小限の流れだけ記載します。
 
-1. [llama.cppのReleases](https://github.com/ggerganov/llama.cpp/releases) からお使いの環境に合ったアーカイブをダウンロードし、展開して `llama-server` (Windowsは `llama-server.exe`) を取得する。GPU利用時はCUDA対応ビルドを選択。
+1. [llama.cppのReleases](https://github.com/ggml-org/llama.cpp/releases) からお使いの環境に合ったアーカイブをダウンロードし、展開して `llama-server` (Windowsは `llama-server.exe`) を取得する。GPU利用時はCUDA対応ビルドを選択。
 2. 展開先直下に `models` ディレクトリを作成し、Hugging Face Hub から `plamo-2-translate.Q4_K_M.gguf` を配置する。
 3. 以下のようにサーバーを起動する（ポートやパスは環境に合わせて調整）。
    ```bash
