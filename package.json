@@ -19,8 +19,8 @@
     "test:coverage": "vitest run --coverage",
     "zip:source": "git archive --format=zip --output=source-code.zip HEAD",
     "zip:dist": "web-ext build -s dist -a web-ext-artifacts --overwrite-dest",
-    "sign:unlisted": "web-ext sign -s dist --channel 'unlisted'",
-    "sign:listed": "web-ext sign -s dist --channel 'listed'",
+    "sign:unlisted": "web-ext sign -s dist --channel \"unlisted\"",
+    "sign:listed": "web-ext sign -s dist --channel \"listed\"",
     "amo:unlisted": "npm run build && npm run zip:source && npm run zip:dist && npm run sign:unlisted",
     "amo:listed": "npm run build && npm run zip:source && npm run zip:dist && npm run sign:listed"
   },
