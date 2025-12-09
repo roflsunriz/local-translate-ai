@@ -118,12 +118,13 @@
 - 翻訳コンテンツのDOMサニタイズ
 - 外部エンドポイントへのHTTPS強制
 
-[Unreleased]: https://github.com/roflsunriz/local-translate-ai/compare/v1.4.1...HEAD
+[Released]: https://github.com/roflsunriz/local-translate-ai/compare/v1.0.0...HEAD
 [1.4.1]: https://github.com/roflsunriz/local-translate-ai/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/roflsunriz/local-translate-ai/compare/v0.1.0...v1.0.0
+[Unreleased]: https://github.com/roflsunriz/local-translate-ai/compare/v0.1.0...v1.0.0
 [0.1.0]: https://github.com/roflsunriz/local-translate-ai/releases/tag/v0.1.0
 
