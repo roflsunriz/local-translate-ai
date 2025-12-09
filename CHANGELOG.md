@@ -5,7 +5,7 @@
 フォーマットは [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) に基づき、
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html) に準拠しています。
 
-## [Unreleased]
+## [Released]
 
 ## [1.4.1] - 2025-12-09
 
@@ -79,6 +79,8 @@
 - コンテンツスクリプトへの翻訳結果ブロードキャスト
 - CORS、Promise処理、i18nの問題
 - コンテンツスクリプト内のMDIアイコンパスをインライン化
+
+## [Unreleased]
 
 ## [0.1.0] - 2024-12-02
 
