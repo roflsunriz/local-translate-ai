@@ -1,6 +1,6 @@
 {
   "name": "local-translate-ai",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Firefox extension for translation using local LLM (llama.cpp)",
   "type": "module",
   "engines": {
