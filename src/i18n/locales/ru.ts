@@ -51,6 +51,7 @@ export const ru = {
       prompt: 'Промпт',
       advanced: 'Расширенные',
       shortcuts: 'Горячие клавиши',
+      history: 'История',
     },
     general: {
       display: 'Настройки отображения',
@@ -66,6 +67,16 @@ export const ru = {
       paramConversion: 'Конвертация размера параметров',
       paramConversionDescription: 'Конвертировать размеры параметров AI моделей (B/M/T) в японские единицы (напр.: 140B → 140B (1,400億))',
       paramConversionEnabled: 'Включить конвертацию размера параметров',
+      popup: 'Всплывающее окно перевода',
+      popupDescription: 'Настройка поведения всплывающего окна перевода при выделении текста',
+      popupCloseOnOutsideAction: 'Закрывать окно при прокрутке или изменении размера (снимите отметку, чтобы закрывать только кнопкой)',
+    },
+    history: {
+      original: 'Оригинал',
+      translated: 'Перевод',
+      copyOriginal: 'Копировать оригинал',
+      copyTranslated: 'Копировать перевод',
+      deleted: 'Запись истории удалена',
     },
     api: {
       profiles: 'Профили',

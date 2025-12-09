@@ -51,6 +51,7 @@ export const zh = {
       prompt: '提示词',
       advanced: '高级',
       shortcuts: '快捷键',
+      history: '历史',
     },
     general: {
       display: '显示设置',
@@ -66,6 +67,16 @@ export const zh = {
       paramConversion: '参数规模转换',
       paramConversionDescription: '将AI模型参数规模（B/M/T）转换为日语单位显示（例：140B → 140B (1,400億)）',
       paramConversionEnabled: '启用参数规模转换',
+      popup: '翻译弹窗',
+      popupDescription: '设置选择文本时显示的翻译弹窗的行为',
+      popupCloseOnOutsideAction: '滚动或调整窗口大小时关闭弹窗（取消勾选则仅通过关闭按钮关闭）',
+    },
+    history: {
+      original: '原文',
+      translated: '译文',
+      copyOriginal: '复制原文',
+      copyTranslated: '复制译文',
+      deleted: '历史记录已删除',
     },
     api: {
       profiles: '配置文件',

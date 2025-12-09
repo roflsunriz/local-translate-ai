@@ -49,6 +49,7 @@ interface TranslationState {
   // History actions
   setHistory: (items: TranslationHistoryItem[]) => void;
   addToHistory: (item: TranslationHistoryItem) => void;
+  deleteHistoryItem: (id: string) => void;
   clearHistory: () => void;
   setHistoryLoading: (loading: boolean) => void;
 
@@ -127,6 +128,12 @@ export const useTranslationStore = create<TranslationState>((set, get) => ({
   addToHistory: (item) => {
     set((state) => ({
       history: [item, ...state.history],
+    }));
+  },
+
+  deleteHistoryItem: (id) => {
+    set((state) => ({
+      history: state.history.filter((item) => item.id !== id),
     }));
   },
 

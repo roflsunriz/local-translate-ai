@@ -51,6 +51,7 @@ export const ko = {
       prompt: '프롬프트',
       advanced: '고급',
       shortcuts: '단축키',
+      history: '기록',
     },
     general: {
       display: '표시 설정',
@@ -66,6 +67,16 @@ export const ko = {
       paramConversion: '파라미터 크기 변환',
       paramConversionDescription: 'AI 모델 파라미터 크기 (B/M/T)를 일본어 단위로 변환하여 표시 (예: 140B → 140B (1,400億))',
       paramConversionEnabled: '파라미터 크기 변환 활성화',
+      popup: '번역 팝업',
+      popupDescription: '텍스트 선택 시 표시되는 번역 팝업의 동작을 설정합니다',
+      popupCloseOnOutsideAction: '스크롤 또는 창 크기 조정 시 팝업 닫기 (체크 해제하면 닫기 버튼으로만 닫힘)',
+    },
+    history: {
+      original: '원문',
+      translated: '번역문',
+      copyOriginal: '원문 복사',
+      copyTranslated: '번역문 복사',
+      deleted: '기록이 삭제되었습니다',
     },
     api: {
       profiles: '프로필',

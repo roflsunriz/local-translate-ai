@@ -51,6 +51,7 @@ export const hi = {
       prompt: 'प्रॉम्प्ट',
       advanced: 'उन्नत',
       shortcuts: 'शॉर्टकट',
+      history: 'इतिहास',
     },
     general: {
       display: 'डिस्प्ले सेटिंग्स',
@@ -66,6 +67,16 @@ export const hi = {
       paramConversion: 'पैरामीटर आकार रूपांतरण',
       paramConversionDescription: 'AI मॉडल पैरामीटर आकार (B/M/T) को जापानी इकाइयों में बदलें (उदा: 140B → 140B (1,400億))',
       paramConversionEnabled: 'पैरामीटर आकार रूपांतरण सक्षम करें',
+      popup: 'अनुवाद पॉपअप',
+      popupDescription: 'टेक्स्ट चयन करते समय दिखाई देने वाले अनुवाद पॉपअप के व्यवहार को कॉन्फ़िगर करें',
+      popupCloseOnOutsideAction: 'स्क्रॉल या रीसाइज़ करते समय पॉपअप बंद करें (केवल बटन से बंद करने के लिए अनचेक करें)',
+    },
+    history: {
+      original: 'मूल',
+      translated: 'अनुवादित',
+      copyOriginal: 'मूल कॉपी करें',
+      copyTranslated: 'अनुवाद कॉपी करें',
+      deleted: 'इतिहास आइटम हटा दिया गया',
     },
     api: {
       profiles: 'प्रोफाइल',

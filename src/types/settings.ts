@@ -85,6 +85,9 @@ export interface Settings {
   exclusionPatterns: ExclusionPattern[];
   keyboardShortcuts: KeyboardShortcuts;
 
+  // Popup Settings
+  popupCloseOnOutsideAction: boolean;
+
   // History Settings
   historyMaxItems: number;
   historyEnabled: boolean;
@@ -164,6 +167,7 @@ export const DEFAULT_SETTINGS: Settings = {
     translateSelection: 'Alt+W',
     toggleSidebar: 'Alt+Q',
   },
+  popupCloseOnOutsideAction: false,
   historyMaxItems: 100,
   historyEnabled: true,
   retryCount: 3,

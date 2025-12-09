@@ -1,15 +1,26 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+このプロジェクトの主な変更点を記録します。
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+フォーマットは [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) に基づき、
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html) に準拠しています。
 
 ## [Unreleased]
 
+## [1.4.0] - 2025-12-09
+
+### 追加
+
+- 設定画面に「履歴」タブを追加（サイドバー以外でも履歴を確認・削除・コピー可能）
+- 翻訳ポップアップの動作設定を追加（デフォルトでスクロール・リサイズ時に閉じなくなった）
+
+### 変更
+
+- 翻訳ポップアップがデフォルトで閉じるボタン以外では閉じなくなりました（以前の動作は設定で復元可能）
+
 ## [1.3.0] - 2025-12-06
 
-### Added
+### 追加
 
 - Anthropic Messages API形式での翻訳に対応（設定でAPI種別を切り替え可能）
 - API設定画面にAPI種別の表示と編集を追加
@@ -17,89 +28,90 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.2.0] - 2025-12-04
 
-### Added
+### 追加
 
-- Text selection translation pop up window is now draggable
+- テキスト選択翻訳ポップアップがドラッグ移動可能に
 
 ## [1.1.0] - 2025-12-04
 
-### Added
+### 追加
 
-- USD to JPY currency conversion feature in translation results
-- AI model parameter conversion (B/M to Japanese units: 億/万)
-- Conversion options toggle in settings
-- Progress bar display for sidebar, page-wide, and text selection translation
-- Toast notifications for translation status across all translation modes
+- 翻訳結果に米ドルから日本円への換算機能を追加
+- AIモデルのパラメータサイズ変換機能（B/Mを億・万単位に）
+- 設定画面に変換オプションのトグルを追加
+- サイドバー、ページ全体翻訳、テキスト選択翻訳にプログレスバーを表示
+- 全ての翻訳モードでトースト通知を表示
 
-### Changed
+### 変更
 
-- Enhanced currency formatting for Japanese locale
-- Improved translation process with conversion options and sanitization
-- Page-wide translation now processes paragraphs sequentially for better UX
+- 日本語ロケールの通貨フォーマットを改善
+- 変換オプションとサニタイズによる翻訳プロセスの改善
+- ページ全体翻訳が段落ごとに順次処理されるように改善（UX向上）
 
 ## [1.0.0] - 2025-12-04
 
-### Added
+### 追加
 
-- Multi-language support (13 languages: Japanese, English, Chinese, Korean, Spanish, French, Portuguese, Russian, Arabic, Hindi, Bengali, Indonesian)
-- Material Design Icons throughout the UI
-- Two copy buttons in text selection translation popup (original/translated)
-- New 96x96 icon for better visual representation
-- AMO submission documentation
+- 多言語サポート（13言語: 日本語、英語、中国語、韓国語、スペイン語、フランス語、ポルトガル語、ロシア語、アラビア語、ヒンディー語、ベンガル語、インドネシア語）
+- UI全体にMaterial Design Iconsを導入
+- テキスト選択翻訳ポップアップに2つのコピーボタン（原文/翻訳文）を追加
+- 新しい96x96アイコンで視認性を向上
+- AMO申請ドキュメントを追加
 
-### Changed
+### 変更
 
-- Replaced emojis with MDI icons in translation popup
-- Updated keyboard shortcuts in manifest and settings
-- Enhanced translation popup with improved DOM manipulation
-- Updated data collection permissions in manifest.json
-- Updated package dependencies and added pnpm lockfile
+- 翻訳ポップアップの絵文字をMDIアイコンに置換
+- マニフェストと設定でキーボードショートカットを更新
+- DOM操作を改善した翻訳ポップアップの強化
+- manifest.jsonのデータ収集権限を更新
+- パッケージ依存関係を更新し、pnpm lockfileを追加
 
-### Fixed
+### 修正
 
-- Settings not syncing between frontend and background
-- Sidebar message handling for translation responses
-- Broadcast translation results to content scripts
-- CORS, Promise handling, and i18n issues
-- Inline MDI icon paths in content script
+- フロントエンドとバックグラウンド間の設定同期問題
+- サイドバーの翻訳レスポンスメッセージ処理
+- コンテンツスクリプトへの翻訳結果ブロードキャスト
+- CORS、Promise処理、i18nの問題
+- コンテンツスクリプト内のMDIアイコンパスをインライン化
 
 ## [0.1.0] - 2024-12-02
 
-### Added
+### 追加
 
-- Initial release of Local Translate AI
-- Text selection translation with popup display
-- Sidebar translation panel with streaming support
-- Page-wide translation with progress display
-- Translation history (up to 100 items)
-- Multiple translation profiles
-- Keyboard shortcuts (Ctrl+Shift+T for translation, Ctrl+Shift+S for sidebar)
-- Dark mode support (system preference + manual toggle)
-- Settings page with 5 tabs:
-  - General: UI language, theme, currency conversion
-  - API: Profile management, endpoint configuration
-  - Prompt: System prompt and user prompt template customization
-  - Advanced: Streaming, history, retry settings, exclusion patterns
-  - Shortcuts: Keyboard shortcut configuration
-- Export/Import settings functionality
-- Context menu integration
-- API retry with configurable attempts and intervals
-- API key encryption using Web Crypto API
-- HTTPS validation for non-localhost endpoints
-- USD to JPY conversion for translation results
-- AI model parameter count conversion (B/M to Japanese units)
-- Translation exclusion patterns (code blocks, URLs, math formulas, emails)
-- Original text hover display for page translation
-- Toast notifications for translation status
+- Local Translate AIの初回リリース
+- テキスト選択翻訳とポップアップ表示
+- ストリーミング対応のサイドバー翻訳パネル
+- 進捗表示付きのページ全体翻訳
+- 翻訳履歴（最大100件）
+- 複数の翻訳プロファイル
+- キーボードショートカット（翻訳: Ctrl+Shift+T、サイドバー: Ctrl+Shift+S）
+- ダークモード対応（システム設定連動 + 手動切り替え）
+- 5つのタブを持つ設定ページ:
+  - 一般: UI言語、テーマ、通貨換算
+  - API: プロファイル管理、エンドポイント設定
+  - プロンプト: システムプロンプトとユーザープロンプトテンプレートのカスタマイズ
+  - 詳細: ストリーミング、履歴、リトライ設定、除外パターン
+  - ショートカット: キーボードショートカット設定
+- 設定のエクスポート/インポート機能
+- コンテキストメニュー統合
+- 設定可能なリトライ回数と間隔
+- Web Crypto APIを使用したAPIキー暗号化
+- localhost以外のエンドポイントに対するHTTPS検証
+- 翻訳結果の米ドル→円換算
+- AIモデルのパラメータサイズ変換（B/Mを億・万単位に）
+- 翻訳除外パターン（コードブロック、URL、数式、メールアドレス）
+- ページ翻訳時の原文ホバー表示
+- 翻訳状況のトースト通知
 
-### Security
+### セキュリティ
 
-- API keys encrypted with AES-GCM
-- Content Security Policy configured
-- DOM sanitization for translated content
-- HTTPS enforcement for external endpoints
+- AES-GCMによるAPIキー暗号化
+- Content Security Policyの設定
+- 翻訳コンテンツのDOMサニタイズ
+- 外部エンドポイントへのHTTPS強制
 
-[Unreleased]: https://github.com/roflsunriz/local-translate-ai/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/roflsunriz/local-translate-ai/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.0.0...v1.1.0

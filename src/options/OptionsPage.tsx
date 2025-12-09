@@ -9,12 +9,13 @@ import { useSettingsStore, useUIStore } from '@/stores';
 import { AdvancedTab } from './tabs/AdvancedTab';
 import { ApiTab } from './tabs/ApiTab';
 import { GeneralTab } from './tabs/GeneralTab';
+import { HistoryTab } from './tabs/HistoryTab';
 import { PromptTab } from './tabs/PromptTab';
 import { ShortcutsTab } from './tabs/ShortcutsTab';
 
 import type { IconName } from '@/components/Icon';
 
-type TabId = 'general' | 'api' | 'prompt' | 'advanced' | 'shortcuts';
+type TabId = 'general' | 'api' | 'prompt' | 'advanced' | 'shortcuts' | 'history';
 
 interface TabConfig {
   id: TabId;
@@ -28,6 +29,7 @@ const TAB_CONFIGS: TabConfig[] = [
   { id: 'prompt', labelKey: 'settings.tabs.prompt', icon: 'message' },
   { id: 'advanced', labelKey: 'settings.tabs.advanced', icon: 'tune' },
   { id: 'shortcuts', labelKey: 'settings.tabs.shortcuts', icon: 'keyboard' },
+  { id: 'history', labelKey: 'settings.tabs.history', icon: 'history' },
 ];
 
 export function OptionsPage() {
@@ -140,6 +142,7 @@ export function OptionsPage() {
             {activeTab === 'prompt' && <PromptTab />}
             {activeTab === 'advanced' && <AdvancedTab />}
             {activeTab === 'shortcuts' && <ShortcutsTab />}
+            {activeTab === 'history' && <HistoryTab />}
           </div>
 
           <div

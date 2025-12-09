@@ -111,6 +111,9 @@ async function handleMessage(
     case 'CLEAR_HISTORY':
       return handleClearHistory();
 
+    case 'DELETE_HISTORY_ITEM':
+      return handleDeleteHistoryItem((message as ExtensionMessage & { payload: { id: string } }).payload.id);
+
     default:
       console.warn('Unknown message type:', message.type);
       return { error: 'Unknown message type' };
@@ -535,6 +538,11 @@ async function handleGetHistory(
 
 async function handleClearHistory(): Promise<unknown> {
   await historyService.clear();
+  return { success: true };
+}
+
+async function handleDeleteHistoryItem(id: string): Promise<unknown> {
+  await historyService.removeItem(id);
   return { success: true };
 }
 

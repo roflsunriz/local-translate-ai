@@ -51,6 +51,7 @@ export const bn = {
       prompt: 'প্রম্পট',
       advanced: 'উন্নত',
       shortcuts: 'শর্টকাট',
+      history: 'ইতিহাস',
     },
     general: {
       display: 'ডিসপ্লে সেটিংস',
@@ -66,6 +67,16 @@ export const bn = {
       paramConversion: 'প্যারামিটার আকার রূপান্তর',
       paramConversionDescription: 'AI মডেল প্যারামিটার আকার (B/M/T) জাপানি ইউনিটে রূপান্তর করুন (উদা: 140B → 140B (1,400億))',
       paramConversionEnabled: 'প্যারামিটার আকার রূপান্তর সক্রিয় করুন',
+      popup: 'অনুবাদ পপআপ',
+      popupDescription: 'টেক্সট নির্বাচন করার সময় প্রদর্শিত অনুবাদ পপআপের আচরণ কনফিগার করুন',
+      popupCloseOnOutsideAction: 'স্ক্রল বা রিসাইজ করার সময় পপআপ বন্ধ করুন (শুধুমাত্র বাটন দিয়ে বন্ধ করতে আনচেক করুন)',
+    },
+    history: {
+      original: 'মূল',
+      translated: 'অনুবাদিত',
+      copyOriginal: 'মূল কপি করুন',
+      copyTranslated: 'অনুবাদ কপি করুন',
+      deleted: 'ইতিহাস আইটেম মুছে ফেলা হয়েছে',
     },
     api: {
       profiles: 'প্রোফাইল',

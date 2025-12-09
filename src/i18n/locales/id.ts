@@ -51,6 +51,7 @@ export const id = {
       prompt: 'Prompt',
       advanced: 'Lanjutan',
       shortcuts: 'Pintasan',
+      history: 'Riwayat',
     },
     general: {
       display: 'Pengaturan Tampilan',
@@ -66,6 +67,16 @@ export const id = {
       paramConversion: 'Konversi Ukuran Parameter',
       paramConversionDescription: 'Konversi ukuran parameter model AI (B/M/T) ke unit Jepang (contoh: 140B → 140B (1,400億))',
       paramConversionEnabled: 'Aktifkan konversi ukuran parameter',
+      popup: 'Popup Terjemahan',
+      popupDescription: 'Konfigurasi perilaku popup terjemahan yang ditampilkan saat memilih teks',
+      popupCloseOnOutsideAction: 'Tutup popup saat scroll atau resize (hapus centang untuk menutup hanya dengan tombol)',
+    },
+    history: {
+      original: 'Asli',
+      translated: 'Terjemahan',
+      copyOriginal: 'Salin asli',
+      copyTranslated: 'Salin terjemahan',
+      deleted: 'Item riwayat dihapus',
     },
     api: {
       profiles: 'Profil',

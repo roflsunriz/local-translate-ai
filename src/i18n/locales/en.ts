@@ -51,6 +51,7 @@ export const en = {
       prompt: 'Prompt',
       advanced: 'Advanced',
       shortcuts: 'Shortcuts',
+      history: 'History',
     },
     general: {
       display: 'Display Settings',
@@ -66,6 +67,16 @@ export const en = {
       paramConversion: 'Parameter Size Conversion',
       paramConversionDescription: 'Convert AI model parameter sizes (B/M/T) to Japanese units (e.g., 140B → 140B (140 billion))',
       paramConversionEnabled: 'Enable parameter size conversion',
+      popup: 'Translation Popup',
+      popupDescription: 'Configure behavior of translation popup shown when selecting text',
+      popupCloseOnOutsideAction: 'Close popup on scroll or resize (uncheck to close only with close button)',
+    },
+    history: {
+      original: 'Original',
+      translated: 'Translated',
+      copyOriginal: 'Copy Original',
+      copyTranslated: 'Copy Translated',
+      deleted: 'History item deleted',
     },
     api: {
       profiles: 'Profiles',

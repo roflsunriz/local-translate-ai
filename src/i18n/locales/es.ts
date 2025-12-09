@@ -51,6 +51,7 @@ export const es = {
       prompt: 'Prompt',
       advanced: 'Avanzado',
       shortcuts: 'Atajos',
+      history: 'Historial',
     },
     general: {
       display: 'Configuración de pantalla',
@@ -66,6 +67,16 @@ export const es = {
       paramConversion: 'Conversión de tamaño de parámetros',
       paramConversionDescription: 'Convertir tamaños de parámetros de modelos AI (B/M/T) a unidades japonesas (ej: 140B → 140B (1,400億))',
       paramConversionEnabled: 'Activar conversión de tamaño de parámetros',
+      popup: 'Popup de traducción',
+      popupDescription: 'Configurar el comportamiento del popup de traducción mostrado al seleccionar texto',
+      popupCloseOnOutsideAction: 'Cerrar popup al desplazarse o redimensionar (desmarcar para cerrar solo con el botón)',
+    },
+    history: {
+      original: 'Original',
+      translated: 'Traducido',
+      copyOriginal: 'Copiar original',
+      copyTranslated: 'Copiar traducción',
+      deleted: 'Elemento del historial eliminado',
     },
     api: {
       profiles: 'Perfiles',

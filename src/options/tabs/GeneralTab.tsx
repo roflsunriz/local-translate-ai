@@ -201,6 +201,44 @@ export function GeneralTab() {
           </div>
         </div>
       </div>
+
+      <div>
+        <h3
+          className="mb-4 text-lg font-medium"
+          style={{ color: 'var(--color-text-primary)' }}
+        >
+          {t('settings.general.popup')}
+        </h3>
+        <p
+          className="mb-4 text-sm"
+          style={{ color: 'var(--color-text-muted)' }}
+        >
+          {t('settings.general.popupDescription')}
+        </p>
+
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="popupCloseOnOutsideAction"
+              checked={settings.popupCloseOnOutsideAction ?? false}
+              onChange={(e) => {
+                updateSettings({
+                  popupCloseOnOutsideAction: e.target.checked,
+                });
+              }}
+              className="h-4 w-4 rounded border-gray-300"
+            />
+            <label
+              htmlFor="popupCloseOnOutsideAction"
+              className="text-sm"
+              style={{ color: 'var(--color-text-primary)' }}
+            >
+              {t('settings.general.popupCloseOnOutsideAction')}
+            </label>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

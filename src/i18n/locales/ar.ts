@@ -51,6 +51,7 @@ export const ar = {
       prompt: 'موجه',
       advanced: 'متقدم',
       shortcuts: 'اختصارات',
+      history: 'السجل',
     },
     general: {
       display: 'إعدادات العرض',
@@ -66,6 +67,16 @@ export const ar = {
       paramConversion: 'تحويل حجم المعلمات',
       paramConversionDescription: 'تحويل أحجام معلمات نماذج AI (B/M/T) إلى الوحدات اليابانية (مثال: 140B → 140B (1,400億))',
       paramConversionEnabled: 'تفعيل تحويل حجم المعلمات',
+      popup: 'نافذة الترجمة المنبثقة',
+      popupDescription: 'تكوين سلوك نافذة الترجمة المنبثقة المعروضة عند تحديد النص',
+      popupCloseOnOutsideAction: 'إغلاق النافذة عند التمرير أو تغيير الحجم (إلغاء التحديد للإغلاق فقط بالزر)',
+    },
+    history: {
+      original: 'النص الأصلي',
+      translated: 'النص المترجم',
+      copyOriginal: 'نسخ الأصلي',
+      copyTranslated: 'نسخ الترجمة',
+      deleted: 'تم حذف عنصر السجل',
     },
     api: {
       profiles: 'الملفات الشخصية',

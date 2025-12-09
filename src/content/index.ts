@@ -98,8 +98,48 @@ let dragState: DragState | null = null;
 // Page translation state
 const translatedNodes = new Map<string, { node: Text; originalText: string }>();
 
+// Settings state
+let popupCloseOnOutsideAction = false;
+
+// Load settings from storage
+async function loadSettings(): Promise<void> {
+  try {
+    const result = await browser.storage.local.get('settings');
+    if (result['settings'] && typeof result['settings'] === 'object') {
+      const settings = result['settings'] as { popupCloseOnOutsideAction?: boolean };
+      popupCloseOnOutsideAction = settings.popupCloseOnOutsideAction ?? false;
+    }
+  } catch (error) {
+    console.error('Failed to load settings:', error);
+  }
+}
+
+// Handle settings changes
+function handleStorageChange(
+  changes: Record<string, browser.storage.StorageChange>,
+  _areaName: string
+): void {
+  if (changes['settings']?.newValue) {
+    const newSettings = changes['settings'].newValue as { popupCloseOnOutsideAction?: boolean };
+    popupCloseOnOutsideAction = newSettings.popupCloseOnOutsideAction ?? false;
+  }
+}
+
+// Conditional popup hide for scroll/resize
+function handleScrollResize(): void {
+  if (popupCloseOnOutsideAction) {
+    hideTranslationUI();
+  }
+}
+
 // Initialize content script
 function init(): void {
+  // Load settings first
+  void loadSettings();
+
+  // Listen for settings changes
+  browser.storage.onChanged.addListener(handleStorageChange);
+
   // Listen for text selection
   document.addEventListener('mouseup', handleMouseUp);
   document.addEventListener('keyup', handleKeyUp);
@@ -107,9 +147,9 @@ function init(): void {
   // Listen for messages from background script
   browser.runtime.onMessage.addListener(handleMessage);
 
-  // Clean up popup on scroll/resize
-  document.addEventListener('scroll', hideTranslationUI, { passive: true });
-  window.addEventListener('resize', hideTranslationUI, { passive: true });
+  // Clean up popup on scroll/resize (conditional based on settings)
+  document.addEventListener('scroll', handleScrollResize, { passive: true });
+  window.addEventListener('resize', handleScrollResize, { passive: true });
 
   // Inject styles for translated elements
   injectTranslationStyles();
