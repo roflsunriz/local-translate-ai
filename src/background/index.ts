@@ -8,7 +8,7 @@ import { TranslationService } from '@/services/translationService';
 import { applyConversions } from '@/utils/currency';
 import { sanitizeAccumulatedResult } from '@/utils/sanitize';
 
-import type { ExtensionMessage, TranslateTextMessage, TranslatePageMessage } from '@/types/messages';
+import type { ExtensionMessage, TranslateTextMessage, TranslatePageMessage, DeleteHistoryItemMessage } from '@/types/messages';
 import type { Settings, SupportedLanguage } from '@/types/settings';
 
 // Initialize services
@@ -112,7 +112,7 @@ async function handleMessage(
       return handleClearHistory();
 
     case 'DELETE_HISTORY_ITEM':
-      return handleDeleteHistoryItem((message as ExtensionMessage & { payload: { id: string } }).payload.id);
+      return handleDeleteHistoryItem((message as DeleteHistoryItemMessage).payload.id);
 
     default:
       console.warn('Unknown message type:', message.type);

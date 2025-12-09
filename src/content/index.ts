@@ -366,7 +366,18 @@ function handleMouseUp(event: MouseEvent): void {
   if (selectedText && selectedText.length > 0) {
     showTranslationButton(event.clientX, event.clientY, selectedText);
   } else {
-    hideTranslationUI();
+    // テキストが選択されていない場合
+    // 翻訳ボタンは常に非表示にする
+    if (translationButton) {
+      translationButton.remove();
+      translationButton = null;
+    }
+    // ポップアップは設定に従って閉じる（popupCloseOnOutsideAction が true の場合のみ）
+    if (popupCloseOnOutsideAction && translationPopup) {
+      translationPopup.remove();
+      translationPopup = null;
+      dragState = null;
+    }
   }
 }
 

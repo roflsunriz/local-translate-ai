@@ -28,6 +28,7 @@ export type MessageType =
   | 'GET_HISTORY'
   | 'GET_HISTORY_RESULT'
   | 'CLEAR_HISTORY'
+  | 'DELETE_HISTORY_ITEM'
   | 'TOGGLE_SIDEBAR'
   | 'GET_SELECTION'
   | 'NOTIFICATION'
@@ -171,6 +172,13 @@ export interface ClearHistoryMessage extends BaseMessage {
   type: 'CLEAR_HISTORY';
 }
 
+export interface DeleteHistoryItemMessage extends BaseMessage {
+  type: 'DELETE_HISTORY_ITEM';
+  payload: {
+    id: string;
+  };
+}
+
 // UI messages
 export interface ToggleSidebarMessage extends BaseMessage {
   type: 'TOGGLE_SIDEBAR';
@@ -230,6 +238,7 @@ export type ExtensionMessage =
   | GetHistoryMessage
   | GetHistoryResultMessage
   | ClearHistoryMessage
+  | DeleteHistoryItemMessage
   | ToggleSidebarMessage
   | GetSelectionMessage
   | NotificationMessage

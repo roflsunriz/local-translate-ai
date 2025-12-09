@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Local Translate AI",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Translate text using local LLM (llama.cpp with OpenAI-compatible API)",
   "author": "roflsunriz",
   "homepage_url": "https://github.com/roflsunriz/local-translate-ai",
