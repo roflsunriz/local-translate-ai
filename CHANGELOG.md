@@ -7,6 +7,12 @@
 
 ## [Released]
 
+## [1.4.2] - 2025-12-16
+
+### 変更
+
+- デフォルトシステムプロンプトを日本語表現に変更。さらに、敬体表現を禁止し常に常体表現で翻訳するように指定。
+
 ## [1.4.1] - 2025-12-09
 
 ### 修正
@@ -119,6 +125,7 @@
 - 外部エンドポイントへのHTTPS強制
 
 [Released]: https://github.com/roflsunriz/local-translate-ai/compare/v1.0.0...HEAD
+[1.4.2]: https://github.com/roflsunriz/local-translate-ai/compare/v1.4.1...v1.4.2
 [1.4.1]: https://github.com/roflsunriz/local-translate-ai/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.2.0...v1.3.0
