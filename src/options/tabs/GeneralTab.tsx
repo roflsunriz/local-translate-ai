@@ -1,3 +1,4 @@
+import { ToggleSwitch } from '@/components/ToggleSwitch';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useSettingsStore } from '@/stores';
 
@@ -200,6 +201,30 @@ export function GeneralTab() {
             </label>
           </div>
         </div>
+      </div>
+
+      <div>
+        <h3
+          className="mb-4 text-lg font-medium"
+          style={{ color: 'var(--color-text-primary)' }}
+        >
+          {t('settings.general.googleTranslate')}
+        </h3>
+        <p
+          className="mb-4 text-sm"
+          style={{ color: 'var(--color-text-muted)' }}
+        >
+          {t('settings.general.googleTranslateDescription')}
+        </p>
+
+        <ToggleSwitch
+          id="settings-google-translate-toggle"
+          checked={settings.useGoogleTranslate}
+          onChange={(checked) => {
+            updateSettings({ useGoogleTranslate: checked });
+          }}
+          label={t('settings.general.googleTranslateEnabled')}
+        />
       </div>
 
       <div>

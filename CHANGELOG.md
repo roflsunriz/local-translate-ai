@@ -7,6 +7,14 @@
 
 ## [Released]
 
+## [1.5.0] - 2026-03-30
+
+### 追加
+
+- Google翻訳モードを追加（サイドバーと設定画面にトグルスイッチを配置、APIキー不要でGoogle翻訳APIを利用可能）
+- 再利用可能なトグルスイッチUIコンポーネントを追加
+- ページ全体翻訳でもGoogle翻訳モードに対応
+
 ## [1.4.2] - 2025-12-16
 
 ### 変更
@@ -125,6 +133,7 @@
 - 外部エンドポイントへのHTTPS強制
 
 [Released]: https://github.com/roflsunriz/local-translate-ai/compare/v1.0.0...HEAD
+[1.5.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.4.2...v1.5.0
 [1.4.2]: https://github.com/roflsunriz/local-translate-ai/compare/v1.4.1...v1.4.2
 [1.4.1]: https://github.com/roflsunriz/local-translate-ai/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.3.0...v1.4.0

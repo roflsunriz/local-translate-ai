@@ -33,6 +33,8 @@ export const ko = {
       translating: '번역 중...',
       copyFormatted: '복사 (서식 유지)',
       copyPlain: '복사 (일반 텍스트)',
+      googleTranslate: 'Google 번역 사용',
+      googleTranslateDescription: 'LLM 대신 Google 번역 API로 번역합니다',
     },
     history: {
       title: '번역 기록',
@@ -67,6 +69,9 @@ export const ko = {
       paramConversion: '파라미터 크기 변환',
       paramConversionDescription: 'AI 모델 파라미터 크기 (B/M/T)를 일본어 단위로 변환하여 표시 (예: 140B → 140B (1,400億))',
       paramConversionEnabled: '파라미터 크기 변환 활성화',
+      googleTranslate: 'Google 번역',
+      googleTranslateEnabled: 'Google 번역 사용',
+      googleTranslateDescription: 'LLM 번역 대신 Google 번역 API를 사용합니다. API 키가 필요하지 않습니다.',
       popup: '번역 팝업',
       popupDescription: '텍스트 선택 시 표시되는 번역 팝업의 동작을 설정합니다',
       popupCloseOnOutsideAction: '스크롤 또는 창 크기 조정 시 팝업 닫기 (체크 해제하면 닫기 버튼으로만 닫힘)',

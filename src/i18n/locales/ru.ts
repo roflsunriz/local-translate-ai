@@ -33,6 +33,8 @@ export const ru = {
       translating: 'Перевод...',
       copyFormatted: 'Копировать (с форматированием)',
       copyPlain: 'Копировать (обычный текст)',
+      googleTranslate: 'Использовать Google Переводчик',
+      googleTranslateDescription: 'Переводить через Google Translate API вместо LLM',
     },
     history: {
       title: 'История переводов',
@@ -67,6 +69,9 @@ export const ru = {
       paramConversion: 'Конвертация размера параметров',
       paramConversionDescription: 'Конвертировать размеры параметров AI моделей (B/M/T) в японские единицы (напр.: 140B → 140B (1,400億))',
       paramConversionEnabled: 'Включить конвертацию размера параметров',
+      googleTranslate: 'Google Переводчик',
+      googleTranslateEnabled: 'Использовать Google Переводчик',
+      googleTranslateDescription: 'Использовать Google Translate API вместо LLM-перевода. API-ключ не требуется.',
       popup: 'Всплывающее окно перевода',
       popupDescription: 'Настройка поведения всплывающего окна перевода при выделении текста',
       popupCloseOnOutsideAction: 'Закрывать окно при прокрутке или изменении размера (снимите отметку, чтобы закрывать только кнопкой)',

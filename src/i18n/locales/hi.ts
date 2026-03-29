@@ -33,6 +33,8 @@ export const hi = {
       translating: 'अनुवाद हो रहा है...',
       copyFormatted: 'कॉपी करें (स्वरूपित)',
       copyPlain: 'कॉपी करें (सादा)',
+      googleTranslate: 'Google अनुवाद का उपयोग करें',
+      googleTranslateDescription: 'LLM के बजाय Google Translate API से अनुवाद करें',
     },
     history: {
       title: 'अनुवाद इतिहास',
@@ -67,6 +69,9 @@ export const hi = {
       paramConversion: 'पैरामीटर आकार रूपांतरण',
       paramConversionDescription: 'AI मॉडल पैरामीटर आकार (B/M/T) को जापानी इकाइयों में बदलें (उदा: 140B → 140B (1,400億))',
       paramConversionEnabled: 'पैरामीटर आकार रूपांतरण सक्षम करें',
+      googleTranslate: 'Google अनुवाद',
+      googleTranslateEnabled: 'Google अनुवाद का उपयोग करें',
+      googleTranslateDescription: 'LLM अनुवाद के बजाय Google Translate API का उपयोग करें। API कुंजी की आवश्यकता नहीं।',
       popup: 'अनुवाद पॉपअप',
       popupDescription: 'टेक्स्ट चयन करते समय दिखाई देने वाले अनुवाद पॉपअप के व्यवहार को कॉन्फ़िगर करें',
       popupCloseOnOutsideAction: 'स्क्रॉल या रीसाइज़ करते समय पॉपअप बंद करें (केवल बटन से बंद करने के लिए अनचेक करें)',

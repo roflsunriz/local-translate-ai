@@ -33,6 +33,8 @@ export const bn = {
       translating: 'অনুবাদ হচ্ছে...',
       copyFormatted: 'কপি (ফরম্যাট সহ)',
       copyPlain: 'কপি (সাধারণ টেক্সট)',
+      googleTranslate: 'Google অনুবাদ ব্যবহার করুন',
+      googleTranslateDescription: 'LLM এর পরিবর্তে Google Translate API দিয়ে অনুবাদ করুন',
     },
     history: {
       title: 'অনুবাদ ইতিহাস',
@@ -67,6 +69,9 @@ export const bn = {
       paramConversion: 'প্যারামিটার আকার রূপান্তর',
       paramConversionDescription: 'AI মডেল প্যারামিটার আকার (B/M/T) জাপানি ইউনিটে রূপান্তর করুন (উদা: 140B → 140B (1,400億))',
       paramConversionEnabled: 'প্যারামিটার আকার রূপান্তর সক্রিয় করুন',
+      googleTranslate: 'Google অনুবাদ',
+      googleTranslateEnabled: 'Google অনুবাদ ব্যবহার করুন',
+      googleTranslateDescription: 'LLM অনুবাদের পরিবর্তে Google Translate API ব্যবহার করুন। API কী প্রয়োজন নেই।',
       popup: 'অনুবাদ পপআপ',
       popupDescription: 'টেক্সট নির্বাচন করার সময় প্রদর্শিত অনুবাদ পপআপের আচরণ কনফিগার করুন',
       popupCloseOnOutsideAction: 'স্ক্রল বা রিসাইজ করার সময় পপআপ বন্ধ করুন (শুধুমাত্র বাটন দিয়ে বন্ধ করতে আনচেক করুন)',

@@ -33,6 +33,8 @@ export const id = {
       translating: 'Menerjemahkan...',
       copyFormatted: 'Salin (Terformat)',
       copyPlain: 'Salin (Teks Biasa)',
+      googleTranslate: 'Gunakan Google Translate',
+      googleTranslateDescription: 'Terjemahkan menggunakan Google Translate API alih-alih LLM',
     },
     history: {
       title: 'Riwayat Terjemahan',
@@ -67,6 +69,9 @@ export const id = {
       paramConversion: 'Konversi Ukuran Parameter',
       paramConversionDescription: 'Konversi ukuran parameter model AI (B/M/T) ke unit Jepang (contoh: 140B → 140B (1,400億))',
       paramConversionEnabled: 'Aktifkan konversi ukuran parameter',
+      googleTranslate: 'Google Translate',
+      googleTranslateEnabled: 'Gunakan Google Translate',
+      googleTranslateDescription: 'Gunakan Google Translate API alih-alih terjemahan LLM. Tidak memerlukan kunci API.',
       popup: 'Popup Terjemahan',
       popupDescription: 'Konfigurasi perilaku popup terjemahan yang ditampilkan saat memilih teks',
       popupCloseOnOutsideAction: 'Tutup popup saat scroll atau resize (hapus centang untuk menutup hanya dengan tombol)',

@@ -33,6 +33,8 @@ export const ar = {
       translating: 'جارٍ الترجمة...',
       copyFormatted: 'نسخ (منسق)',
       copyPlain: 'نسخ (نص عادي)',
+      googleTranslate: 'استخدام ترجمة Google',
+      googleTranslateDescription: 'الترجمة باستخدام Google Translate API بدلاً من LLM',
     },
     history: {
       title: 'سجل الترجمة',
@@ -67,6 +69,9 @@ export const ar = {
       paramConversion: 'تحويل حجم المعلمات',
       paramConversionDescription: 'تحويل أحجام معلمات نماذج AI (B/M/T) إلى الوحدات اليابانية (مثال: 140B → 140B (1,400億))',
       paramConversionEnabled: 'تفعيل تحويل حجم المعلمات',
+      googleTranslate: 'ترجمة Google',
+      googleTranslateEnabled: 'استخدام ترجمة Google',
+      googleTranslateDescription: 'استخدام Google Translate API بدلاً من ترجمة LLM. لا يتطلب مفتاح API.',
       popup: 'نافذة الترجمة المنبثقة',
       popupDescription: 'تكوين سلوك نافذة الترجمة المنبثقة المعروضة عند تحديد النص',
       popupCloseOnOutsideAction: 'إغلاق النافذة عند التمرير أو تغيير الحجم (إلغاء التحديد للإغلاق فقط بالزر)',

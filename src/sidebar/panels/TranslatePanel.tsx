@@ -4,6 +4,7 @@ import { Button } from '@/components/Button';
 import { MdiIcon } from '@/components/Icon';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { TextArea } from '@/components/TextArea';
+import { ToggleSwitch } from '@/components/ToggleSwitch';
 import { useTranslation } from '@/hooks';
 import { useSettingsStore, useTranslationStore, useUIStore } from '@/stores';
 
@@ -25,7 +26,7 @@ export function TranslatePanel() {
     clearTexts,
   } = useTranslationStore();
 
-  const { settings, getActiveProfile } = useSettingsStore();
+  const { settings, updateSettings, saveToStorage, getActiveProfile } = useSettingsStore();
   const { showSuccess, showError, showInfo } = useUIStore();
 
   const activeProfile = getActiveProfile();
@@ -165,6 +166,18 @@ export function TranslatePanel() {
           disabled={isTranslating}
         />
       </div>
+
+      {/* Google Translate Toggle */}
+      <ToggleSwitch
+        id="sidebar-google-translate-toggle"
+        checked={settings.useGoogleTranslate}
+        onChange={(checked) => {
+          updateSettings({ useGoogleTranslate: checked });
+          void saveToStorage();
+        }}
+        label={t('sidebar.translate.googleTranslate')}
+        description={t('sidebar.translate.googleTranslateDescription')}
+      />
 
       {/* Action Buttons */}
       <div className="flex gap-2">

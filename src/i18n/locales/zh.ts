@@ -33,6 +33,8 @@ export const zh = {
       translating: '翻译中...',
       copyFormatted: '复制（带格式）',
       copyPlain: '复制（纯文本）',
+      googleTranslate: '使用Google翻译',
+      googleTranslateDescription: '使用Google翻译API代替LLM进行翻译',
     },
     history: {
       title: '翻译历史',
@@ -67,6 +69,9 @@ export const zh = {
       paramConversion: '参数规模转换',
       paramConversionDescription: '将AI模型参数规模（B/M/T）转换为日语单位显示（例：140B → 140B (1,400億)）',
       paramConversionEnabled: '启用参数规模转换',
+      googleTranslate: 'Google翻译',
+      googleTranslateEnabled: '使用Google翻译',
+      googleTranslateDescription: '使用Google翻译API代替LLM翻译。无需API密钥。',
       popup: '翻译弹窗',
       popupDescription: '设置选择文本时显示的翻译弹窗的行为',
       popupCloseOnOutsideAction: '滚动或调整窗口大小时关闭弹窗（取消勾选则仅通过关闭按钮关闭）',

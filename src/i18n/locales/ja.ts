@@ -33,6 +33,8 @@ export const ja = {
       translating: '翻訳中...',
       copyFormatted: 'コピー（フォーマット済み）',
       copyPlain: 'コピー（1行）',
+      googleTranslate: 'Google翻訳を使う',
+      googleTranslateDescription: 'LLMの代わりにGoogle翻訳APIで翻訳します',
     },
     history: {
       title: '翻訳履歴',
@@ -67,6 +69,9 @@ export const ja = {
       paramConversion: 'パラメータサイズ変換',
       paramConversionDescription: 'AIモデルのパラメータサイズ（B/M/T）を日本語の億・万単位に変換して表示します（例: 140B → 140B (1,400億)）',
       paramConversionEnabled: 'パラメータサイズ変換を有効にする',
+      googleTranslate: 'Google翻訳',
+      googleTranslateEnabled: 'Google翻訳を使用する',
+      googleTranslateDescription: 'LLM翻訳の代わりにGoogle翻訳APIを使用します。APIキーは不要です。',
       popup: '翻訳ポップアップ',
       popupDescription: 'テキスト選択時に表示される翻訳ポップアップの動作を設定します',
       popupCloseOnOutsideAction: 'スクロールやリサイズ時にポップアップを閉じる（チェックを外すと閉じるボタンのみで閉じます）',

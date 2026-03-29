@@ -33,6 +33,8 @@ export const pt = {
       translating: 'Traduzindo...',
       copyFormatted: 'Copiar (formatado)',
       copyPlain: 'Copiar (texto simples)',
+      googleTranslate: 'Usar Google Tradutor',
+      googleTranslateDescription: 'Traduzir usando a API do Google Tradutor em vez de LLM',
     },
     history: {
       title: 'Histórico de traduções',
@@ -67,6 +69,9 @@ export const pt = {
       paramConversion: 'Conversão de tamanho de parâmetros',
       paramConversionDescription: 'Converter tamanhos de parâmetros de modelos AI (B/M/T) para unidades japonesas (ex: 140B → 140B (1,400億))',
       paramConversionEnabled: 'Ativar conversão de tamanho de parâmetros',
+      googleTranslate: 'Google Tradutor',
+      googleTranslateEnabled: 'Usar Google Tradutor',
+      googleTranslateDescription: 'Usar a API do Google Tradutor em vez de tradução LLM. Não requer chave API.',
       popup: 'Popup de tradução',
       popupDescription: 'Configurar o comportamento do popup de tradução exibido ao selecionar texto',
       popupCloseOnOutsideAction: 'Fechar popup ao rolar ou redimensionar (desmarque para fechar apenas com o botão)',

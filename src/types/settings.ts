@@ -98,6 +98,9 @@ export interface Settings {
 
   // Streaming
   streamingEnabled: boolean;
+
+  // Google Translate
+  useGoogleTranslate: boolean;
 }
 
 export const DEFAULT_SYSTEM_PROMPT =
@@ -181,5 +184,6 @@ export const DEFAULT_SETTINGS: Settings = {
   retryCount: 3,
   retryInterval: 1000,
   streamingEnabled: true,
+  useGoogleTranslate: false,
 };
 

@@ -2,6 +2,7 @@
  * Background Script - Handles API communication, caching, and message routing
  */
 
+import { GoogleTranslateService } from '@/services/googleTranslateService';
 import { HistoryService } from '@/services/historyService';
 import { SettingsService } from '@/services/settingsService';
 import { TranslationService } from '@/services/translationService';
@@ -13,6 +14,7 @@ import type { Settings, SupportedLanguage } from '@/types/settings';
 
 // Initialize services
 const translationService = new TranslationService();
+const googleTranslateService = new GoogleTranslateService();
 const historyService = new HistoryService();
 const settingsService = new SettingsService();
 
@@ -139,6 +141,7 @@ async function handleTranslateText(
   });
 
   try {
+    const startTime = Date.now();
     const settings = await settingsService.getSettings();
     const effectiveProfileId = profileId || settings.activeProfileId;
     const profile = settings.profiles.find((p) => p.id === effectiveProfileId) ?? settings.profiles[0];
@@ -164,7 +167,55 @@ async function handleTranslateText(
       },
     };
 
-    if (stream && settings.streamingEnabled) {
+    if (settings.useGoogleTranslate) {
+      // Google Translate (non-streaming)
+      const rawResult = await googleTranslateService.translate(
+        text,
+        sourceLanguage,
+        targetLanguage,
+        abortController.signal,
+      );
+
+      const convertedText = sanitizeAccumulatedResult(
+        applyConversions(rawResult, conversionOptions)
+      );
+
+      if (settings.historyEnabled) {
+        await historyService.addItem({
+          id: requestId,
+          sourceText: text,
+          translatedText: convertedText,
+          sourceLanguage,
+          targetLanguage,
+          timestamp: Date.now(),
+          profileId: 'google-translate',
+        });
+      }
+
+      void sendToActiveTab({
+        type: 'HIDE_PROGRESS_BAR',
+        timestamp: Date.now(),
+      });
+
+      const response = {
+        type: 'TRANSLATE_TEXT_RESULT',
+        timestamp: Date.now(),
+        payload: {
+          id: crypto.randomUUID(),
+          requestId,
+          translatedText: convertedText,
+          sourceText: text,
+          sourceLanguage,
+          targetLanguage,
+          timestamp: Date.now(),
+          duration: Date.now() - startTime,
+          fromCache: false,
+        },
+      };
+
+      void broadcastMessage(response);
+      return response;
+    } else if (stream && settings.streamingEnabled) {
       // Streaming translation
       await translationService.translateStreaming(
         text,
@@ -392,50 +443,56 @@ async function handleTranslatePage(
       },
     };
 
-    // Translate with progressive rendering (each node applied immediately after translation)
-    const translatedTexts = await translationService.translateBatch(
-      contentResponse.texts,
-      'auto' as SupportedLanguage,
-      targetLanguage,
-      profile,
-      abortController.signal,
-      (completed, total, result) => {
-        // Get the nodeId for the just-completed translation
-        const nodeId = contentResponse.nodeIds[completed - 1];
-        if (nodeId && result) {
-          // Apply conversions and sanitize the result before sending to content script
-          const convertedResult = applyConversions(result, conversionOptions);
-          const sanitizedResult = sanitizeAccumulatedResult(convertedResult);
+    const progressCallback = (completed: number, total: number, result: string) => {
+      const nodeId = contentResponse.nodeIds[completed - 1];
+      if (nodeId && result) {
+        const convertedResult = applyConversions(result, conversionOptions);
+        const sanitizedResult = sanitizeAccumulatedResult(convertedResult);
 
-          // Send single node translation to content script for immediate rendering
-          void browser.tabs.sendMessage(activeTabId, {
-            type: 'APPLY_SINGLE_NODE_TRANSLATION',
-            timestamp: Date.now(),
-            payload: {
-              nodeId,
-              translatedText: sanitizedResult,
-              translatedNodes: completed,
-              totalNodes: total,
-            },
-          }).catch(() => {
-            // Ignore errors if tab is closed
-          });
-        }
-
-        // Also send progress update to all contexts
-        void broadcastMessage({
-          type: 'TRANSLATE_PAGE_PROGRESS',
+        void browser.tabs.sendMessage(activeTabId, {
+          type: 'APPLY_SINGLE_NODE_TRANSLATION',
           timestamp: Date.now(),
           payload: {
-            totalNodes: total,
+            nodeId,
+            translatedText: sanitizedResult,
             translatedNodes: completed,
-            currentNodeIndex: completed,
-            status: 'translating',
-            errors: [],
+            totalNodes: total,
           },
+        }).catch(() => {
+          // Ignore errors if tab is closed
         });
       }
-    );
+
+      void broadcastMessage({
+        type: 'TRANSLATE_PAGE_PROGRESS',
+        timestamp: Date.now(),
+        payload: {
+          totalNodes: total,
+          translatedNodes: completed,
+          currentNodeIndex: completed,
+          status: 'translating',
+          errors: [],
+        },
+      });
+    };
+
+    // Translate with progressive rendering (each node applied immediately after translation)
+    const translatedTexts = settings.useGoogleTranslate
+      ? await googleTranslateService.translateBatch(
+          contentResponse.texts,
+          'auto' as SupportedLanguage,
+          targetLanguage,
+          abortController.signal,
+          progressCallback,
+        )
+      : await translationService.translateBatch(
+          contentResponse.texts,
+          'auto' as SupportedLanguage,
+          targetLanguage,
+          profile,
+          abortController.signal,
+          progressCallback,
+        );
 
     // Apply conversions and sanitization to final translated texts
     const processedTexts = translatedTexts.map(text => {
