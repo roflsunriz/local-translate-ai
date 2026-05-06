@@ -50,6 +50,7 @@ jobs:
     name: Package signed XPI
     runs-on: ubuntu-latest
     needs: verify
+    environment: amo
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
