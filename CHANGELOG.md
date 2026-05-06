@@ -7,6 +7,19 @@
 
 ## [Released]
 
+## [1.5.1] - 2026-05-07
+
+### 追加
+
+- 翻訳ポップアップをリサイズ可能にしました。
+- テスト手順を `docs/TESTING.md` に追加しました。
+
+### 変更
+
+- 新しいAPIタイプへの翻訳対応を追加し、UIの言語選択肢を拡張しました。
+- 翻訳リクエストに request ID を導入し、エラー処理を改善しました。
+- 日本語翻訳ガイドラインをシステムプロンプトに反映しました。
+
 ## [1.5.0] - 2026-03-30
 
 ### 追加
@@ -133,6 +146,7 @@
 - 外部エンドポイントへのHTTPS強制
 
 [Released]: https://github.com/roflsunriz/local-translate-ai/compare/v1.0.0...HEAD
+[1.5.1]: https://github.com/roflsunriz/local-translate-ai/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.4.2...v1.5.0
 [1.4.2]: https://github.com/roflsunriz/local-translate-ai/compare/v1.4.1...v1.4.2
 [1.4.1]: https://github.com/roflsunriz/local-translate-ai/compare/v1.4.0...v1.4.1
@@ -141,6 +155,6 @@
 [1.2.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/roflsunriz/local-translate-ai/compare/v0.1.0...v1.0.0
-[Unreleased]: https://github.com/roflsunriz/local-translate-ai/compare/v0.1.0...v1.0.0
+[Unreleased]: https://github.com/roflsunriz/local-translate-ai/compare/v1.5.1...HEAD
 [0.1.0]: https://github.com/roflsunriz/local-translate-ai/releases/tag/v0.1.0
 
