@@ -99,6 +99,15 @@ interface DragState {
 }
 let dragState: DragState | null = null;
 
+interface ResizeState {
+  isResizing: boolean;
+  startX: number;
+  startY: number;
+  initialWidth: number;
+  initialHeight: number;
+}
+let resizeState: ResizeState | null = null;
+
 // Page translation state
 const translatedNodes = new Map<string, { node: Text; originalText: string }>();
 
@@ -538,6 +547,7 @@ function showTranslationPopup(x: number, y: number): void {
 
   // Reset drag state
   dragState = null;
+  resizeState = null;
 
   translationPopup = document.createElement('div');
   translationPopup.id = 'lta-translation-popup';
@@ -546,9 +556,10 @@ function showTranslationPopup(x: number, y: number): void {
     left: ${x}px;
     top: ${y}px;
     z-index: 2147483647;
+    width: 320px;
+    height: 240px;
     min-width: 200px;
-    max-width: 400px;
-    max-height: 350px;
+    min-height: 160px;
     padding: 12px;
     background: white;
     color: #1f2937;
@@ -560,6 +571,7 @@ function showTranslationPopup(x: number, y: number): void {
     flex-direction: column;
     cursor: grab;
     border: 3px solid #3b82f6;
+    box-sizing: border-box;
   `;
 
   // Check if popup would go off screen and adjust initial position
@@ -581,6 +593,7 @@ function showTranslationPopup(x: number, y: number): void {
 
   // Initialize drag handlers on the popup itself
   initializeDragHandlers(translationPopup);
+  initializeResizeHandlers(translationPopup);
 
   // Add header (for title display)
   const header = createPopupHeader();
@@ -591,11 +604,16 @@ function showTranslationPopup(x: number, y: number): void {
   contentContainer.id = 'lta-popup-content';
   contentContainer.style.cssText = `
     flex: 1;
-    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
     min-height: 0;
     cursor: default;
   `;
   translationPopup.appendChild(contentContainer);
+
+  const resizeHandle = createResizeHandle();
+  translationPopup.appendChild(resizeHandle);
 
   document.body.appendChild(translationPopup);
 }
@@ -618,6 +636,9 @@ function updateTranslationPopupContent(content: string, showStopButton = false):
   contentDiv.id = 'lta-popup-text-content';
   contentDiv.style.whiteSpace = 'pre-wrap';
   contentDiv.style.wordBreak = 'break-word';
+  contentDiv.style.flex = '1';
+  contentDiv.style.minHeight = '0';
+  contentDiv.style.overflow = 'auto';
   contentDiv.style.cursor = 'text';
   contentDiv.style.userSelect = 'text';
   contentDiv.textContent = content;
@@ -636,6 +657,7 @@ function createSelectionStopButton(): HTMLButtonElement {
     MDI_STOP,
     { background: '#ef4444', color: 'white', marginTop: '12px' },
   );
+  stopBtn.style.flexShrink = '0';
   stopBtn.addEventListener('click', () => {
     void cancelSelectionTranslation();
   });
@@ -740,6 +762,9 @@ function showTranslationResult(text: string): void {
   contentDiv.style.whiteSpace = 'pre-wrap';
   contentDiv.style.wordBreak = 'break-word';
   contentDiv.style.marginBottom = '12px';
+  contentDiv.style.flex = '1';
+  contentDiv.style.minHeight = '0';
+  contentDiv.style.overflow = 'auto';
   contentDiv.style.cursor = 'text';
   contentDiv.style.userSelect = 'text';
   contentDiv.textContent = text;
@@ -750,10 +775,11 @@ function showTranslationResult(text: string): void {
   buttonContainer.style.display = 'flex';
   buttonContainer.style.gap = '8px';
   buttonContainer.style.justifyContent = 'flex-end';
-  buttonContainer.style.flexWrap = 'wrap';
+  buttonContainer.style.flexWrap = 'nowrap';
+  buttonContainer.style.flexShrink = '0';
+  buttonContainer.style.overflowX = 'auto';
   buttonContainer.style.paddingTop = '8px';
   buttonContainer.style.borderTop = '1px solid #e5e7eb';
-  buttonContainer.style.marginTop = 'auto';
 
   // Create buttons using DOM API
   const copyFormattedBtn = createButton(
@@ -796,6 +822,10 @@ function showTranslationResult(text: string): void {
 
   closeBtn.addEventListener('click', hideTranslationUI);
 
+  copyFormattedBtn.style.flexShrink = '0';
+  copyPlainBtn.style.flexShrink = '0';
+  closeBtn.style.flexShrink = '0';
+
   // Append buttons to container
   buttonContainer.appendChild(copyFormattedBtn);
   buttonContainer.appendChild(copyPlainBtn);
@@ -830,6 +860,9 @@ function showTranslationError(message: string): void {
   const errorDiv = document.createElement('div');
   errorDiv.style.color = '#dc2626';
   errorDiv.style.marginBottom = '12px';
+  errorDiv.style.flex = '1';
+  errorDiv.style.minHeight = '0';
+  errorDiv.style.overflow = 'auto';
 
   const strongEl = document.createElement('strong');
   strongEl.textContent = 'エラー:';
@@ -844,6 +877,7 @@ function showTranslationError(message: string): void {
     MDI_CLOSE,
     { background: '#ef4444', color: 'white' },
   );
+  closeBtn.style.flexShrink = '0';
   closeBtn.addEventListener('click', hideTranslationUI);
   contentContainer.appendChild(closeBtn);
 }
@@ -859,6 +893,7 @@ function hideTranslationUI(): void {
   }
   // Clean up drag state
   dragState = null;
+  resizeState = null;
 }
 
 /**
@@ -868,6 +903,33 @@ function initializeDragHandlers(popup: HTMLDivElement): void {
   popup.addEventListener('mousedown', handleDragStart);
   document.addEventListener('mousemove', handleDragMove);
   document.addEventListener('mouseup', handleDragEnd);
+}
+
+function initializeResizeHandlers(popup: HTMLDivElement): void {
+  document.addEventListener('mousemove', handleResizeMove);
+  document.addEventListener('mouseup', handleResizeEnd);
+  popup.addEventListener('dblclick', handleResizeReset);
+}
+
+function createResizeHandle(): HTMLDivElement {
+  const handle = document.createElement('div');
+  handle.id = 'lta-popup-resize-handle';
+  handle.title = 'ドラッグしてサイズ変更';
+  handle.style.cssText = `
+    position: absolute;
+    right: 2px;
+    bottom: 2px;
+    width: 16px;
+    height: 16px;
+    cursor: nwse-resize;
+    opacity: 0.65;
+    background:
+      linear-gradient(135deg, transparent 0 50%, #6b7280 50% 60%, transparent 60% 100%),
+      linear-gradient(135deg, transparent 0 65%, #6b7280 65% 75%, transparent 75% 100%),
+      linear-gradient(135deg, transparent 0 80%, #6b7280 80% 90%, transparent 90% 100%);
+  `;
+  handle.addEventListener('mousedown', handleResizeStart);
+  return handle;
 }
 
 function handleDragStart(e: MouseEvent): void {
@@ -881,6 +943,7 @@ function handleDragStart(e: MouseEvent): void {
   if (
     target.closest('button') ||
     target.closest('#lta-popup-text-content') ||
+    target.closest('#lta-popup-resize-handle') ||
     target.tagName === 'BUTTON'
   ) {
     return;
@@ -903,7 +966,7 @@ function handleDragStart(e: MouseEvent): void {
 }
 
 function handleDragMove(e: MouseEvent): void {
-  if (!dragState?.isDragging || !translationPopup) {
+  if (!dragState?.isDragging || resizeState?.isResizing || !translationPopup) {
     return;
   }
 
@@ -936,6 +999,66 @@ function handleDragEnd(): void {
   dragState = null;
 }
 
+function handleResizeStart(e: MouseEvent): void {
+  if (!translationPopup) {
+    return;
+  }
+
+  e.preventDefault();
+  e.stopPropagation();
+
+  const rect = translationPopup.getBoundingClientRect();
+  resizeState = {
+    isResizing: true,
+    startX: e.clientX,
+    startY: e.clientY,
+    initialWidth: rect.width,
+    initialHeight: rect.height,
+  };
+  dragState = null;
+  translationPopup.classList.add('lta-resizing');
+  translationPopup.style.cursor = 'nwse-resize';
+}
+
+function handleResizeMove(e: MouseEvent): void {
+  if (!resizeState?.isResizing || !translationPopup) {
+    return;
+  }
+
+  e.preventDefault();
+
+  const rect = translationPopup.getBoundingClientRect();
+  const minWidth = 200;
+  const minHeight = 160;
+  const maxWidth = Math.max(minWidth, window.innerWidth - rect.left - 10);
+  const maxHeight = Math.max(minHeight, window.innerHeight - rect.top - 10);
+  const nextWidth = resizeState.initialWidth + e.clientX - resizeState.startX;
+  const nextHeight = resizeState.initialHeight + e.clientY - resizeState.startY;
+
+  translationPopup.style.width = `${Math.max(minWidth, Math.min(maxWidth, nextWidth))}px`;
+  translationPopup.style.height = `${Math.max(minHeight, Math.min(maxHeight, nextHeight))}px`;
+}
+
+function handleResizeEnd(): void {
+  if (resizeState?.isResizing && translationPopup) {
+    translationPopup.classList.remove('lta-resizing');
+    translationPopup.style.cursor = 'grab';
+  }
+  resizeState = null;
+}
+
+function handleResizeReset(e: MouseEvent): void {
+  const target = e.target as HTMLElement;
+  if (!translationPopup || !target.closest('#lta-popup-resize-handle')) {
+    return;
+  }
+
+  e.preventDefault();
+  e.stopPropagation();
+  translationPopup.style.width = '320px';
+  translationPopup.style.height = '240px';
+}
+
 /**
  * Create a compact header for the popup (non-draggable, just title)
  */
@@ -964,7 +1087,7 @@ function createPopupHeader(): HTMLDivElement {
     font-weight: 500;
   `;
   leftSection.appendChild(createSvgIcon(MDI_DRAG, 14, 'rgba(255,255,255,0.8)'));
-  leftSection.appendChild(document.createTextNode('翻訳結果（枠をドラッグで移動）'));
+  leftSection.appendChild(document.createTextNode('翻訳結果（ドラッグで移動・右下でサイズ変更）'));
 
   header.appendChild(leftSection);
 
