@@ -8,19 +8,19 @@ interface LanguageSelectorProps {
 }
 
 const LANGUAGES: { value: SupportedLanguage; label: string }[] = [
-  { value: 'auto', label: '自動検出' },
-  { value: 'Japanese', label: '日本語' },
+  { value: 'auto', label: 'Auto Detect' },
+  { value: 'Japanese', label: 'Japanese' },
   { value: 'English', label: 'English' },
-  { value: 'Chinese', label: '中文' },
-  { value: 'Korean', label: '한국어' },
-  { value: 'Spanish', label: 'Español' },
-  { value: 'Portuguese', label: 'Português' },
-  { value: 'Russian', label: 'Русский' },
-  { value: 'Hindi', label: 'हिन्दी' },
-  { value: 'Arabic', label: 'العربية' },
-  { value: 'French', label: 'Français' },
-  { value: 'Bengali', label: 'বাংলা' },
-  { value: 'Indonesian', label: 'Bahasa Indonesia' },
+  { value: 'Chinese', label: 'Chinese' },
+  { value: 'Korean', label: 'Korean' },
+  { value: 'Spanish', label: 'Spanish' },
+  { value: 'Portuguese', label: 'Portuguese' },
+  { value: 'Russian', label: 'Russian' },
+  { value: 'Hindi', label: 'Hindi' },
+  { value: 'Arabic', label: 'Arabic' },
+  { value: 'French', label: 'French' },
+  { value: 'Bengali', label: 'Bengali' },
+  { value: 'Indonesian', label: 'Indonesian' },
 ];
 
 export function LanguageSelector({

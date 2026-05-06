@@ -6,6 +6,7 @@ import { GoogleTranslateService } from '@/services/googleTranslateService';
 import { HistoryService } from '@/services/historyService';
 import { SettingsService } from '@/services/settingsService';
 import { TranslationService } from '@/services/translationService';
+import { resolveLanguage, t as translate } from '@/i18n';
 import { applyConversions } from '@/utils/currency';
 import { sanitizeAccumulatedResult } from '@/utils/sanitize';
 
@@ -609,6 +610,7 @@ async function handleSaveSettings(
     timestamp: Date.now(),
     payload: { settings },
   });
+  void setupContextMenus();
 
   return { success: true, settings };
 }
@@ -631,18 +633,29 @@ async function handleDeleteHistoryItem(id: string): Promise<unknown> {
   return { success: true };
 }
 
-// Context menu setup
-browser.contextMenus.create({
-  id: 'translate-selection',
-  title: '選択テキストを翻訳',
-  contexts: ['selection'],
-});
+async function setupContextMenus(): Promise<void> {
+  const settings = await settingsService.getSettings();
+  const resolvedLang = resolveLanguage(settings.uiLanguage);
+  const lang = ['ja', 'en', 'zh', 'ko', 'es', 'pt', 'ru', 'hi', 'ar', 'fr', 'bn', 'id'].includes(resolvedLang)
+    ? resolvedLang
+    : 'en';
 
-browser.contextMenus.create({
-  id: 'translate-page',
-  title: 'ページ全体を翻訳',
-  contexts: ['page'],
-});
+  await browser.contextMenus.removeAll();
+  browser.contextMenus.create({
+    id: 'translate-selection',
+    title: translate('contextMenu.translateSelection', lang),
+    contexts: ['selection'],
+  });
+
+  browser.contextMenus.create({
+    id: 'translate-page',
+    title: translate('contextMenu.translatePage', lang),
+    contexts: ['page'],
+  });
+}
+
+// Context menu setup
+void setupContextMenus();
 
 browser.contextMenus.onClicked.addListener((info, tab) => {
   if (!tab?.id) {
@@ -706,6 +719,7 @@ browser.storage.onChanged.addListener((changes, areaName) => {
   if (areaName === 'local' && changes['settings']) {
     // Clear the settings cache so next getSettings() reads fresh data
     settingsService.clearCache();
+    void setupContextMenus();
     console.info('Settings cache cleared due to storage change');
   }
 });

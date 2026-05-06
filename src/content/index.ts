@@ -3,6 +3,7 @@
  */
 
 import type { ExtensionMessage, ApplySingleNodeTranslationMessage } from '@/types/messages';
+import type { UILanguage } from '@/types/settings';
 import {
   injectProgressBarStyles,
   showProgressBar,
@@ -113,14 +114,340 @@ const translatedNodes = new Map<string, { node: Text; originalText: string }>();
 
 // Settings state
 let popupCloseOnOutsideAction = false;
+let uiLanguage: UILanguage = 'auto';
+
+type ContentTranslationKey =
+  | 'content.translate'
+  | 'content.translating'
+  | 'content.selectionStarted'
+  | 'content.pageStarted'
+  | 'content.processing'
+  | 'content.paragraphProgress'
+  | 'content.complete'
+  | 'content.error'
+  | 'content.pageError'
+  | 'content.cancelled'
+  | 'content.pageCancelled'
+  | 'content.unknownError'
+  | 'content.stop'
+  | 'content.stopPage'
+  | 'content.close'
+  | 'content.copied'
+  | 'content.copyFormatted'
+  | 'content.copyPlain'
+  | 'content.errorLabel'
+  | 'content.popupTitle'
+  | 'content.pageCompleteMessage';
+
+type ContentLanguage = Exclude<UILanguage, 'auto'>;
+
+const CONTENT_TRANSLATIONS: Record<ContentLanguage, Record<ContentTranslationKey, string>> = {
+  ja: {
+    'content.translate': '翻訳',
+    'content.translating': '翻訳中...',
+    'content.selectionStarted': 'テキスト選択翻訳を開始しました…',
+    'content.pageStarted': 'ページ全体翻訳を開始しました…',
+    'content.processing': '翻訳処理中…',
+    'content.paragraphProgress': '{{completed}} / {{total}} 段落',
+    'content.complete': '翻訳が完了しました',
+    'content.error': '翻訳エラー',
+    'content.pageError': 'ページ翻訳エラー',
+    'content.cancelled': '翻訳を停止しました',
+    'content.pageCancelled': 'ページ翻訳を停止しました',
+    'content.unknownError': '不明なエラー',
+    'content.stop': '停止',
+    'content.stopPage': 'ページ翻訳を停止',
+    'content.close': '閉じる',
+    'content.copied': 'コピー完了!',
+    'content.copyFormatted': 'フォーマット済み',
+    'content.copyPlain': '1行',
+    'content.errorLabel': 'エラー:',
+    'content.popupTitle': '翻訳結果（ドラッグで移動・右下でサイズ変更）',
+    'content.pageCompleteMessage': '{{count}}個のテキストを翻訳しました',
+  },
+  en: {
+    'content.translate': 'Translate',
+    'content.translating': 'Translating...',
+    'content.selectionStarted': 'Selection translation started...',
+    'content.pageStarted': 'Page translation started...',
+    'content.processing': 'Translating...',
+    'content.paragraphProgress': '{{completed}} / {{total}} paragraphs',
+    'content.complete': 'Translation complete',
+    'content.error': 'Translation error',
+    'content.pageError': 'Page translation error',
+    'content.cancelled': 'Translation stopped',
+    'content.pageCancelled': 'Page translation stopped',
+    'content.unknownError': 'Unknown error',
+    'content.stop': 'Stop',
+    'content.stopPage': 'Stop page translation',
+    'content.close': 'Close',
+    'content.copied': 'Copied!',
+    'content.copyFormatted': 'Formatted',
+    'content.copyPlain': 'Plain',
+    'content.errorLabel': 'Error:',
+    'content.popupTitle': 'Translation result (drag to move, resize from bottom-right)',
+    'content.pageCompleteMessage': 'Translated {{count}} texts',
+  },
+  zh: {
+    'content.translate': '翻译',
+    'content.translating': '正在翻译...',
+    'content.selectionStarted': '已开始选中文本翻译...',
+    'content.pageStarted': '已开始整页翻译...',
+    'content.processing': '正在翻译...',
+    'content.paragraphProgress': '{{completed}} / {{total}} 段落',
+    'content.complete': '翻译完成',
+    'content.error': '翻译错误',
+    'content.pageError': '页面翻译错误',
+    'content.cancelled': '翻译已停止',
+    'content.pageCancelled': '页面翻译已停止',
+    'content.unknownError': '未知错误',
+    'content.stop': '停止',
+    'content.stopPage': '停止页面翻译',
+    'content.close': '关闭',
+    'content.copied': '已复制!',
+    'content.copyFormatted': '保留格式',
+    'content.copyPlain': '单行',
+    'content.errorLabel': '错误:',
+    'content.popupTitle': '翻译结果（拖动移动，右下角调整大小）',
+    'content.pageCompleteMessage': '已翻译 {{count}} 个文本',
+  },
+  ko: {
+    'content.translate': '번역',
+    'content.translating': '번역 중...',
+    'content.selectionStarted': '선택 텍스트 번역을 시작했습니다...',
+    'content.pageStarted': '전체 페이지 번역을 시작했습니다...',
+    'content.processing': '번역 중...',
+    'content.paragraphProgress': '{{completed}} / {{total}} 단락',
+    'content.complete': '번역 완료',
+    'content.error': '번역 오류',
+    'content.pageError': '페이지 번역 오류',
+    'content.cancelled': '번역이 중지되었습니다',
+    'content.pageCancelled': '페이지 번역이 중지되었습니다',
+    'content.unknownError': '알 수 없는 오류',
+    'content.stop': '중지',
+    'content.stopPage': '페이지 번역 중지',
+    'content.close': '닫기',
+    'content.copied': '복사 완료!',
+    'content.copyFormatted': '서식 유지',
+    'content.copyPlain': '한 줄',
+    'content.errorLabel': '오류:',
+    'content.popupTitle': '번역 결과 (드래그로 이동, 오른쪽 아래에서 크기 조정)',
+    'content.pageCompleteMessage': '{{count}}개 텍스트를 번역했습니다',
+  },
+  es: {
+    'content.translate': 'Traducir',
+    'content.translating': 'Traduciendo...',
+    'content.selectionStarted': 'Traducción de selección iniciada...',
+    'content.pageStarted': 'Traducción de página iniciada...',
+    'content.processing': 'Traduciendo...',
+    'content.paragraphProgress': '{{completed}} / {{total}} párrafos',
+    'content.complete': 'Traducción completada',
+    'content.error': 'Error de traducción',
+    'content.pageError': 'Error de traducción de página',
+    'content.cancelled': 'Traducción detenida',
+    'content.pageCancelled': 'Traducción de página detenida',
+    'content.unknownError': 'Error desconocido',
+    'content.stop': 'Detener',
+    'content.stopPage': 'Detener traducción de página',
+    'content.close': 'Cerrar',
+    'content.copied': 'Copiado!',
+    'content.copyFormatted': 'Con formato',
+    'content.copyPlain': 'Una línea',
+    'content.errorLabel': 'Error:',
+    'content.popupTitle': 'Resultado de traducción (arrastra para mover, redimensiona desde abajo a la derecha)',
+    'content.pageCompleteMessage': 'Se tradujeron {{count}} textos',
+  },
+  pt: {
+    'content.translate': 'Traduzir',
+    'content.translating': 'Traduzindo...',
+    'content.selectionStarted': 'Tradução da seleção iniciada...',
+    'content.pageStarted': 'Tradução da página iniciada...',
+    'content.processing': 'Traduzindo...',
+    'content.paragraphProgress': '{{completed}} / {{total}} parágrafos',
+    'content.complete': 'Tradução concluída',
+    'content.error': 'Erro de tradução',
+    'content.pageError': 'Erro de tradução da página',
+    'content.cancelled': 'Tradução parada',
+    'content.pageCancelled': 'Tradução da página parada',
+    'content.unknownError': 'Erro desconhecido',
+    'content.stop': 'Parar',
+    'content.stopPage': 'Parar tradução da página',
+    'content.close': 'Fechar',
+    'content.copied': 'Copiado!',
+    'content.copyFormatted': 'Formatado',
+    'content.copyPlain': 'Uma linha',
+    'content.errorLabel': 'Erro:',
+    'content.popupTitle': 'Resultado da tradução (arraste para mover, redimensione pelo canto inferior direito)',
+    'content.pageCompleteMessage': '{{count}} textos traduzidos',
+  },
+  ru: {
+    'content.translate': 'Перевести',
+    'content.translating': 'Перевод...',
+    'content.selectionStarted': 'Перевод выделенного текста запущен...',
+    'content.pageStarted': 'Перевод всей страницы запущен...',
+    'content.processing': 'Перевод...',
+    'content.paragraphProgress': '{{completed}} / {{total}} абзацев',
+    'content.complete': 'Перевод завершен',
+    'content.error': 'Ошибка перевода',
+    'content.pageError': 'Ошибка перевода страницы',
+    'content.cancelled': 'Перевод остановлен',
+    'content.pageCancelled': 'Перевод страницы остановлен',
+    'content.unknownError': 'Неизвестная ошибка',
+    'content.stop': 'Остановить',
+    'content.stopPage': 'Остановить перевод страницы',
+    'content.close': 'Закрыть',
+    'content.copied': 'Скопировано!',
+    'content.copyFormatted': 'С форматированием',
+    'content.copyPlain': 'В одну строку',
+    'content.errorLabel': 'Ошибка:',
+    'content.popupTitle': 'Результат перевода (перетащите для перемещения, измените размер снизу справа)',
+    'content.pageCompleteMessage': 'Переведено {{count}} текстов',
+  },
+  hi: {
+    'content.translate': 'अनुवाद करें',
+    'content.translating': 'अनुवाद हो रहा है...',
+    'content.selectionStarted': 'चयनित टेक्स्ट का अनुवाद शुरू हुआ...',
+    'content.pageStarted': 'पूरे पेज का अनुवाद शुरू हुआ...',
+    'content.processing': 'अनुवाद हो रहा है...',
+    'content.paragraphProgress': '{{completed}} / {{total}} अनुच्छेद',
+    'content.complete': 'अनुवाद पूरा हुआ',
+    'content.error': 'अनुवाद त्रुटि',
+    'content.pageError': 'पेज अनुवाद त्रुटि',
+    'content.cancelled': 'अनुवाद रोक दिया गया',
+    'content.pageCancelled': 'पेज अनुवाद रोक दिया गया',
+    'content.unknownError': 'अज्ञात त्रुटि',
+    'content.stop': 'रोकें',
+    'content.stopPage': 'पेज अनुवाद रोकें',
+    'content.close': 'बंद करें',
+    'content.copied': 'कॉपी हो गया!',
+    'content.copyFormatted': 'फ़ॉर्मेट सहित',
+    'content.copyPlain': 'एक पंक्ति',
+    'content.errorLabel': 'त्रुटि:',
+    'content.popupTitle': 'अनुवाद परिणाम (खींचकर ले जाएं, नीचे-दाएं से आकार बदलें)',
+    'content.pageCompleteMessage': '{{count}} टेक्स्ट का अनुवाद किया गया',
+  },
+  ar: {
+    'content.translate': 'ترجمة',
+    'content.translating': 'جارٍ الترجمة...',
+    'content.selectionStarted': 'بدأت ترجمة النص المحدد...',
+    'content.pageStarted': 'بدأت ترجمة الصفحة بالكامل...',
+    'content.processing': 'جارٍ الترجمة...',
+    'content.paragraphProgress': '{{completed}} / {{total}} فقرة',
+    'content.complete': 'اكتملت الترجمة',
+    'content.error': 'خطأ في الترجمة',
+    'content.pageError': 'خطأ في ترجمة الصفحة',
+    'content.cancelled': 'تم إيقاف الترجمة',
+    'content.pageCancelled': 'تم إيقاف ترجمة الصفحة',
+    'content.unknownError': 'خطأ غير معروف',
+    'content.stop': 'إيقاف',
+    'content.stopPage': 'إيقاف ترجمة الصفحة',
+    'content.close': 'إغلاق',
+    'content.copied': 'تم النسخ!',
+    'content.copyFormatted': 'مع التنسيق',
+    'content.copyPlain': 'سطر واحد',
+    'content.errorLabel': 'خطأ:',
+    'content.popupTitle': 'نتيجة الترجمة (اسحب للتحريك، وغير الحجم من أسفل اليمين)',
+    'content.pageCompleteMessage': 'تمت ترجمة {{count}} نص',
+  },
+  fr: {
+    'content.translate': 'Traduire',
+    'content.translating': 'Traduction...',
+    'content.selectionStarted': 'Traduction de la sélection démarrée...',
+    'content.pageStarted': 'Traduction de la page démarrée...',
+    'content.processing': 'Traduction...',
+    'content.paragraphProgress': '{{completed}} / {{total}} paragraphes',
+    'content.complete': 'Traduction terminée',
+    'content.error': 'Erreur de traduction',
+    'content.pageError': 'Erreur de traduction de page',
+    'content.cancelled': 'Traduction arrêtée',
+    'content.pageCancelled': 'Traduction de page arrêtée',
+    'content.unknownError': 'Erreur inconnue',
+    'content.stop': 'Arrêter',
+    'content.stopPage': 'Arrêter la traduction de page',
+    'content.close': 'Fermer',
+    'content.copied': 'Copié!',
+    'content.copyFormatted': 'Formaté',
+    'content.copyPlain': 'Une ligne',
+    'content.errorLabel': 'Erreur:',
+    'content.popupTitle': 'Résultat de traduction (faites glisser pour déplacer, redimensionnez en bas à droite)',
+    'content.pageCompleteMessage': '{{count}} textes traduits',
+  },
+  bn: {
+    'content.translate': 'অনুবাদ করুন',
+    'content.translating': 'অনুবাদ হচ্ছে...',
+    'content.selectionStarted': 'নির্বাচিত টেক্সট অনুবাদ শুরু হয়েছে...',
+    'content.pageStarted': 'সম্পূর্ণ পেজ অনুবাদ শুরু হয়েছে...',
+    'content.processing': 'অনুবাদ হচ্ছে...',
+    'content.paragraphProgress': '{{completed}} / {{total}} অনুচ্ছেদ',
+    'content.complete': 'অনুবাদ সম্পন্ন হয়েছে',
+    'content.error': 'অনুবাদ ত্রুটি',
+    'content.pageError': 'পেজ অনুবাদ ত্রুটি',
+    'content.cancelled': 'অনুবাদ বন্ধ করা হয়েছে',
+    'content.pageCancelled': 'পেজ অনুবাদ বন্ধ করা হয়েছে',
+    'content.unknownError': 'অজানা ত্রুটি',
+    'content.stop': 'বন্ধ করুন',
+    'content.stopPage': 'পেজ অনুবাদ বন্ধ করুন',
+    'content.close': 'বন্ধ করুন',
+    'content.copied': 'কপি হয়েছে!',
+    'content.copyFormatted': 'ফরম্যাটসহ',
+    'content.copyPlain': 'এক লাইন',
+    'content.errorLabel': 'ত্রুটি:',
+    'content.popupTitle': 'অনুবাদ ফলাফল (সরাতে ড্র্যাগ করুন, নিচের ডান দিক থেকে আকার পরিবর্তন করুন)',
+    'content.pageCompleteMessage': '{{count}}টি টেক্সট অনুবাদ হয়েছে',
+  },
+  id: {
+    'content.translate': 'Terjemahkan',
+    'content.translating': 'Menerjemahkan...',
+    'content.selectionStarted': 'Terjemahan teks terpilih dimulai...',
+    'content.pageStarted': 'Terjemahan halaman dimulai...',
+    'content.processing': 'Menerjemahkan...',
+    'content.paragraphProgress': '{{completed}} / {{total}} paragraf',
+    'content.complete': 'Terjemahan selesai',
+    'content.error': 'Kesalahan terjemahan',
+    'content.pageError': 'Kesalahan terjemahan halaman',
+    'content.cancelled': 'Terjemahan dihentikan',
+    'content.pageCancelled': 'Terjemahan halaman dihentikan',
+    'content.unknownError': 'Kesalahan tidak diketahui',
+    'content.stop': 'Hentikan',
+    'content.stopPage': 'Hentikan terjemahan halaman',
+    'content.close': 'Tutup',
+    'content.copied': 'Disalin!',
+    'content.copyFormatted': 'Berformat',
+    'content.copyPlain': 'Satu baris',
+    'content.errorLabel': 'Kesalahan:',
+    'content.popupTitle': 'Hasil terjemahan (seret untuk memindahkan, ubah ukuran dari kanan bawah)',
+    'content.pageCompleteMessage': '{{count}} teks diterjemahkan',
+  },
+};
+
+function tr(key: string, params?: Record<string, string | number>): string {
+  const browserLanguage = navigator.language.split('-')[0];
+  const resolvedLanguage = uiLanguage === 'auto' ? browserLanguage : uiLanguage;
+  const language = resolvedLanguage in CONTENT_TRANSLATIONS
+    ? resolvedLanguage as ContentLanguage
+    : 'en';
+  let value = CONTENT_TRANSLATIONS[language][key as ContentTranslationKey] ?? key;
+
+  if (params) {
+    for (const [paramKey, paramValue] of Object.entries(params)) {
+      value = value.replace(new RegExp(`\\{\\{${paramKey}\\}\\}`, 'g'), String(paramValue));
+    }
+  }
+
+  return value;
+}
 
 // Load settings from storage
 async function loadSettings(): Promise<void> {
   try {
     const result = await browser.storage.local.get('settings');
     if (result['settings'] && typeof result['settings'] === 'object') {
-      const settings = result['settings'] as { popupCloseOnOutsideAction?: boolean };
+      const settings = result['settings'] as {
+        popupCloseOnOutsideAction?: boolean;
+        uiLanguage?: UILanguage;
+      };
       popupCloseOnOutsideAction = settings.popupCloseOnOutsideAction ?? false;
+      uiLanguage = settings.uiLanguage ?? 'auto';
     }
   } catch (error) {
     console.error('Failed to load settings:', error);
@@ -133,8 +460,12 @@ function handleStorageChange(
   _areaName: string
 ): void {
   if (changes['settings']?.newValue) {
-    const newSettings = changes['settings'].newValue as { popupCloseOnOutsideAction?: boolean };
+    const newSettings = changes['settings'].newValue as {
+      popupCloseOnOutsideAction?: boolean;
+      uiLanguage?: UILanguage;
+    };
     popupCloseOnOutsideAction = newSettings.popupCloseOnOutsideAction ?? false;
+    uiLanguage = newSettings.uiLanguage ?? 'auto';
   }
 }
 
@@ -225,7 +556,7 @@ function handleMessage(
         showTranslationPopup(popupX, popupY);
         const requestId = crypto.randomUUID();
         activeSelectionRequestId = requestId;
-        updateTranslationPopupContent('翻訳中...', true);
+        updateTranslationPopupContent(tr('content.translating'), true);
 
         // Show indeterminate progress bar during translation
         showProgressBar(true);
@@ -233,7 +564,7 @@ function handleMessage(
         // Show toast notification for selection translation
         showToast({
           id: TRANSLATION_TOAST_ID,
-          title: 'テキスト選択翻訳を開始しました…',
+          title: tr('content.selectionStarted'),
           type: 'info',
           duration: 0, // Persistent until translation completes
         });
@@ -258,7 +589,7 @@ function handleMessage(
       // Show toast notification for page translation start
       showToast({
         id: TRANSLATION_TOAST_ID,
-        title: 'ページ全体翻訳を開始しました…',
+        title: tr('content.pageStarted'),
         type: 'info',
         duration: 0, // Persistent until translation completes
       });
@@ -285,7 +616,7 @@ function handleMessage(
       removeProgressBar();
       removePageStopButton();
       updateToast(TRANSLATION_TOAST_ID, {
-        title: errorPayload.code === 'CANCELLED' ? '翻訳を停止しました' : 'ページ翻訳エラー',
+        title: errorPayload.code === 'CANCELLED' ? tr('content.cancelled') : tr('content.pageError'),
         message: errorPayload.message,
         type: errorPayload.code === 'CANCELLED' ? 'warning' : 'error',
         duration: 5000,
@@ -301,8 +632,11 @@ function handleMessage(
       updateProgressBar(progressPayload.translatedNodes, progressPayload.totalNodes);
       // Update toast with progress
       updateToast(TRANSLATION_TOAST_ID, {
-        title: '翻訳処理中…',
-        message: `${progressPayload.translatedNodes} / ${progressPayload.totalNodes} 段落`,
+        title: tr('content.processing'),
+        message: tr('content.paragraphProgress', {
+          completed: progressPayload.translatedNodes,
+          total: progressPayload.totalNodes,
+        }),
       });
       break;
     }
@@ -313,8 +647,11 @@ function handleMessage(
       updateProgressBar(singlePayload.translatedNodes, singlePayload.totalNodes);
       // Update toast with progress
       updateToast(TRANSLATION_TOAST_ID, {
-        title: '翻訳処理中…',
-        message: `${singlePayload.translatedNodes} / ${singlePayload.totalNodes} 段落`,
+        title: tr('content.processing'),
+        message: tr('content.paragraphProgress', {
+          completed: singlePayload.translatedNodes,
+          total: singlePayload.totalNodes,
+        }),
       });
       break;
     }
@@ -347,7 +684,7 @@ function handleMessage(
       finalizeTranslationResult(endPayload.translatedText);
       // Show completion toast
       updateToast(TRANSLATION_TOAST_ID, {
-        title: '翻訳が完了しました',
+        title: tr('content.complete'),
         type: 'success',
         duration: 3000, // Auto-dismiss after 3 seconds
       });
@@ -364,7 +701,7 @@ function handleMessage(
       showTranslationError(errorPayload.message);
       // Show error toast
       updateToast(TRANSLATION_TOAST_ID, {
-        title: errorPayload.code === 'CANCELLED' ? '翻訳を停止しました' : '翻訳エラー',
+        title: errorPayload.code === 'CANCELLED' ? tr('content.cancelled') : tr('content.error'),
         message: errorPayload.message,
         type: errorPayload.code === 'CANCELLED' ? 'warning' : 'error',
         duration: 5000,
@@ -381,7 +718,7 @@ function handleMessage(
         activeSelectionRequestId = showPayload.requestId ?? activeSelectionRequestId;
         showToast({
           id: TRANSLATION_TOAST_ID,
-          title: 'テキスト選択翻訳を開始しました…',
+          title: tr('content.selectionStarted'),
           type: 'info',
           duration: 0, // Persistent until translation completes
         });
@@ -390,7 +727,7 @@ function handleMessage(
         showPageStopButton();
         showToast({
           id: TRANSLATION_TOAST_ID,
-          title: 'ページ全体翻訳を開始しました…',
+          title: tr('content.pageStarted'),
           type: 'info',
           duration: 0, // Persistent until translation completes
         });
@@ -452,7 +789,7 @@ function showTranslationButton(x: number, y: number, text: string): void {
   translationButton = document.createElement('button');
   translationButton.id = 'lta-translate-button';
   translationButton.appendChild(createSvgIcon(MDI_TRANSLATE, 14, 'white'));
-  translationButton.appendChild(document.createTextNode('翻訳'));
+  translationButton.appendChild(document.createTextNode(tr('content.translate')));
   translationButton.style.cssText = `
     position: fixed;
     left: ${x + 10}px;
@@ -499,7 +836,7 @@ async function translateSelectedText(text: string): Promise<void> {
 
   showTranslationPopup(buttonRect.left, buttonRect.bottom + 10);
   activeSelectionRequestId = requestId;
-  updateTranslationPopupContent('翻訳中...', true);
+  updateTranslationPopupContent(tr('content.translating'), true);
 
   // Show indeterminate progress bar during translation
   showProgressBar(true);
@@ -507,7 +844,7 @@ async function translateSelectedText(text: string): Promise<void> {
   // Show toast notification for selection translation
   showToast({
     id: TRANSLATION_TOAST_ID,
-    title: 'テキスト選択翻訳を開始しました…',
+    title: tr('content.selectionStarted'),
     type: 'info',
     duration: 0, // Persistent until translation completes
   });
@@ -527,7 +864,7 @@ async function translateSelectedText(text: string): Promise<void> {
       },
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : '不明なエラー';
+    const message = error instanceof Error ? error.message : tr('content.unknownError');
     activeSelectionRequestId = null;
     showTranslationError(message);
     removeProgressBar();
@@ -653,7 +990,7 @@ function updateTranslationPopupContent(content: string, showStopButton = false):
 function createSelectionStopButton(): HTMLButtonElement {
   const stopBtn = createButton(
     'lta-stop-selection-btn',
-    '停止',
+    tr('content.stop'),
     MDI_STOP,
     { background: '#ef4444', color: 'white', marginTop: '12px' },
   );
@@ -679,9 +1016,9 @@ async function cancelSelectionTranslation(): Promise<void> {
   }).catch(console.error);
 
   removeProgressBar();
-  showTranslationError('翻訳を停止しました');
+  showTranslationError(tr('content.cancelled'));
   updateToast(TRANSLATION_TOAST_ID, {
-    title: '翻訳を停止しました',
+    title: tr('content.cancelled'),
     type: 'warning',
     duration: 3000,
   });
@@ -694,7 +1031,7 @@ function showPageStopButton(): void {
 
   pageStopButton = createButton(
     'lta-stop-page-btn',
-    'ページ翻訳を停止',
+    tr('content.stopPage'),
     MDI_STOP,
     { background: '#ef4444', color: 'white' },
   );
@@ -733,7 +1070,7 @@ async function cancelPageTranslation(): Promise<void> {
   removeProgressBar();
   removePageStopButton();
   updateToast(TRANSLATION_TOAST_ID, {
-    title: 'ページ翻訳を停止しました',
+    title: tr('content.pageCancelled'),
     type: 'warning',
     duration: 3000,
   });
@@ -784,21 +1121,21 @@ function showTranslationResult(text: string): void {
   // Create buttons using DOM API
   const copyFormattedBtn = createButton(
     'lta-copy-formatted-btn',
-    'フォーマット済み',
+    tr('content.copyFormatted'),
     MDI_CONTENT_COPY,
     { background: '#3b82f6', color: 'white' },
   );
 
   const copyPlainBtn = createButton(
     'lta-copy-plain-btn',
-    '1行',
+    tr('content.copyPlain'),
     MDI_CONTENT_COPY,
     { background: '#e5e7eb', color: '#374151' },
   );
 
   const closeBtn = createButton(
     'lta-close-btn',
-    '閉じる',
+    tr('content.close'),
     MDI_CLOSE,
     { background: '#ef4444', color: 'white' },
   );
@@ -806,17 +1143,17 @@ function showTranslationResult(text: string): void {
   // Add event listeners
   copyFormattedBtn.addEventListener('click', () => {
     void navigator.clipboard.writeText(text);
-    updateButtonContent(copyFormattedBtn, MDI_CHECK, 'コピー完了!');
+    updateButtonContent(copyFormattedBtn, MDI_CHECK, tr('content.copied'));
     setTimeout(() => {
-      updateButtonContent(copyFormattedBtn, MDI_CONTENT_COPY, 'フォーマット済み');
+      updateButtonContent(copyFormattedBtn, MDI_CONTENT_COPY, tr('content.copyFormatted'));
     }, 2000);
   });
 
   copyPlainBtn.addEventListener('click', () => {
     void navigator.clipboard.writeText(plainText);
-    updateButtonContent(copyPlainBtn, MDI_CHECK, 'コピー完了!');
+    updateButtonContent(copyPlainBtn, MDI_CHECK, tr('content.copied'));
     setTimeout(() => {
-      updateButtonContent(copyPlainBtn, MDI_CONTENT_COPY, '1行');
+      updateButtonContent(copyPlainBtn, MDI_CONTENT_COPY, tr('content.copyPlain'));
     }, 2000);
   });
 
@@ -865,7 +1202,7 @@ function showTranslationError(message: string): void {
   errorDiv.style.overflow = 'auto';
 
   const strongEl = document.createElement('strong');
-  strongEl.textContent = 'エラー:';
+  strongEl.textContent = tr('content.errorLabel');
   errorDiv.appendChild(strongEl);
   errorDiv.appendChild(document.createTextNode(' ' + message));
   contentContainer.appendChild(errorDiv);
@@ -873,7 +1210,7 @@ function showTranslationError(message: string): void {
   // Create close button using DOM API
   const closeBtn = createButton(
     'lta-close-btn',
-    '閉じる',
+    tr('content.close'),
     MDI_CLOSE,
     { background: '#ef4444', color: 'white' },
   );
@@ -1087,7 +1424,7 @@ function createPopupHeader(): HTMLDivElement {
     font-weight: 500;
   `;
   leftSection.appendChild(createSvgIcon(MDI_DRAG, 14, 'rgba(255,255,255,0.8)'));
-  leftSection.appendChild(document.createTextNode('翻訳結果（ドラッグで移動・右下でサイズ変更）'));
+  leftSection.appendChild(document.createTextNode(tr('content.popupTitle')));
 
   header.appendChild(leftSection);
 
@@ -1190,8 +1527,8 @@ function applyPageTranslation(nodeIds: string[], translatedTexts: string[]): voi
 
   // Show completion toast notification
   updateToast(TRANSLATION_TOAST_ID, {
-    title: '翻訳が完了しました',
-    message: `${nodeIds.length}個のテキストを翻訳しました`,
+    title: tr('content.complete'),
+    message: tr('content.pageCompleteMessage', { count: nodeIds.length }),
     type: 'success',
     duration: 4000, // Auto-dismiss after 4 seconds
   });

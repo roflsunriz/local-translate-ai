@@ -5,24 +5,35 @@ import { useSettingsStore } from '@/stores';
 import type { UILanguage, ThemeMode } from '@/types/settings';
 
 const UI_LANGUAGES: { value: UILanguage; label: string }[] = [
-  { value: 'auto', label: '自動' },
-  { value: 'ja', label: '日本語' },
+  { value: 'auto', label: 'Auto' },
+  { value: 'ja', label: 'Japanese' },
   { value: 'en', label: 'English' },
-  { value: 'zh', label: '中文' },
-  { value: 'ko', label: '한국어' },
-  { value: 'es', label: 'Español' },
-  { value: 'pt', label: 'Português' },
-  { value: 'ru', label: 'Русский' },
-  { value: 'hi', label: 'हिन्दी' },
-  { value: 'ar', label: 'العربية' },
-  { value: 'fr', label: 'Français' },
-  { value: 'bn', label: 'বাংলা' },
-  { value: 'id', label: 'Bahasa Indonesia' },
+  { value: 'zh', label: 'Chinese' },
+  { value: 'ko', label: 'Korean' },
+  { value: 'es', label: 'Spanish' },
+  { value: 'pt', label: 'Portuguese' },
+  { value: 'ru', label: 'Russian' },
+  { value: 'hi', label: 'Hindi' },
+  { value: 'ar', label: 'Arabic' },
+  { value: 'fr', label: 'French' },
+  { value: 'bn', label: 'Bengali' },
+  { value: 'id', label: 'Indonesian' },
 ];
 
 export function GeneralTab() {
   const { t } = useTranslation();
   const { settings, updateSettings } = useSettingsStore();
+
+  const handleUILanguageChange = (uiLanguage: UILanguage): void => {
+    updateSettings({ uiLanguage });
+    void browser.runtime.sendMessage({
+      type: 'SAVE_SETTINGS',
+      timestamp: Date.now(),
+      payload: {
+        settings: { uiLanguage },
+      },
+    }).catch(console.error);
+  };
 
   const THEME_MODES: { value: ThemeMode; label: string }[] = [
     { value: 'auto', label: t('settings.general.themeAuto') },
@@ -50,7 +61,7 @@ export function GeneralTab() {
             </label>
             <select
               value={settings.uiLanguage}
-              onChange={(e) => { updateSettings({ uiLanguage: e.target.value as UILanguage }); }}
+              onChange={(e) => { handleUILanguageChange(e.target.value as UILanguage); }}
               className="w-full rounded-md border px-3 py-2 text-sm"
               style={{
                 backgroundColor: 'var(--color-bg-tertiary)',
