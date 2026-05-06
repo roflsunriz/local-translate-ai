@@ -5,7 +5,7 @@
 ## 0. 前提条件
 
 ### 全OS共通
-- **Python**: モデルのダウンロードに `huggingface-cli` を使う場合に必要です。公式サイトからインストールしてください。
+- **Python**: モデルのダウンロードに `hf` を使う場合に必要です。公式サイトからインストールしてください。
 
 ### Windowsでソースからビルドする場合
 - **Git**: ソースコードの取得に必要です。公式サイトからインストールしてください。
@@ -98,13 +98,13 @@ mkdir models
 cd models
 ```
 
-Hugging Face Hubからモデルをダウンロードします。huggingface-cli を使うと便利です。(Pythonがインストールされている必要があります)
+Hugging Face Hubからモデルをダウンロードします。hf を使うと便利です。(Pythonがインストールされている必要があります)
 
 ```bash
 # huggingface-hubが未インストールの場合はインストール
 # pip install -U "huggingface_hub[cli]"
 
-huggingface-cli download mmnga/plamo-2-translate-gguf plamo-2-translate.Q4_K_M.gguf --local-dir . --local-dir-use-symlinks False
+hf download mmnga/plamo-2-translate-gguf plamo-2-translate.Q4_K_M.gguf --local-dir . --local-dir-use-symlinks False
 ```
 
 `wget` や `curl` を使用して直接ダウンロードすることもできます。
