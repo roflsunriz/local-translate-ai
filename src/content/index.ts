@@ -423,7 +423,7 @@ const CONTENT_TRANSLATIONS: Record<ContentLanguage, Record<ContentTranslationKey
 function tr(key: string, params?: Record<string, string | number>): string {
   const browserLanguage = navigator.language.split('-')[0];
   const resolvedLanguage = uiLanguage === 'auto' ? browserLanguage : uiLanguage;
-  const language = resolvedLanguage in CONTENT_TRANSLATIONS
+  const language: ContentLanguage = resolvedLanguage && resolvedLanguage in CONTENT_TRANSLATIONS
     ? resolvedLanguage as ContentLanguage
     : 'en';
   let value = CONTENT_TRANSLATIONS[language][key as ContentTranslationKey] ?? key;

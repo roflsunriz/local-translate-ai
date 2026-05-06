@@ -412,10 +412,11 @@ async function handleTranslatePage(
     if (!tab?.id) {
       throw new Error('No active tab');
     }
-    activeTabId = tab.id;
+    const targetTabId = tab.id;
+    activeTabId = targetTabId;
 
     // Show progress bar (indeterminate until first translation completes) and toast notification
-    void browser.tabs.sendMessage(activeTabId, {
+    void browser.tabs.sendMessage(targetTabId, {
       type: 'SHOW_PROGRESS_BAR',
       timestamp: Date.now(),
       payload: { indeterminate: true, requestId, translationKind: 'page' },
@@ -424,13 +425,13 @@ async function handleTranslatePage(
     });
 
     // Request text nodes from content script
-    const contentResponse = await browser.tabs.sendMessage(activeTabId, {
+    const contentResponse = await browser.tabs.sendMessage(targetTabId, {
       type: 'GET_PAGE_TEXT_NODES',
       timestamp: Date.now(),
     }) as { texts: string[]; nodeIds: string[] };
 
     if (!contentResponse?.texts || contentResponse.texts.length === 0) {
-      void browser.tabs.sendMessage(activeTabId, {
+      void browser.tabs.sendMessage(targetTabId, {
         type: 'HIDE_PROGRESS_BAR',
         timestamp: Date.now(),
       }).catch(() => {
@@ -467,7 +468,7 @@ async function handleTranslatePage(
         const convertedResult = applyConversions(result, conversionOptions);
         const sanitizedResult = sanitizeAccumulatedResult(convertedResult);
 
-        void browser.tabs.sendMessage(activeTabId, {
+        void browser.tabs.sendMessage(targetTabId, {
           type: 'APPLY_SINGLE_NODE_TRANSLATION',
           timestamp: Date.now(),
           payload: {
@@ -519,7 +520,7 @@ async function handleTranslatePage(
     });
 
     // Send final completion message (all translations already applied progressively)
-    await browser.tabs.sendMessage(activeTabId, {
+    await browser.tabs.sendMessage(targetTabId, {
       type: 'APPLY_PAGE_TRANSLATION',
       timestamp: Date.now(),
       payload: {
