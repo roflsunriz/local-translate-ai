@@ -1,0 +1,133 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    name: Verify (${{ matrix.task }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        task:
+          - lint
+          - type-check
+          - test
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.14.4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Enable corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run ${{ matrix.task }}
+        run: pnpm run ${{ matrix.task }}
+
+  package:
+    name: Package (${{ matrix.kind }})
+    runs-on: ubuntu-latest
+    needs: verify
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - kind: source
+          - kind: dist
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Create source archive
+        if: matrix.kind == 'source'
+        run: |
+          mkdir -p release-artifacts
+          git archive --format=zip --output=release-artifacts/source-code.zip HEAD
+
+      - name: Set up pnpm
+        if: matrix.kind == 'dist'
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.14.4
+
+      - name: Set up Node.js
+        if: matrix.kind == 'dist'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Enable corepack
+        if: matrix.kind == 'dist'
+        run: corepack enable
+
+      - name: Install dependencies
+        if: matrix.kind == 'dist'
+        run: pnpm install --frozen-lockfile
+
+      - name: Build extension
+        if: matrix.kind == 'dist'
+        run: pnpm build
+
+      - name: Package extension
+        if: matrix.kind == 'dist'
+        run: pnpm run zip:dist
+
+      - name: Upload artifact
+        if: matrix.kind == 'source'
+        uses: actions/upload-artifact@v4
+        with:
+          name: source-code
+          path: release-artifacts/source-code.zip
+          if-no-files-found: error
+
+      - name: Upload artifact
+        if: matrix.kind == 'dist'
+        uses: actions/upload-artifact@v4
+        with:
+          name: extension-dist
+          path: web-ext-artifacts/*.zip
+          if-no-files-found: error
+
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs:
+      - package
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+          merge-multiple: true
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          generate_release_notes: true
+          files: release-artifacts/*
+          fail_on_unmatched_files: true
