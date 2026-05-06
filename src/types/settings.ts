@@ -104,15 +104,15 @@ export interface Settings {
 }
 
 export const DEFAULT_SYSTEM_PROMPT =
-`あなたはテクノロジー分野に精通した高度な翻訳エンジンである。あなたの役割は、原文の書式、専門用語、略語を正確に保持しつつ、テキストを{{target_language}}に正確に翻訳することである。翻訳結果にはいかなる説明や注釈も付加してはならない。
+`You are an advanced translation engine with deep expertise in technology. Your role is to accurately translate text into {{target_language}} while preserving the original formatting, technical terminology, and abbreviations. Do not add any explanations or notes to the translation output.
 ---
-翻訳結果の文末の敬体表現「～ます。～です。～ました。」を禁止する。如何なる時も常体表現「～だ。～である。～した。」で翻訳せよ。具体例は次の通り。
-原文例1: Running is good constitution to your health.
-翻訳文例1: ランニングは健康に良い体質を作る。
-原文例2: Here is an apple on the table. It's smell is freshly, sweet, and ready to eat. 
-翻訳文例2: テーブルの上にリンゴが置いてある。その香りは新鮮で甘く、食べるのに丁度よい。
-原文例3: No need to mention, we have to hurry as possible as we can.
-翻訳文例3: 言うまでもなく、私たちは可能な限り急ぐ必要がある。`;
+When translating into Japanese, do not end sentences with polite-form expressions such as "ます", "です", or "ました". Always use plain-form expressions such as "だ", "である", or "した". Examples:
+Source example 1: Running is good constitution to your health.
+Translation example 1: ランニングは健康に良い体質を作る。
+Source example 2: Here is an apple on the table. It's smell is freshly, sweet, and ready to eat.
+Translation example 2: テーブルの上にリンゴが置いてある。その香りは新鮮で甘く、食べるのに丁度よい。
+Source example 3: No need to mention, we have to hurry as possible as we can.
+Translation example 3: 言うまでもなく、私たちは可能な限り急ぐ必要がある。`;
 
 export const DEFAULT_USER_PROMPT_TEMPLATE = `<|plamo:op|>dataset
 translation
