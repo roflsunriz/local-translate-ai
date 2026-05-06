@@ -47,68 +47,44 @@ jobs:
         run: pnpm run ${{ matrix.task }}
 
   package:
-    name: Package (${{ matrix.kind }})
+    name: Package signed XPI
     runs-on: ubuntu-latest
     needs: verify
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - kind: source
-          - kind: dist
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Create source archive
-        if: matrix.kind == 'source'
-        run: |
-          mkdir -p release-artifacts
-          git archive --format=zip --output=release-artifacts/source-code.zip HEAD
-
       - name: Set up pnpm
-        if: matrix.kind == 'dist'
         uses: pnpm/action-setup@v4
         with:
           version: 9.14.4
 
       - name: Set up Node.js
-        if: matrix.kind == 'dist'
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: pnpm
 
       - name: Enable corepack
-        if: matrix.kind == 'dist'
         run: corepack enable
 
       - name: Install dependencies
-        if: matrix.kind == 'dist'
         run: pnpm install --frozen-lockfile
 
       - name: Build extension
-        if: matrix.kind == 'dist'
         run: pnpm build
 
-      - name: Package extension
-        if: matrix.kind == 'dist'
-        run: pnpm run zip:dist
+      - name: Sign extension with AMO
+        run: pnpm run sign:listed
+        env:
+          WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_API_KEY }}
+          WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_API_SECRET }}
 
       - name: Upload artifact
-        if: matrix.kind == 'source'
         uses: actions/upload-artifact@v4
         with:
-          name: source-code
-          path: release-artifacts/source-code.zip
-          if-no-files-found: error
-
-      - name: Upload artifact
-        if: matrix.kind == 'dist'
-        uses: actions/upload-artifact@v4
-        with:
-          name: extension-dist
-          path: web-ext-artifacts/*.zip
+          name: signed-xpi
+          path: web-ext-artifacts/*.xpi
           if-no-files-found: error
 
   release:
