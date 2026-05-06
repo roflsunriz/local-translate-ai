@@ -76,7 +76,107 @@ jobs:
         run: pnpm build
 
       - name: Sign extension with AMO
-        run: pnpm run sign:listed
+        id: sign
+        shell: bash
+        run: |
+          set +e
+          pnpm run sign:listed 2>&1 | tee amo-sign.log
+          status=${PIPESTATUS[0]}
+          set -e
+
+          if [ "$status" -eq 0 ]; then
+            echo "reused=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if grep -Eiq 'version .*already exists|already exists.*version' amo-sign.log; then
+            echo "AMO already has this version; reusing the existing signed XPI."
+            echo "reused=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          exit "$status"
+        env:
+          WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_API_KEY }}
+          WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_API_SECRET }}
+
+      - name: Download existing signed XPI from AMO
+        if: steps.sign.outputs.reused == 'true'
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import { createHmac, randomUUID } from 'node:crypto';
+          import { mkdir, readFile, writeFile } from 'node:fs/promises';
+          import path from 'node:path';
+
+          const apiKey = process.env.WEB_EXT_API_KEY;
+          const apiSecret = process.env.WEB_EXT_API_SECRET;
+          if (!apiKey || !apiSecret) {
+            throw new Error('WEB_EXT_API_KEY and WEB_EXT_API_SECRET are required.');
+          }
+
+          const base64url = (value) => Buffer.from(value)
+            .toString('base64')
+            .replace(/=/g, '')
+            .replace(/\+/g, '-')
+            .replace(/\//g, '_');
+
+          const signJwt = () => {
+            const issuedAt = Math.floor(Date.now() / 1000);
+            const header = { alg: 'HS256', typ: 'JWT' };
+            const payload = {
+              iss: apiKey,
+              jti: randomUUID(),
+              iat: issuedAt,
+              exp: issuedAt + 60,
+            };
+            const unsignedToken = `${base64url(JSON.stringify(header))}.${base64url(JSON.stringify(payload))}`;
+            const signature = createHmac('sha256', apiSecret).update(unsignedToken).digest('base64url');
+            return `${unsignedToken}.${signature}`;
+          };
+
+          const manifest = JSON.parse(await readFile('dist/manifest.json', 'utf8'));
+          const packageJson = JSON.parse(await readFile('package.json', 'utf8'));
+          const addonId = manifest.browser_specific_settings?.gecko?.id ?? manifest.applications?.gecko?.id;
+          const version = manifest.version;
+          if (!addonId || !version) {
+            throw new Error('dist/manifest.json must include gecko.id and version.');
+          }
+
+          const authHeader = { Authorization: `JWT ${signJwt()}` };
+          const versionUrl = `https://addons.mozilla.org/api/v5/addons/addon/${encodeURIComponent(addonId)}/versions/${encodeURIComponent(`v${version}`)}/`;
+          const versionResponse = await fetch(versionUrl, { headers: authHeader });
+          if (!versionResponse.ok) {
+            throw new Error(`Failed to fetch AMO version metadata: ${versionResponse.status} ${await versionResponse.text()}`);
+          }
+
+          const amoVersion = await versionResponse.json();
+          if (amoVersion.channel !== 'listed') {
+            throw new Error(`Expected listed AMO version ${version}, got channel ${amoVersion.channel}.`);
+          }
+          if (!amoVersion.file?.url) {
+            throw new Error(`AMO version ${version} does not include a downloadable file URL.`);
+          }
+
+          const xpiResponse = await fetch(amoVersion.file.url, { headers: authHeader });
+          if (!xpiResponse.ok) {
+            throw new Error(`Failed to download existing XPI: ${xpiResponse.status} ${await xpiResponse.text()}`);
+          }
+
+          const xpiBytes = Buffer.from(await xpiResponse.arrayBuffer());
+          if (amoVersion.file.size && xpiBytes.length !== amoVersion.file.size) {
+            throw new Error(`Downloaded XPI size mismatch: expected ${amoVersion.file.size}, got ${xpiBytes.length}.`);
+          }
+          if (xpiBytes[0] !== 0x50 || xpiBytes[1] !== 0x4b) {
+            throw new Error('Downloaded AMO file is not a ZIP/XPI payload.');
+          }
+
+          await mkdir('web-ext-artifacts', { recursive: true });
+          const safeName = `${packageJson.name}-${version}.xpi`.replace(/[^a-zA-Z0-9._-]/g, '_');
+          const xpiPath = path.join('web-ext-artifacts', safeName);
+          await writeFile(xpiPath, xpiBytes);
+          console.log(`Downloaded existing signed XPI to ${xpiPath}`);
+          NODE
         env:
           WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_API_KEY }}
           WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_API_SECRET }}
