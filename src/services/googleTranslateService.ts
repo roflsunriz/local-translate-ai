@@ -90,6 +90,9 @@ export class GoogleTranslateService {
         results.push(result);
         onProgress(i + 1, total, result);
       } catch (error) {
+        if (signal.aborted || (error instanceof Error && error.name === 'AbortError')) {
+          throw error;
+        }
         console.error(`Google Translate: failed to translate text at index ${i}:`, error);
         results.push(text);
         onProgress(i + 1, total, text);

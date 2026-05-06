@@ -137,7 +137,7 @@ async function handleTranslateText(
   void sendToActiveTab({
     type: 'SHOW_PROGRESS_BAR',
     timestamp: Date.now(),
-    payload: { indeterminate: true, translationKind: 'selection' },
+    payload: { indeterminate: true, requestId, translationKind: 'selection' },
   });
 
   try {
@@ -331,6 +331,7 @@ async function handleTranslateText(
         timestamp: Date.now(),
         payload: {
           ...rawResult,
+          requestId,
           translatedText: convertedText,
         },
       };
@@ -347,9 +348,13 @@ async function handleTranslateText(
       timestamp: Date.now(),
     });
 
-    if (error instanceof Error && error.name === 'AbortError') {
-      return {
+    if (
+      error instanceof Error &&
+      (error.name === 'AbortError' || abortController.signal.aborted || error.message.includes('cancelled'))
+    ) {
+      const response = {
         type: 'TRANSLATE_TEXT_ERROR',
+        timestamp: Date.now(),
         payload: {
           requestId,
           code: 'CANCELLED',
@@ -357,11 +362,14 @@ async function handleTranslateText(
           timestamp: Date.now(),
         },
       };
+      void broadcastMessage(response);
+      return response;
     } else {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error('Translation error:', error);
-      return {
+      const response = {
         type: 'TRANSLATE_TEXT_ERROR',
+        timestamp: Date.now(),
         payload: {
           requestId,
           code: 'API_ERROR',
@@ -370,6 +378,8 @@ async function handleTranslateText(
           timestamp: Date.now(),
         },
       };
+      void broadcastMessage(response);
+      return response;
     }
   } finally {
     activeRequests.delete(requestId);
@@ -380,6 +390,7 @@ async function handleTranslatePage(
   message: TranslatePageMessage
 ): Promise<unknown> {
   const { requestId, targetLanguage, profileId } = message.payload;
+  let activeTabId: number | null = null;
 
   // Create abort controller
   const abortController = new AbortController();
@@ -400,13 +411,13 @@ async function handleTranslatePage(
     if (!tab?.id) {
       throw new Error('No active tab');
     }
-    const activeTabId = tab.id;
+    activeTabId = tab.id;
 
     // Show progress bar (indeterminate until first translation completes) and toast notification
     void browser.tabs.sendMessage(activeTabId, {
       type: 'SHOW_PROGRESS_BAR',
       timestamp: Date.now(),
-      payload: { indeterminate: true, translationKind: 'page' },
+      payload: { indeterminate: true, requestId, translationKind: 'page' },
     }).catch(() => {
       // Ignore errors if content script is not ready
     });
@@ -418,6 +429,12 @@ async function handleTranslatePage(
     }) as { texts: string[]; nodeIds: string[] };
 
     if (!contentResponse?.texts || contentResponse.texts.length === 0) {
+      void browser.tabs.sendMessage(activeTabId, {
+        type: 'HIDE_PROGRESS_BAR',
+        timestamp: Date.now(),
+      }).catch(() => {
+        // Ignore errors if content script is not ready
+      });
       return {
         type: 'TRANSLATE_PAGE_COMPLETE',
         timestamp: Date.now(),
@@ -527,17 +544,28 @@ async function handleTranslatePage(
     });
 
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('Page translation error:', error);
-    return {
+    const isCancelled = abortController.signal.aborted || errorMessage.includes('cancelled');
+    if (!isCancelled) {
+      console.error('Page translation error:', error);
+    }
+    const response = {
       type: 'TRANSLATE_PAGE_ERROR',
+      timestamp: Date.now(),
       payload: {
         requestId,
-        code: 'API_ERROR',
-        message: errorMessage,
+        code: isCancelled ? 'CANCELLED' : 'API_ERROR',
+        message: isCancelled ? 'Translation was cancelled' : errorMessage,
         details: String(error),
         timestamp: Date.now(),
       },
     };
+    if (activeTabId !== null) {
+      void browser.tabs.sendMessage(activeTabId, response).catch(() => {
+        // Ignore errors if tab is closed
+      });
+    }
+    void broadcastMessage(response);
+    return response;
   } finally {
     activeRequests.delete(requestId);
   }

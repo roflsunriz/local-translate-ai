@@ -209,6 +209,7 @@ export interface ShowProgressBarMessage extends BaseMessage {
   type: 'SHOW_PROGRESS_BAR';
   payload: {
     indeterminate: boolean;
+    requestId?: string | undefined;
     /** Type of translation for toast notification */
     translationKind?: TranslationKind | undefined;
   };

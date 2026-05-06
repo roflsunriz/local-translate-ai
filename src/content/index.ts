@@ -24,6 +24,7 @@ const MDI_CHECK = 'M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z';
 const MDI_CLOSE = 'M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z';
 const MDI_TRANSLATE = 'M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12A6,6 0 0,0 12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18C12.33,18 12.65,17.97 12.97,17.93L14.12,19.08C13.41,19.56 12.53,20 11.5,20A7,7 0 0,1 4.5,13A7,7 0 0,1 11.5,6C12.53,6 13.41,6.44 14.12,6.92L12.97,8.05C12.65,8.03 12.33,8 12,8A5,5 0 0,0 7,13A5,5 0 0,0 12,18A5,5 0 0,0 17,13C17,12.67 16.97,12.35 16.95,12H17.97L19.43,12.97Z';
 const MDI_DRAG = 'M7,19V17H9V19H7M11,19V17H13V19H11M15,19V17H17V19H15M7,15V13H9V15H7M11,15V13H13V15H11M15,15V13H17V15H15M7,11V9H9V11H7M11,11V9H13V11H11M15,11V9H17V11H15M7,7V5H9V7H7M11,7V5H13V7H11M15,7V5H17V7H15Z';
+const MDI_STOP = 'M18,18H6V6H18V18Z';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -84,6 +85,9 @@ function updateButtonContent(btn: HTMLButtonElement, iconPath: string, text: str
 // Translation popup element
 let translationPopup: HTMLDivElement | null = null;
 let translationButton: HTMLButtonElement | null = null;
+let pageStopButton: HTMLButtonElement | null = null;
+let activeSelectionRequestId: string | null = null;
+let activePageRequestId: string | null = null;
 
 // Drag state for popup
 interface DragState {
@@ -210,7 +214,9 @@ function handleMessage(
 
         // Show popup before sending translation request
         showTranslationPopup(popupX, popupY);
-        updateTranslationPopupContent('翻訳中...');
+        const requestId = crypto.randomUUID();
+        activeSelectionRequestId = requestId;
+        updateTranslationPopupContent('翻訳中...', true);
 
         // Show indeterminate progress bar during translation
         showProgressBar(true);
@@ -227,7 +233,7 @@ function handleMessage(
           type: 'TRANSLATE_TEXT',
           timestamp: Date.now(),
           payload: {
-            requestId: crypto.randomUUID(),
+            requestId,
             text: selectedText,
             sourceLanguage: 'auto',
             targetLanguage: 'Japanese',
@@ -255,12 +261,34 @@ function handleMessage(
 
     case 'APPLY_PAGE_TRANSLATION': {
       const applyPayload = (message as { payload: { nodeIds: string[]; translatedTexts: string[] } }).payload;
+      activePageRequestId = null;
+      removePageStopButton();
       applyPageTranslation(applyPayload.nodeIds, applyPayload.translatedTexts);
+      break;
+    }
+
+    case 'TRANSLATE_PAGE_ERROR': {
+      const errorPayload = (message as ExtensionMessage & { type: 'TRANSLATE_PAGE_ERROR' }).payload;
+      if (activePageRequestId !== errorPayload.requestId) {
+        break;
+      }
+      activePageRequestId = null;
+      removeProgressBar();
+      removePageStopButton();
+      updateToast(TRANSLATION_TOAST_ID, {
+        title: errorPayload.code === 'CANCELLED' ? '翻訳を停止しました' : 'ページ翻訳エラー',
+        message: errorPayload.message,
+        type: errorPayload.code === 'CANCELLED' ? 'warning' : 'error',
+        duration: 5000,
+      });
       break;
     }
 
     case 'TRANSLATE_PAGE_PROGRESS': {
       const progressPayload = (message as { payload: { translatedNodes: number; totalNodes: number } }).payload;
+      if (!activePageRequestId) {
+        break;
+      }
       updateProgressBar(progressPayload.translatedNodes, progressPayload.totalNodes);
       // Update toast with progress
       updateToast(TRANSLATION_TOAST_ID, {
@@ -284,18 +312,29 @@ function handleMessage(
 
     case 'TRANSLATE_TEXT_RESULT': {
       const resultPayload = (message as ExtensionMessage & { type: 'TRANSLATE_TEXT_RESULT' }).payload;
+      if (activeSelectionRequestId && resultPayload.requestId !== activeSelectionRequestId) {
+        break;
+      }
+      activeSelectionRequestId = null;
       showTranslationResult(resultPayload.translatedText);
       break;
     }
 
     case 'TRANSLATE_TEXT_STREAM_CHUNK': {
       const chunkPayload = (message as ExtensionMessage & { type: 'TRANSLATE_TEXT_STREAM_CHUNK' }).payload;
+      if (activeSelectionRequestId && chunkPayload.requestId !== activeSelectionRequestId) {
+        break;
+      }
       updateStreamingResult(chunkPayload.accumulated);
       break;
     }
 
     case 'TRANSLATE_TEXT_STREAM_END': {
       const endPayload = (message as ExtensionMessage & { type: 'TRANSLATE_TEXT_STREAM_END' }).payload;
+      if (activeSelectionRequestId && endPayload.requestId !== activeSelectionRequestId) {
+        break;
+      }
+      activeSelectionRequestId = null;
       finalizeTranslationResult(endPayload.translatedText);
       // Show completion toast
       updateToast(TRANSLATION_TOAST_ID, {
@@ -306,24 +345,31 @@ function handleMessage(
       break;
     }
 
-    case 'TRANSLATE_TEXT_ERROR':
+    case 'TRANSLATE_TEXT_ERROR': {
+      const errorPayload = (message as ExtensionMessage & { type: 'TRANSLATE_TEXT_ERROR' }).payload;
+      if (activeSelectionRequestId !== errorPayload.requestId) {
+        break;
+      }
       removeProgressBar();
-      showTranslationError((message as ExtensionMessage & { type: 'TRANSLATE_TEXT_ERROR' }).payload.message);
+      activeSelectionRequestId = null;
+      showTranslationError(errorPayload.message);
       // Show error toast
       updateToast(TRANSLATION_TOAST_ID, {
-        title: '翻訳エラー',
-        message: (message as ExtensionMessage & { type: 'TRANSLATE_TEXT_ERROR' }).payload.message,
-        type: 'error',
+        title: errorPayload.code === 'CANCELLED' ? '翻訳を停止しました' : '翻訳エラー',
+        message: errorPayload.message,
+        type: errorPayload.code === 'CANCELLED' ? 'warning' : 'error',
         duration: 5000,
       });
       break;
+    }
 
     case 'SHOW_PROGRESS_BAR': {
-      const showPayload = (message as { payload: { indeterminate: boolean; translationKind?: 'page' | 'selection' } }).payload;
+      const showPayload = (message as { payload: { indeterminate: boolean; requestId?: string; translationKind?: 'page' | 'selection' } }).payload;
       showProgressBar(showPayload.indeterminate);
 
       // Show toast notification based on translation kind
       if (showPayload.translationKind === 'selection') {
+        activeSelectionRequestId = showPayload.requestId ?? activeSelectionRequestId;
         showToast({
           id: TRANSLATION_TOAST_ID,
           title: 'テキスト選択翻訳を開始しました…',
@@ -331,6 +377,8 @@ function handleMessage(
           duration: 0, // Persistent until translation completes
         });
       } else if (showPayload.translationKind === 'page') {
+        activePageRequestId = showPayload.requestId ?? activePageRequestId;
+        showPageStopButton();
         showToast({
           id: TRANSLATION_TOAST_ID,
           title: 'ページ全体翻訳を開始しました…',
@@ -343,6 +391,7 @@ function handleMessage(
 
     case 'HIDE_PROGRESS_BAR':
       removeProgressBar();
+      removePageStopButton();
       break;
 
     default:
@@ -437,8 +486,11 @@ async function translateSelectedText(text: string): Promise<void> {
   }
 
   const buttonRect = translationButton.getBoundingClientRect();
+  const requestId = crypto.randomUUID();
+
   showTranslationPopup(buttonRect.left, buttonRect.bottom + 10);
-  updateTranslationPopupContent('翻訳中...');
+  activeSelectionRequestId = requestId;
+  updateTranslationPopupContent('翻訳中...', true);
 
   // Show indeterminate progress bar during translation
   showProgressBar(true);
@@ -450,8 +502,6 @@ async function translateSelectedText(text: string): Promise<void> {
     type: 'info',
     duration: 0, // Persistent until translation completes
   });
-
-  const requestId = crypto.randomUUID();
 
   try {
     // Send to background script for translation and sidebar sync
@@ -469,6 +519,7 @@ async function translateSelectedText(text: string): Promise<void> {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : '不明なエラー';
+    activeSelectionRequestId = null;
     showTranslationError(message);
     removeProgressBar();
   }
@@ -549,7 +600,7 @@ function showTranslationPopup(x: number, y: number): void {
   document.body.appendChild(translationPopup);
 }
 
-function updateTranslationPopupContent(content: string): void {
+function updateTranslationPopupContent(content: string, showStopButton = false): void {
   if (!translationPopup) {
     return;
   }
@@ -572,6 +623,98 @@ function updateTranslationPopupContent(content: string): void {
   contentDiv.textContent = content;
 
   contentContainer.appendChild(contentDiv);
+
+  if (showStopButton && activeSelectionRequestId) {
+    contentContainer.appendChild(createSelectionStopButton());
+  }
+}
+
+function createSelectionStopButton(): HTMLButtonElement {
+  const stopBtn = createButton(
+    'lta-stop-selection-btn',
+    '停止',
+    MDI_STOP,
+    { background: '#ef4444', color: 'white', marginTop: '12px' },
+  );
+  stopBtn.addEventListener('click', () => {
+    void cancelSelectionTranslation();
+  });
+  return stopBtn;
+}
+
+async function cancelSelectionTranslation(): Promise<void> {
+  if (!activeSelectionRequestId) {
+    return;
+  }
+
+  const requestId = activeSelectionRequestId;
+  activeSelectionRequestId = null;
+
+  await browser.runtime.sendMessage({
+    type: 'CANCEL_TRANSLATION',
+    timestamp: Date.now(),
+    payload: { requestId },
+  }).catch(console.error);
+
+  removeProgressBar();
+  showTranslationError('翻訳を停止しました');
+  updateToast(TRANSLATION_TOAST_ID, {
+    title: '翻訳を停止しました',
+    type: 'warning',
+    duration: 3000,
+  });
+}
+
+function showPageStopButton(): void {
+  if (pageStopButton || !activePageRequestId) {
+    return;
+  }
+
+  pageStopButton = createButton(
+    'lta-stop-page-btn',
+    'ページ翻訳を停止',
+    MDI_STOP,
+    { background: '#ef4444', color: 'white' },
+  );
+  pageStopButton.style.position = 'fixed';
+  pageStopButton.style.top = '12px';
+  pageStopButton.style.right = '12px';
+  pageStopButton.style.zIndex = '2147483647';
+  pageStopButton.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
+  pageStopButton.addEventListener('click', () => {
+    void cancelPageTranslation();
+  });
+  document.body.appendChild(pageStopButton);
+}
+
+function removePageStopButton(): void {
+  if (pageStopButton) {
+    pageStopButton.remove();
+    pageStopButton = null;
+  }
+}
+
+async function cancelPageTranslation(): Promise<void> {
+  if (!activePageRequestId) {
+    return;
+  }
+
+  const requestId = activePageRequestId;
+  activePageRequestId = null;
+
+  await browser.runtime.sendMessage({
+    type: 'CANCEL_TRANSLATION',
+    timestamp: Date.now(),
+    payload: { requestId },
+  }).catch(console.error);
+
+  removeProgressBar();
+  removePageStopButton();
+  updateToast(TRANSLATION_TOAST_ID, {
+    title: 'ページ翻訳を停止しました',
+    type: 'warning',
+    duration: 3000,
+  });
 }
 
 function showTranslationResult(text: string): void {
@@ -661,7 +804,7 @@ function showTranslationResult(text: string): void {
 }
 
 function updateStreamingResult(text: string): void {
-  updateTranslationPopupContent(text);
+  updateTranslationPopupContent(text, activeSelectionRequestId !== null);
 }
 
 function finalizeTranslationResult(text: string): void {
@@ -919,6 +1062,8 @@ function applyPageTranslation(nodeIds: string[], translatedTexts: string[]): voi
   }
 
   removeProgressBar();
+  removePageStopButton();
+  activePageRequestId = null;
 
   // Show completion toast notification
   updateToast(TRANSLATION_TOAST_ID, {
@@ -930,15 +1075,19 @@ function applyPageTranslation(nodeIds: string[], translatedTexts: string[]): voi
 }
 
 async function startPageTranslation(): Promise<void> {
+  const requestId = crypto.randomUUID();
+  activePageRequestId = requestId;
+
   // Show progress bar (determinate mode for page translation)
   showProgressBar(false);
+  showPageStopButton();
 
   // Request translation from background
   await browser.runtime.sendMessage({
     type: 'TRANSLATE_PAGE',
     timestamp: Date.now(),
     payload: {
-      requestId: crypto.randomUUID(),
+      requestId,
       targetLanguage: 'Japanese',
       profileId: '',
     },

@@ -316,6 +316,9 @@ export class TranslationService {
         results.push(result.translatedText);
         onProgress(i + 1, total, result.translatedText);
       } catch (error) {
+        if (signal.aborted || (error instanceof Error && error.name === 'AbortError')) {
+          throw error;
+        }
         // On error, keep original text
         console.error(`Failed to translate text at index ${i}:`, error);
         results.push(text);
