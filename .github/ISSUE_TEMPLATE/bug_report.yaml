@@ -1,4 +1,5 @@
-name: バグ報告
+name: "[BUG] バグ報告"
+title: "[BUG] "
 description: 不具合の報告はこちら
 labels:
   - bug
