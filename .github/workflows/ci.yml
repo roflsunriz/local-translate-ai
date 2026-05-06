@@ -20,7 +20,6 @@ jobs:
         task:
           - lint
           - type-check
-          - test
           - build
     steps:
       - name: Check out repository

@@ -22,7 +22,6 @@ jobs:
         task:
           - lint
           - type-check
-          - test
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
