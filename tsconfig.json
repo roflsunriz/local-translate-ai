@@ -29,13 +29,12 @@
     "noImplicitReturns": true,
 
     /* Paths */
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     },
 
     /* Types */
-    "types": ["firefox-webext-browser", "vite/client"]
+    "types": ["firefox-webext-browser", "vite/client", "node"]
   },
   "include": ["src/**/*", "vite.config.ts"],
   "exclude": ["node_modules", "dist"]

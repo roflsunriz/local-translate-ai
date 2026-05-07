@@ -20,7 +20,12 @@ const historyService = new HistoryService();
 const settingsService = new SettingsService();
 
 // Active translation requests (for cancellation)
-const activeRequests = new Map<string, AbortController>();
+interface ActiveTranslationRequest {
+  controller: AbortController;
+  targetTabId?: number | undefined;
+}
+
+const activeRequests = new Map<string, ActiveTranslationRequest>();
 
 // Initialize retry config from settings
 async function initializeServices(): Promise<void> {
@@ -76,27 +81,51 @@ async function sendToActiveTab(message: unknown): Promise<void> {
   }
 }
 
+async function getActiveTabId(): Promise<number | undefined> {
+  try {
+    const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+    return tabs[0]?.id;
+  } catch {
+    return undefined;
+  }
+}
+
+async function sendToTargetTab(
+  targetTabId: number | undefined,
+  message: unknown
+): Promise<void> {
+  if (targetTabId !== undefined) {
+    void browser.tabs.sendMessage(targetTabId, message).catch(() => {
+      // Ignore errors for tabs without content script or already closed tabs
+    });
+    return;
+  }
+
+  await sendToActiveTab(message);
+}
+
 // Message handler - Firefox requires returning a Promise for async responses
 browser.runtime.onMessage.addListener((
   message: ExtensionMessage,
-  _sender: browser.runtime.MessageSender
+  sender: browser.runtime.MessageSender
 ): Promise<unknown> | undefined => {
   // Return a Promise for async handling (Firefox WebExtension pattern)
-  return handleMessage(message).catch((error: unknown) => {
+  return handleMessage(message, sender).catch((error: unknown) => {
     console.error('Message handler error:', error);
     return { error: String(error) };
   });
 });
 
 async function handleMessage(
-  message: ExtensionMessage
+  message: ExtensionMessage,
+  sender?: browser.runtime.MessageSender
 ): Promise<unknown> {
   switch (message.type) {
     case 'TRANSLATE_TEXT':
-      return handleTranslateText(message);
+      return handleTranslateText(message, sender?.tab?.id);
 
     case 'TRANSLATE_PAGE':
-      return handleTranslatePage(message);
+      return handleTranslatePage(message, sender?.tab?.id);
 
     case 'CANCEL_TRANSLATION':
       handleCancelTranslation(message.payload.requestId);
@@ -124,18 +153,23 @@ async function handleMessage(
 }
 
 async function handleTranslateText(
-  message: TranslateTextMessage
+  message: TranslateTextMessage,
+  targetTabId?: number
 ): Promise<unknown> {
   const { requestId, text, sourceLanguage, targetLanguage, profileId, stream } =
     message.payload;
 
   // Create abort controller for this request
   const abortController = new AbortController();
-  activeRequests.set(requestId, abortController);
+  const resolvedTargetTabId = targetTabId ?? await getActiveTabId();
+  activeRequests.set(requestId, {
+    controller: abortController,
+    targetTabId: resolvedTargetTabId,
+  });
 
   // Show progress bar on active tab (indeterminate mode for text translation)
   // Also includes translationKind for toast notification
-  void sendToActiveTab({
+  void sendToTargetTab(resolvedTargetTabId, {
     type: 'SHOW_PROGRESS_BAR',
     timestamp: Date.now(),
     payload: { indeterminate: true, requestId, translationKind: 'selection' },
@@ -193,7 +227,7 @@ async function handleTranslateText(
         });
       }
 
-      void sendToActiveTab({
+      void sendToTargetTab(resolvedTargetTabId, {
         type: 'HIDE_PROGRESS_BAR',
         timestamp: Date.now(),
       });
@@ -259,7 +293,7 @@ async function handleTranslateText(
         }
 
         // Hide progress bar
-        void sendToActiveTab({
+        void sendToTargetTab(resolvedTargetTabId, {
           type: 'HIDE_PROGRESS_BAR',
           timestamp: Date.now(),
         });
@@ -287,7 +321,7 @@ async function handleTranslateText(
       }
 
       // Hide progress bar even if no result
-      void sendToActiveTab({
+      void sendToTargetTab(resolvedTargetTabId, {
         type: 'HIDE_PROGRESS_BAR',
         timestamp: Date.now(),
       });
@@ -322,7 +356,7 @@ async function handleTranslateText(
       }
 
       // Hide progress bar
-      void sendToActiveTab({
+      void sendToTargetTab(resolvedTargetTabId, {
         type: 'HIDE_PROGRESS_BAR',
         timestamp: Date.now(),
       });
@@ -344,7 +378,7 @@ async function handleTranslateText(
     }
   } catch (error) {
     // Hide progress bar on error
-    void sendToActiveTab({
+    void sendToTargetTab(resolvedTargetTabId, {
       type: 'HIDE_PROGRESS_BAR',
       timestamp: Date.now(),
     });
@@ -388,14 +422,14 @@ async function handleTranslateText(
 }
 
 async function handleTranslatePage(
-  message: TranslatePageMessage
+  message: TranslatePageMessage,
+  targetTabId?: number
 ): Promise<unknown> {
   const { requestId, targetLanguage, profileId } = message.payload;
   let activeTabId: number | null = null;
 
   // Create abort controller
   const abortController = new AbortController();
-  activeRequests.set(requestId, abortController);
 
   try {
     const settings = await settingsService.getSettings();
@@ -406,17 +440,18 @@ async function handleTranslatePage(
       throw new Error('Profile not found');
     }
 
-    // Get active tab
-    const tabs = await browser.tabs.query({ active: true, currentWindow: true });
-    const tab = tabs[0];
-    if (!tab?.id) {
+    const resolvedTargetTabId = targetTabId ?? await getActiveTabId();
+    if (!resolvedTargetTabId) {
       throw new Error('No active tab');
     }
-    const targetTabId = tab.id;
-    activeTabId = targetTabId;
+    activeTabId = resolvedTargetTabId;
+    activeRequests.set(requestId, {
+      controller: abortController,
+      targetTabId: resolvedTargetTabId,
+    });
 
     // Show progress bar (indeterminate until first translation completes) and toast notification
-    void browser.tabs.sendMessage(targetTabId, {
+    void browser.tabs.sendMessage(resolvedTargetTabId, {
       type: 'SHOW_PROGRESS_BAR',
       timestamp: Date.now(),
       payload: { indeterminate: true, requestId, translationKind: 'page' },
@@ -425,13 +460,13 @@ async function handleTranslatePage(
     });
 
     // Request text nodes from content script
-    const contentResponse = await browser.tabs.sendMessage(targetTabId, {
+    const contentResponse = await browser.tabs.sendMessage(resolvedTargetTabId, {
       type: 'GET_PAGE_TEXT_NODES',
       timestamp: Date.now(),
     }) as { texts: string[]; nodeIds: string[] };
 
     if (!contentResponse?.texts || contentResponse.texts.length === 0) {
-      void browser.tabs.sendMessage(targetTabId, {
+      void browser.tabs.sendMessage(resolvedTargetTabId, {
         type: 'HIDE_PROGRESS_BAR',
         timestamp: Date.now(),
       }).catch(() => {
@@ -468,7 +503,7 @@ async function handleTranslatePage(
         const convertedResult = applyConversions(result, conversionOptions);
         const sanitizedResult = sanitizeAccumulatedResult(convertedResult);
 
-        void browser.tabs.sendMessage(targetTabId, {
+        void browser.tabs.sendMessage(resolvedTargetTabId, {
           type: 'APPLY_SINGLE_NODE_TRANSLATION',
           timestamp: Date.now(),
           payload: {
@@ -520,7 +555,7 @@ async function handleTranslatePage(
     });
 
     // Send final completion message (all translations already applied progressively)
-    await browser.tabs.sendMessage(targetTabId, {
+    await browser.tabs.sendMessage(resolvedTargetTabId, {
       type: 'APPLY_PAGE_TRANSLATION',
       timestamp: Date.now(),
       payload: {
@@ -540,7 +575,7 @@ async function handleTranslatePage(
     };
   } catch (error) {
     // Hide progress bar on page translation error
-    void sendToActiveTab({
+    void sendToTargetTab(activeTabId ?? undefined, {
       type: 'HIDE_PROGRESS_BAR',
       timestamp: Date.now(),
     });
@@ -574,16 +609,25 @@ async function handleTranslatePage(
 }
 
 function handleCancelTranslation(requestId: string): void {
-  const controller = activeRequests.get(requestId);
-  if (controller) {
-    controller.abort();
+  const activeRequest = activeRequests.get(requestId);
+  if (activeRequest) {
+    activeRequest.controller.abort();
     activeRequests.delete(requestId);
 
     // Hide progress bar when translation is cancelled
-    void sendToActiveTab({
+    void sendToTargetTab(activeRequest.targetTabId, {
       type: 'HIDE_PROGRESS_BAR',
       timestamp: Date.now(),
     });
+  }
+}
+
+function abortTranslationsForClosedTab(tabId: number): void {
+  for (const [requestId, activeRequest] of activeRequests) {
+    if (activeRequest.targetTabId === tabId) {
+      activeRequest.controller.abort();
+      activeRequests.delete(requestId);
+    }
   }
 }
 
@@ -665,7 +709,7 @@ browser.contextMenus.onClicked.addListener((info, tab) => {
 
   if (info.menuItemId === 'translate-selection' && info.selectionText) {
     // Send selected text for translation
-    void browser.runtime.sendMessage({
+    void handleTranslateText({
       type: 'TRANSLATE_TEXT',
       timestamp: Date.now(),
       payload: {
@@ -676,7 +720,7 @@ browser.contextMenus.onClicked.addListener((info, tab) => {
         profileId: '',
         stream: true,
       },
-    });
+    }, tab.id);
   } else if (info.menuItemId === 'translate-page') {
     // Send message to background to handle page translation
     void handleTranslatePage({
@@ -687,8 +731,12 @@ browser.contextMenus.onClicked.addListener((info, tab) => {
         targetLanguage: 'Japanese',
         profileId: '',
       },
-    });
+    }, tab.id);
   }
+});
+
+browser.tabs.onRemoved.addListener((tabId) => {
+  abortTranslationsForClosedTab(tabId);
 });
 
 // Keyboard shortcut handling
