@@ -142,7 +142,7 @@ local-translate-ai/
 │   ├── unit/                # Vitestユニットテスト
 │   └── e2e/                 # Playwright E2Eテスト
 ├── manifest.json
-├── vite.config.ts
+├── vite.config.mjs
 ├── tailwind.config.ts
 ├── tsconfig.json
 ├── package.json

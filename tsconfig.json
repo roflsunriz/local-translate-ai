@@ -36,7 +36,7 @@
     /* Types */
     "types": ["firefox-webext-browser", "vite/client", "node"]
   },
-  "include": ["src/**/*", "vite.config.ts"],
+  "include": ["src/**/*", "vite.config.mjs"],
   "exclude": ["node_modules", "dist"]
 }
 

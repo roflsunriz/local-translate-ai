@@ -26,25 +26,21 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v4
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          version: 9.14.4
+          bun-version: 1.3.8
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: pnpm
-
-      - name: Enable corepack
-        run: corepack enable
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
       - name: Run ${{ matrix.task }}
-        run: pnpm run ${{ matrix.task }}
+        run: bun run ${{ matrix.task }}
 
   package:
     name: Package signed XPI
@@ -55,32 +51,28 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v4
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          version: 9.14.4
+          bun-version: 1.3.8
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: pnpm
-
-      - name: Enable corepack
-        run: corepack enable
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
       - name: Build extension
-        run: pnpm build
+        run: bun run build
 
       - name: Sign extension with AMO
         id: sign
         shell: bash
         run: |
           set +e
-          pnpm run sign:listed 2>&1 | tee amo-sign.log
+          bun run sign:listed 2>&1 | tee amo-sign.log
           status=${PIPESTATUS[0]}
           set -e
 

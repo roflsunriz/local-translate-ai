@@ -6,10 +6,10 @@
   "engines": {
     "node": ">=20.0.0"
   },
-  "packageManager": "pnpm@9.14.4",
+  "packageManager": "bun@1.3.8",
   "scripts": {
-    "dev": "vite build --watch --mode development",
-    "build": "vite build",
+    "dev": "vite build --watch --mode development --configLoader runner",
+    "build": "vite build --configLoader runner",
     "preview": "web-ext run -s dist --firefox=firefox",
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
@@ -21,8 +21,8 @@
     "zip:dist": "web-ext build -s dist -a web-ext-artifacts --overwrite-dest",
     "sign:unlisted": "web-ext sign -s dist --channel \"unlisted\"",
     "sign:listed": "web-ext sign -s dist --channel \"listed\"",
-    "amo:unlisted": "npm run build && npm run zip:source && npm run zip:dist && npm run sign:unlisted",
-    "amo:listed": "npm run build && npm run zip:source && npm run zip:dist && npm run sign:listed"
+    "amo:unlisted": "bun run build && bun run zip:source && bun run zip:dist && bun run sign:unlisted",
+    "amo:listed": "bun run build && bun run zip:source && bun run zip:dist && bun run sign:listed"
   },
   "dependencies": {
     "@mdi/js": "^7.4.47",

@@ -5,10 +5,10 @@
 - 主な変更点を箇条書きで
 
 ## 動作確認
-- [ ] `npm run lint`
-- [ ] `npm run type-check`
-- [ ] `npm run build`
-- [ ] `npm test`
+- [ ] `bun run lint`
+- [ ] `bun run type-check`
+- [ ] `bun run build`
+- [ ] `bun run test`
 - [ ] 手動確認（ブラウザ、シナリオなど）
 
 ## 関連Issue
