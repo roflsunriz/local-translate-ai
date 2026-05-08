@@ -27,6 +27,15 @@ const DEFAULT_RETRY_CONFIG: RetryConfig = {
 const ANTHROPIC_VERSION = '2023-06-01';
 const ANTHROPIC_MIN_MAX_TOKENS = 1024;
 const ANTHROPIC_MAX_TOKENS = 4096;
+
+type PromptTemplateVariable =
+  | 'source_language'
+  | 'target_language'
+  | 'input_text'
+  | 'output_text';
+
+type PromptTemplateVariables = Record<PromptTemplateVariable, string>;
+
 /**
  * Safety limits for streaming translation to prevent infinite loops
  */
@@ -71,7 +80,7 @@ export class TranslationService {
     const startTime = Date.now();
 
     const prompt = this.buildPrompt(text, sourceLanguage, targetLanguage, profile);
-    const request = this.buildRequestPayload(prompt, targetLanguage, profile, false);
+    const request = this.buildRequestPayload(prompt, text, sourceLanguage, targetLanguage, profile, false);
 
     // Execute with retry
     const response = await this.executeWithRetry(
@@ -124,7 +133,7 @@ export class TranslationService {
     onChunk: (chunk: string, accumulated: string) => void
   ): Promise<void> {
     const prompt = this.buildPrompt(text, sourceLanguage, targetLanguage, profile);
-    const request = this.buildRequestPayload(prompt, targetLanguage, profile, true);
+    const request = this.buildRequestPayload(prompt, text, sourceLanguage, targetLanguage, profile, true);
 
     // Execute with retry
     const response = await this.executeWithRetry(
@@ -335,14 +344,21 @@ export class TranslationService {
 
   private buildRequestPayload(
     prompt: string,
+    text: string,
+    sourceLanguage: SupportedLanguage,
     targetLanguage: SupportedLanguage,
     profile: TranslationProfile,
     stream: boolean
   ): ChatCompletionRequest | AnthropicMessageRequest {
+    const systemPrompt = this.renderPromptTemplate(
+      profile.systemPrompt,
+      this.buildPromptTemplateVariables(text, sourceLanguage, targetLanguage)
+    );
+
     if (profile.apiType === 'anthropic') {
       return {
         model: profile.model,
-        system: profile.systemPrompt.replace('{{target_language}}', targetLanguage),
+        system: systemPrompt,
         messages: [
           {
             role: 'user',
@@ -358,7 +374,7 @@ export class TranslationService {
     return {
       model: profile.model,
       messages: [
-        { role: 'system', content: profile.systemPrompt.replace('{{target_language}}', targetLanguage) },
+        { role: 'system', content: systemPrompt },
         { role: 'user', content: prompt },
       ],
       stream,
@@ -428,10 +444,36 @@ export class TranslationService {
     targetLanguage: SupportedLanguage,
     profile: TranslationProfile
   ): string {
-    return profile.userPromptTemplate
-      .replace(/\{\{source_language\}\}/g, sourceLanguage)
-      .replace(/\{\{target_language\}\}/g, targetLanguage)
-      .replace(/\{\{input_text\}\}/g, text);
+    return this.renderPromptTemplate(
+      profile.userPromptTemplate,
+      this.buildPromptTemplateVariables(text, sourceLanguage, targetLanguage)
+    );
+  }
+
+  private buildPromptTemplateVariables(
+    text: string,
+    sourceLanguage: SupportedLanguage,
+    targetLanguage: SupportedLanguage
+  ): PromptTemplateVariables {
+    return {
+      source_language: sourceLanguage,
+      target_language: targetLanguage,
+      input_text: text,
+      output_text: '',
+    };
+  }
+
+  private renderPromptTemplate(
+    template: string,
+    variables: PromptTemplateVariables
+  ): string {
+    let rendered = template;
+
+    for (const [key, value] of Object.entries(variables)) {
+      rendered = rendered.split(`{{${key}}}`).join(value);
+    }
+
+    return rendered;
   }
 
   private async executeWithRetry<T>(
