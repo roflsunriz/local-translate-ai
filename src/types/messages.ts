@@ -47,9 +47,9 @@ export interface TranslateTextMessage extends BaseMessage {
   payload: {
     requestId: string;
     text: string;
-    sourceLanguage: SupportedLanguage;
-    targetLanguage: SupportedLanguage;
-    profileId: string;
+    sourceLanguage?: SupportedLanguage;
+    targetLanguage?: SupportedLanguage;
+    profileId?: string;
     stream: boolean;
   };
 }
@@ -83,8 +83,8 @@ export interface TranslatePageMessage extends BaseMessage {
   type: 'TRANSLATE_PAGE';
   payload: {
     requestId: string;
-    targetLanguage: SupportedLanguage;
-    profileId: string;
+    targetLanguage?: SupportedLanguage;
+    profileId?: string;
   };
 }
 

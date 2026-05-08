@@ -575,9 +575,6 @@ function handleMessage(
           payload: {
             requestId,
             text: selectedText,
-            sourceLanguage: 'auto',
-            targetLanguage: 'Japanese',
-            profileId: '',
             stream: true,
           },
         });
@@ -857,9 +854,6 @@ async function translateSelectedText(text: string): Promise<void> {
       payload: {
         requestId,
         text,
-        sourceLanguage: 'auto',
-        targetLanguage: 'Japanese',
-        profileId: '',
         stream: true,
       },
     });
@@ -1548,8 +1542,6 @@ async function startPageTranslation(): Promise<void> {
     timestamp: Date.now(),
     payload: {
       requestId,
-      targetLanguage: 'Japanese',
-      profileId: '',
     },
   });
 }

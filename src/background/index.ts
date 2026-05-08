@@ -185,6 +185,9 @@ async function handleTranslateText(
       throw new Error('Profile not found');
     }
 
+    const effectiveSourceLanguage = sourceLanguage ?? profile.sourceLanguage;
+    const effectiveTargetLanguage = targetLanguage ?? profile.targetLanguage;
+
     // Update retry config
     translationService.setRetryConfig({
       maxRetries: settings.retryCount,
@@ -206,8 +209,8 @@ async function handleTranslateText(
       // Google Translate (non-streaming)
       const rawResult = await googleTranslateService.translate(
         text,
-        sourceLanguage,
-        targetLanguage,
+        effectiveSourceLanguage,
+        effectiveTargetLanguage,
         abortController.signal,
       );
 
@@ -220,8 +223,8 @@ async function handleTranslateText(
           id: requestId,
           sourceText: text,
           translatedText: convertedText,
-          sourceLanguage,
-          targetLanguage,
+          sourceLanguage: effectiveSourceLanguage,
+          targetLanguage: effectiveTargetLanguage,
           timestamp: Date.now(),
           profileId: 'google-translate',
         });
@@ -240,8 +243,8 @@ async function handleTranslateText(
           requestId,
           translatedText: convertedText,
           sourceText: text,
-          sourceLanguage,
-          targetLanguage,
+          sourceLanguage: effectiveSourceLanguage,
+          targetLanguage: effectiveTargetLanguage,
           timestamp: Date.now(),
           duration: Date.now() - startTime,
           fromCache: false,
@@ -254,8 +257,8 @@ async function handleTranslateText(
       // Streaming translation
       await translationService.translateStreaming(
         text,
-        sourceLanguage,
-        targetLanguage,
+        effectiveSourceLanguage,
+        effectiveTargetLanguage,
         profile,
         abortController.signal,
         (chunk, accumulated) => {
@@ -285,8 +288,8 @@ async function handleTranslateText(
             id: requestId,
             sourceText: text,
             translatedText: result,
-            sourceLanguage,
-            targetLanguage,
+            sourceLanguage: effectiveSourceLanguage,
+            targetLanguage: effectiveTargetLanguage,
             timestamp: Date.now(),
             profileId: profile.id,
           });
@@ -306,8 +309,8 @@ async function handleTranslateText(
             requestId,
             translatedText: result,
             sourceText: text,
-            sourceLanguage,
-            targetLanguage,
+            sourceLanguage: effectiveSourceLanguage,
+            targetLanguage: effectiveTargetLanguage,
             timestamp: Date.now(),
             duration: 0,
             fromCache: false,
@@ -331,8 +334,8 @@ async function handleTranslateText(
       // Non-streaming translation
       const rawResult = await translationService.translate(
         text,
-        sourceLanguage,
-        targetLanguage,
+        effectiveSourceLanguage,
+        effectiveTargetLanguage,
         profile,
         abortController.signal
       );
@@ -348,8 +351,8 @@ async function handleTranslateText(
           id: requestId,
           sourceText: text,
           translatedText: convertedText,
-          sourceLanguage,
-          targetLanguage,
+          sourceLanguage: effectiveSourceLanguage,
+          targetLanguage: effectiveTargetLanguage,
           timestamp: Date.now(),
           profileId: profile.id,
         });
@@ -439,6 +442,8 @@ async function handleTranslatePage(
     if (!profile) {
       throw new Error('Profile not found');
     }
+
+    const effectiveTargetLanguage = targetLanguage ?? profile.targetLanguage;
 
     const resolvedTargetTabId = targetTabId ?? await getActiveTabId();
     if (!resolvedTargetTabId) {
@@ -535,14 +540,14 @@ async function handleTranslatePage(
       ? await googleTranslateService.translateBatch(
           contentResponse.texts,
           'auto' as SupportedLanguage,
-          targetLanguage,
+          effectiveTargetLanguage,
           abortController.signal,
           progressCallback,
         )
       : await translationService.translateBatch(
           contentResponse.texts,
           'auto' as SupportedLanguage,
-          targetLanguage,
+          effectiveTargetLanguage,
           profile,
           abortController.signal,
           progressCallback,
@@ -715,9 +720,6 @@ browser.contextMenus.onClicked.addListener((info, tab) => {
       payload: {
         requestId: crypto.randomUUID(),
         text: info.selectionText,
-        sourceLanguage: 'auto',
-        targetLanguage: 'Japanese',
-        profileId: '',
         stream: true,
       },
     }, tab.id);
@@ -728,8 +730,6 @@ browser.contextMenus.onClicked.addListener((info, tab) => {
       timestamp: Date.now(),
       payload: {
         requestId: crypto.randomUUID(),
-        targetLanguage: 'Japanese',
-        profileId: '',
       },
     }, tab.id);
   }
