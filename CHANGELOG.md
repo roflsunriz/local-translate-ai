@@ -7,6 +7,14 @@
 
 ## [Unreleased]
 
+### Security
+
+- push前監査で検出された既知の依存脆弱性を解消するため、安全版へ依存関係とロックファイルを更新した。
+
+### Changed
+
+- 作業開始時の共通指針見落としを防ぐため、調査やコマンド実行より前に `COMMON-AGENTS.md` を先頭から末尾まで読み、EOFを確認する必須ゲートを追加した。
+
 ## [1.6.0] - 2026-05-08
 
 ### 追加
@@ -169,4 +177,3 @@
 [1.0.0]: https://github.com/roflsunriz/local-translate-ai/compare/v0.1.0...v1.0.0
 [Unreleased]: https://github.com/roflsunriz/local-translate-ai/compare/v1.6.0...HEAD
 [0.1.0]: https://github.com/roflsunriz/local-translate-ai/releases/tag/v0.1.0
-
