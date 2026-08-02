@@ -40,7 +40,7 @@ git archive --format=zip --output=source-code.zip HEAD
 
 ### 4. 掲載ページのローカライズ
 
-AMO本番の言語切替で提供されているロケールを確認し、既存の拡張機能翻訳と対応する14地域ロケールの掲載メタデータを `amo-metadata.json` に管理しています。`name`、`summary`、`description`、`developer_comments`、`homepage`、`support_url`、バージョンの `release_notes` を同じロケール集合で保持してください。
+AMO本番の言語切替で提供されているロケールを確認し、既存の拡張機能翻訳と対応する14地域ロケールの掲載メタデータを `amo-metadata.json` に管理しています。`name`、`summary`、`description`、`developer_comments`、`homepage`、`support_url`、`support_email`、バージョンの `release_notes` を同じロケール集合で保持してください。
 
 ```powershell
 bun run amo:validate

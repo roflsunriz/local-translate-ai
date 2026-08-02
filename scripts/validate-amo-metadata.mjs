@@ -15,7 +15,7 @@ const supportedAmoLocales = new Set([
 ]);
 
 const expectedExtensionLocales = ['ar', 'bn', 'en', 'es', 'fr', 'hi', 'id', 'ja', 'ko', 'pt', 'ru', 'zh'];
-const translatedAddonFields = ['name', 'summary', 'description', 'developer_comments', 'homepage', 'support_url'];
+const translatedAddonFields = ['name', 'summary', 'description', 'developer_comments', 'homepage', 'support_url', 'support_email'];
 const requiredManifestMessages = [
   'extensionName',
   'extensionDescription',

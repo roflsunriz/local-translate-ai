@@ -96,6 +96,22 @@
     "ru": "https://github.com/roflsunriz/local-translate-ai/issues",
     "zh-CN": "https://github.com/roflsunriz/local-translate-ai/issues"
   },
+  "support_email": {
+    "en-CA": "ununiquewebextension@gmail.com",
+    "en-GB": "ununiquewebextension@gmail.com",
+    "en-US": "ununiquewebextension@gmail.com",
+    "es-AR": "ununiquewebextension@gmail.com",
+    "es-CL": "ununiquewebextension@gmail.com",
+    "es-ES": "ununiquewebextension@gmail.com",
+    "es-MX": "ununiquewebextension@gmail.com",
+    "fr": "ununiquewebextension@gmail.com",
+    "ja": "ununiquewebextension@gmail.com",
+    "ko": "ununiquewebextension@gmail.com",
+    "pt-BR": "ununiquewebextension@gmail.com",
+    "pt-PT": "ununiquewebextension@gmail.com",
+    "ru": "ununiquewebextension@gmail.com",
+    "zh-CN": "ununiquewebextension@gmail.com"
+  },
   "version": {
     "license": "MIT",
     "approval_notes": "This release adds localized AMO listing metadata for the AMO production locales supported by the extension, localized manifest strings, and no remote code. The source archive is uploaded with the submission. To test local translation, use the documented llama.cpp or OpenAI-compatible setup; Google Translate can be tested without a local server.",

@@ -36,7 +36,7 @@ async function readJson(relativePath) {
 describe('AMO metadata', () => {
   it('contains a consistent set of supported listing locales', async () => {
     const metadata = await readJson('amo-metadata.json');
-    const translatedFields = ['name', 'summary', 'description', 'developer_comments', 'homepage', 'support_url'];
+    const translatedFields = ['name', 'summary', 'description', 'developer_comments', 'homepage', 'support_url', 'support_email'];
     const localeSets = translatedFields.map((field) => Object.keys(metadata[field]).sort());
 
     expect(localeSets[0]).toEqual(expectedAmoLocales.sort());
