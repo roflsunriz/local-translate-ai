@@ -1,8 +1,9 @@
 {
   "manifest_version": 2,
-  "name": "Local Translate AI",
-  "version": "1.6.0",
-  "description": "Translate text using local LLM (llama.cpp with OpenAI-compatible API)",
+  "default_locale": "en",
+  "name": "__MSG_extensionName__",
+  "version": "1.7.0",
+  "description": "__MSG_extensionDescription__",
   "author": "roflsunriz",
   "homepage_url": "https://github.com/roflsunriz/local-translate-ai",
 
@@ -35,7 +36,7 @@
       "48": "icons/icon-48.svg",
       "96": "icons/icon-96.svg"
     },
-    "default_title": "Local Translate AI - 設定を開く"
+    "default_title": "__MSG_browserActionTitle__"
   },
 
   "background": {
@@ -53,7 +54,7 @@
   ],
 
   "sidebar_action": {
-    "default_title": "Local Translate AI",
+    "default_title": "__MSG_extensionName__",
     "default_panel": "src/sidebar/index.html",
     "default_icon": {
       "48": "icons/icon-48.svg",
@@ -71,13 +72,13 @@
       "suggested_key": {
         "default": "Alt+W"
       },
-      "description": "Translate selected text"
+      "description": "__MSG_translateSelectionCommand__"
     },
     "toggle-sidebar": {
       "suggested_key": {
         "default": "Alt+Q"
       },
-      "description": "Toggle sidebar"
+      "description": "__MSG_toggleSidebarCommand__"
     }
   },
 

@@ -1,0 +1,22 @@
+{
+  "extensionName": {
+    "message": "Local Translate AI",
+    "description": "확장 기능 이름입니다."
+  },
+  "extensionDescription": {
+    "message": "로컬 LLM(llama.cpp) 또는 호환 API로 텍스트를 번역합니다.",
+    "description": "Firefox 확장 기능 메타데이터에 표시되는 설명입니다."
+  },
+  "browserActionTitle": {
+    "message": "Local Translate AI - 설정 열기",
+    "description": "도구 모음 버튼의 툴팁입니다."
+  },
+  "translateSelectionCommand": {
+    "message": "선택한 텍스트 번역",
+    "description": "선택한 텍스트 번역 키보드 명령의 설명입니다."
+  },
+  "toggleSidebarCommand": {
+    "message": "사이드바 전환",
+    "description": "사이드바 전환 키보드 명령의 설명입니다."
+  }
+}

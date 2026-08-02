@@ -15,6 +15,18 @@
 
 - 作業開始時の共通指針見落としを防ぐため、調査やコマンド実行より前に `COMMON-AGENTS.md` を先頭から末尾まで読み、EOFを確認する必須ゲートを追加した。
 
+## [1.7.0] - 2026-08-02
+
+### Added
+
+- AMO本番の対応ロケールに合わせて、拡張機能の名前・説明・操作名をWebExtension i18nで表示できるようにした。
+- AMO掲載ページの名前、概要、詳細説明、開発者コメント、ホームページ、サポートURL、リリースノートを14地域ロケールへ翻訳した。
+- AMOメタデータとmanifestローカライズの欠落や概要文字数超過を検出する検証コマンドを追加した。
+
+### Changed
+
+- AMOのlisted提出時に掲載メタデータとソースコードアーカイブを同時に送信し、GitHub Actionsから新バージョンを提出できるようにした。
+
 ## [1.6.0] - 2026-05-08
 
 ### 追加
@@ -165,6 +177,7 @@
 - 翻訳コンテンツのDOMサニタイズ
 - 外部エンドポイントへのHTTPS強制
 
+[1.7.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.5.2...v1.6.0
 [1.5.1]: https://github.com/roflsunriz/local-translate-ai/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.4.2...v1.5.0
@@ -175,5 +188,5 @@
 [1.2.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/roflsunriz/local-translate-ai/compare/v0.1.0...v1.0.0
-[Unreleased]: https://github.com/roflsunriz/local-translate-ai/compare/v1.6.0...HEAD
+[Unreleased]: https://github.com/roflsunriz/local-translate-ai/compare/v1.7.0...HEAD
 [0.1.0]: https://github.com/roflsunriz/local-translate-ai/releases/tag/v0.1.0

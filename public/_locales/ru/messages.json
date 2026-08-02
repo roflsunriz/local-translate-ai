@@ -1,0 +1,22 @@
+{
+  "extensionName": {
+    "message": "Local Translate AI",
+    "description": "Название расширения."
+  },
+  "extensionDescription": {
+    "message": "Переводите текст с помощью локальной LLM (llama.cpp) или совместимых API.",
+    "description": "Описание в метаданных расширения Firefox."
+  },
+  "browserActionTitle": {
+    "message": "Local Translate AI — открыть настройки",
+    "description": "Подсказка кнопки на панели инструментов."
+  },
+  "translateSelectionCommand": {
+    "message": "Перевести выделенный текст",
+    "description": "Описание клавиатурной команды для перевода выделенного текста."
+  },
+  "toggleSidebarCommand": {
+    "message": "Переключить боковую панель",
+    "description": "Описание клавиатурной команды для боковой панели."
+  }
+}

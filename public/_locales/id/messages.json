@@ -1,0 +1,22 @@
+{
+  "extensionName": {
+    "message": "Local Translate AI",
+    "description": "Nama ekstensi."
+  },
+  "extensionDescription": {
+    "message": "Terjemahkan teks dengan LLM lokal (llama.cpp) atau API yang kompatibel.",
+    "description": "Deskripsi yang ditampilkan dalam metadata ekstensi Firefox."
+  },
+  "browserActionTitle": {
+    "message": "Local Translate AI - Buka pengaturan",
+    "description": "Tooltip tombol bilah alat."
+  },
+  "translateSelectionCommand": {
+    "message": "Terjemahkan teks yang dipilih",
+    "description": "Deskripsi perintah keyboard untuk menerjemahkan teks yang dipilih."
+  },
+  "toggleSidebarCommand": {
+    "message": "Beralih bilah samping",
+    "description": "Deskripsi perintah keyboard untuk menampilkan atau menyembunyikan bilah samping."
+  }
+}

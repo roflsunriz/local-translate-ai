@@ -17,14 +17,14 @@
 ### 1. プロダクションビルド
 
 ```powershell
-npm run build
+bun run build
 ```
 
 ### 2. 拡張機能のパッケージング
 
 ```powershell
 # web-ext を使用してパッケージを作成
-npx web-ext build -s dist -a web-ext-artifacts
+bun run zip:dist
 ```
 
 これにより `web-ext-artifacts/` に `.zip` ファイルが生成されます。
@@ -37,6 +37,16 @@ AMO レビューでは、ビルドされたコードと一緒にソースコー�
 # ソースコードを zip 化（node_modules を除外）
 git archive --format=zip --output=source-code.zip HEAD
 ```
+
+### 4. 掲載ページのローカライズ
+
+AMO本番の言語切替で提供されているロケールを確認し、既存の拡張機能翻訳と対応する14地域ロケールの掲載メタデータを `amo-metadata.json` に管理しています。`name`、`summary`、`description`、`developer_comments`、`homepage`、`support_url`、バージョンの `release_notes` を同じロケール集合で保持してください。
+
+```powershell
+bun run amo:validate
+```
+
+`web-ext sign --channel "listed"` は `amo-metadata.json` を使用して既存掲載のメタデータを更新し、新しいlistedバージョンを提出します。AMO APIでは既存掲載のメタデータ更新とバージョン作成が別責務になっているため、メタデータを省略して提出しないでください。
 
 ## AMO への提出
 
@@ -56,22 +66,12 @@ git archive --format=zip --output=source-code.zip HEAD
 
 - **Name**: Local Translate AI
 - **Add-on URL**: local-translate-ai
-- **Summary**: ローカルLLM（llama.cpp）を使用した翻訳拡張機能。OpenAI互換APIに対応。
+- **Summary**: `amo-metadata.json` の各ロケールに記載した概要を使用します。
 
 #### 詳細説明
 
 ```
-Local Translate AI は、llama.cpp でホストしたローカル LLM を使用して翻訳を行う Firefox 拡張機能です。
-
-主な機能：
-- テキスト選択翻訳
-- ページ全体翻訳
-- サイドバー翻訳
-- ストリーミング対応
-- 翻訳履歴
-- ダークモード対応
-
-すべての翻訳処理はローカル環境で完結し、外部サーバーにデータを送信しません。
+詳細説明は `amo-metadata.json` の各ロケールに記載した内容を使用します。llama.cppを使用する場合は端末内で翻訳できますが、クラウドAPIやGoogle翻訳を設定した場合は、選択テキストやページ内容が設定先へ送信されます。
 ```
 
 #### カテゴリ
@@ -86,24 +86,24 @@ Local Translate AI は、llama.cpp でホストしたローカル LLM を使用�
 - llm
 - ai
 
-### 4. プライバシーポリシー
+### 5. プライバシーポリシー
 
 PRIVACY_POLICY.md の内容を入力
 
-### 5. ソースコードの提出
+### 6. ソースコードの提出
 
 1. 「Yes」を選択
 2. `source-code.zip` をアップロード
 3. ビルド手順を記載：
 
 ```powershell
-# Node.js 20.x が必要です
+# Node.js 20.x と Bun が必要です
 
 # 依存関係のインストール
-npm install
+bun install --frozen-lockfile
 
 # ビルド
-npm run build
+bun run build
 
 # ビルド結果は dist/ フォルダに出力されます
 ```
@@ -128,10 +128,10 @@ npm run build
 
 ## 更新手順
 
-1. バージョン番号を更新（package.json, manifest.json）
-2. CHANGELOG.md を更新
-3. 再ビルド
-4. AMO で「Upload a New Version」
+1. `package.json` と `public/manifest.json` のバージョン番号を更新
+2. `CHANGELOG.md` と `amo-metadata.json` のリリースノートを更新
+3. `bun run amo:validate`、`bun run lint`、`bun run type-check`、`bun run build`、`bun run test` を実行
+4. `main` と `vX.Y.Z` タグをpushする。GitHub ActionsがAMOのlisted提出とGitHub Release作成を実行
 
 ## web-ext での署名（自己配布用）
 
@@ -144,10 +144,10 @@ $env:WEB_EXT_API_KEY = "your-api-key"
 $env:WEB_EXT_API_SECRET = "your-api-secret"
 
 # 署名
-npx web-ext sign -s dist --channel "unlisted"
+bun run sign:unlisted
 ```
 # 自己配布用（審査不要）
-npx web-ext sign -s dist --channel "unlisted"
+bun run sign:unlisted
 
 # 注意: --channel "listed"はAMO審査完了後の更新時に使用します
 # 初回提出時や審査中は使用できません
@@ -211,15 +211,15 @@ You can verify by searching the source code:
 ```powershell
 # キャッシュをクリアして再ビルド
 Remove-Item -Recurse -Force dist, node_modules -ErrorAction SilentlyContinue
-npm install
-npm run build
+bun install --frozen-lockfile
+bun run build
 ```
 
 ### 検証エラー
 
 ```powershell
 # 事前検証
-npx web-ext lint -s dist
+bun run amo:lint
 ```
 
 ### 権限に関する警告
@@ -229,4 +229,3 @@ manifest.json の権限を最小限に保つ：
 - `storage`: 設定保存
 - `contextMenus`: 右クリックメニュー
 - `notifications`: トースト通知
-

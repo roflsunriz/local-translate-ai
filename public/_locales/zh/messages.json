@@ -1,0 +1,22 @@
+{
+  "extensionName": {
+    "message": "Local Translate AI",
+    "description": "扩展名称。"
+  },
+  "extensionDescription": {
+    "message": "使用本地LLM（llama.cpp）或兼容API翻译文本。",
+    "description": "显示在Firefox扩展元数据中的描述。"
+  },
+  "browserActionTitle": {
+    "message": "Local Translate AI - 打开设置",
+    "description": "工具栏按钮的提示文字。"
+  },
+  "translateSelectionCommand": {
+    "message": "翻译选中的文本",
+    "description": "选中文本翻译键盘命令的说明。"
+  },
+  "toggleSidebarCommand": {
+    "message": "切换侧边栏",
+    "description": "切换侧边栏键盘命令的说明。"
+  }
+}

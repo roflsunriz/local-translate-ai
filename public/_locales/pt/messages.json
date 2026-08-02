@@ -1,0 +1,22 @@
+{
+  "extensionName": {
+    "message": "Local Translate AI",
+    "description": "Nome da extensão."
+  },
+  "extensionDescription": {
+    "message": "Traduza textos com um LLM local (llama.cpp) ou APIs compatíveis.",
+    "description": "Descrição exibida nos metadados da extensão do Firefox."
+  },
+  "browserActionTitle": {
+    "message": "Local Translate AI - abrir configurações",
+    "description": "Dica do botão da barra de ferramentas."
+  },
+  "translateSelectionCommand": {
+    "message": "Traduzir texto selecionado",
+    "description": "Descrição do comando de teclado para traduzir texto selecionado."
+  },
+  "toggleSidebarCommand": {
+    "message": "Alternar barra lateral",
+    "description": "Descrição do comando de teclado para alternar a barra lateral."
+  }
+}

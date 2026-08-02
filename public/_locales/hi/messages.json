@@ -1,0 +1,22 @@
+{
+  "extensionName": {
+    "message": "Local Translate AI",
+    "description": "एक्सटेंशन का नाम।"
+  },
+  "extensionDescription": {
+    "message": "स्थानीय LLM (llama.cpp) या संगत API से टेक्स्ट का अनुवाद करें।",
+    "description": "Firefox एक्सटेंशन मेटाडेटा में दिखाई देने वाला विवरण।"
+  },
+  "browserActionTitle": {
+    "message": "Local Translate AI - सेटिंग्स खोलें",
+    "description": "टूलबार बटन का टूलटिप।"
+  },
+  "translateSelectionCommand": {
+    "message": "चयनित टेक्स्ट का अनुवाद करें",
+    "description": "चयनित टेक्स्ट अनुवाद की कीबोर्ड कमांड का विवरण।"
+  },
+  "toggleSidebarCommand": {
+    "message": "साइडबार टॉगल करें",
+    "description": "साइडबार टॉगल कीबोर्ड कमांड का विवरण।"
+  }
+}

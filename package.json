@@ -1,6 +1,6 @@
 {
   "name": "local-translate-ai",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "Firefox extension for translation using local LLM (llama.cpp)",
   "type": "module",
   "engines": {
@@ -10,6 +10,8 @@
   "scripts": {
     "dev": "vite build --watch --mode development --configLoader runner",
     "build": "vite build --configLoader runner",
+    "amo:validate": "node scripts/validate-amo-metadata.mjs",
+    "amo:lint": "web-ext lint -s dist",
     "preview": "web-ext run -s dist --firefox=firefox",
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
@@ -20,7 +22,7 @@
     "zip:source": "git archive --format=zip --output=source-code.zip HEAD",
     "zip:dist": "web-ext build -s dist -a web-ext-artifacts --overwrite-dest",
     "sign:unlisted": "web-ext sign -s dist --channel \"unlisted\"",
-    "sign:listed": "web-ext sign -s dist --channel \"listed\"",
+    "sign:listed": "web-ext sign -s dist --channel \"listed\" --amo-metadata \"amo-metadata.json\" --upload-source-code \"source-code.zip\"",
     "amo:unlisted": "bun run build && bun run zip:source && bun run zip:dist && bun run sign:unlisted",
     "amo:listed": "bun run build && bun run zip:source && bun run zip:dist && bun run sign:listed"
   },
@@ -69,10 +71,8 @@
   ],
   "overrides": {
     "adm-zip": "0.6.0",
-    "brace-expansion": "5.0.8",
     "fast-uri": "4.1.1",
     "flatted": "3.4.3",
-    "minimatch": "10.2.5",
     "node-forge": "1.4.0",
     "picomatch": "4.0.5",
     "rollup": "4.62.2",

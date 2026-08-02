@@ -1,0 +1,22 @@
+{
+  "extensionName": {
+    "message": "Local Translate AI",
+    "description": "拡張機能の名前。"
+  },
+  "extensionDescription": {
+    "message": "ローカルLLM（llama.cpp）や互換APIでテキストを翻訳します。",
+    "description": "Firefoxの拡張機能メタデータに表示する説明。"
+  },
+  "browserActionTitle": {
+    "message": "Local Translate AI - 設定を開く",
+    "description": "ツールバーのボタンに表示するツールチップ。"
+  },
+  "translateSelectionCommand": {
+    "message": "選択テキストを翻訳",
+    "description": "選択テキスト翻訳のキーボードコマンド説明。"
+  },
+  "toggleSidebarCommand": {
+    "message": "サイドバーの表示/非表示を切り替え",
+    "description": "サイドバー切り替えのキーボードコマンド説明。"
+  }
+}

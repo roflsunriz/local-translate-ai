@@ -22,6 +22,7 @@ jobs:
         task:
           - lint
           - type-check
+          - amo:validate
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -66,6 +67,12 @@ jobs:
 
       - name: Build extension
         run: bun run build
+
+      - name: Lint AMO package
+        run: bun run amo:lint
+
+      - name: Create source archive
+        run: bun run zip:source
 
       - name: Sign extension with AMO
         id: sign

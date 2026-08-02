@@ -1,0 +1,22 @@
+{
+  "extensionName": {
+    "message": "Local Translate AI",
+    "description": "اسم الإضافة."
+  },
+  "extensionDescription": {
+    "message": "ترجم النص باستخدام نموذج لغوي محلي (llama.cpp) أو واجهات API متوافقة.",
+    "description": "الوصف الظاهر في بيانات إضافة Firefox."
+  },
+  "browserActionTitle": {
+    "message": "Local Translate AI - فتح الإعدادات",
+    "description": "تلميح زر شريط الأدوات."
+  },
+  "translateSelectionCommand": {
+    "message": "ترجمة النص المحدد",
+    "description": "وصف أمر لوحة المفاتيح لترجمة النص المحدد."
+  },
+  "toggleSidebarCommand": {
+    "message": "تبديل الشريط الجانبي",
+    "description": "وصف أمر لوحة المفاتيح لتبديل الشريط الجانبي."
+  }
+}

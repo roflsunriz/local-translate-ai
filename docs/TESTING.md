@@ -147,7 +147,8 @@ AMO に提出する前は、以下も実行します。
 
 ```powershell
 bun run build
-npx web-ext lint -s dist
+bun run amo:validate
+bun run amo:lint
 ```
 
 必要に応じてパッケージも作成します。
