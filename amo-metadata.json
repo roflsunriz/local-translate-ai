@@ -114,22 +114,22 @@
   },
   "version": {
     "license": "MIT",
-    "approval_notes": "This release adds localized AMO listing metadata for the AMO production locales supported by the extension, localized manifest strings, and no remote code. The source archive is uploaded with the submission. To test local translation, use the documented llama.cpp or OpenAI-compatible setup; Google Translate can be tested without a local server.",
+    "approval_notes": "This release fixes connections to IP-based loopback API endpoints, adds loopback coverage to the extension connection policy, and streamlines development startup with `bun run dev`. No remote code is included. The source archive is uploaded with the submission. To test local translation, use the documented llama.cpp or OpenAI-compatible setup; Google Translate can be tested without a local server.",
     "release_notes": {
-      "en-CA": "Added localized AMO listing metadata and localized extension manifest strings for supported Firefox locales.",
-      "en-GB": "Added localized AMO listing metadata and localized extension manifest strings for supported Firefox locales.",
-      "en-US": "Added localized AMO listing metadata and localized extension manifest strings for supported Firefox locales.",
-      "es-AR": "Se añadieron metadatos localizados para la página de AMO y cadenas localizadas del manifiesto para los idiomas de Firefox compatibles.",
-      "es-CL": "Se añadieron metadatos localizados para la página de AMO y cadenas localizadas del manifiesto para los idiomas de Firefox compatibles.",
-      "es-ES": "Se añadieron metadatos localizados para la página de AMO y cadenas localizadas del manifiesto para los idiomas de Firefox compatibles.",
-      "es-MX": "Se añadieron metadatos localizados para la página de AMO y cadenas localizadas del manifiesto para los idiomas de Firefox compatibles.",
-      "fr": "Les métadonnées de la fiche AMO et les chaînes du manifeste sont désormais localisées pour les langues Firefox prises en charge.",
-      "ja": "Firefoxの対応ロケールに合わせて、AMO掲載メタデータと拡張機能manifestの文字列を多言語化しました。",
-      "ko": "지원되는 Firefox 언어에 맞춰 AMO 등록 정보와 확장 기능 manifest 문자열을 현지화했습니다.",
-      "pt-BR": "Foram adicionados metadados localizados para a página da AMO e strings localizadas do manifest para os idiomas do Firefox compatíveis.",
-      "pt-PT": "Foram adicionados metadados localizados para a página da AMO e strings localizadas do manifest para os idiomas do Firefox compatíveis.",
-      "ru": "Добавлены локализованные метаданные страницы AMO и строки манифеста для поддерживаемых языков Firefox.",
-      "zh-CN": "为支持的 Firefox 语言添加了本地化的 AMO 页面元数据和扩展 manifest 字符串。"
+      "en-CA": "Fixed connections to IP-based local API endpoints such as 127.0.0.1, and `bun run dev` now launches Firefox with the extension loaded for development.",
+      "en-GB": "Fixed connections to IP-based local API endpoints such as 127.0.0.1, and `bun run dev` now launches Firefox with the extension loaded for development.",
+      "en-US": "Fixed connections to IP-based local API endpoints such as 127.0.0.1, and `bun run dev` now launches Firefox with the extension loaded for development.",
+      "es-AR": "Se corrigió la conexión con los endpoints de API locales indicados por IP, como 127.0.0.1, y `bun run dev` ahora inicia Firefox con la extensión cargada para facilitar el desarrollo.",
+      "es-CL": "Se corrigió la conexión con los endpoints de API locales indicados por IP, como 127.0.0.1, y `bun run dev` ahora inicia Firefox con la extensión cargada para facilitar el desarrollo.",
+      "es-ES": "Se corrigió la conexión con los endpoints de API locales indicados por IP, como 127.0.0.1, y `bun run dev` ahora inicia Firefox con la extensión cargada para facilitar el desarrollo.",
+      "es-MX": "Se corrigió la conexión con los endpoints de API locales indicados por IP, como 127.0.0.1, y `bun run dev` ahora inicia Firefox con la extensión cargada para facilitar el desarrollo.",
+      "fr": "Correction de la connexion aux points de terminaison d'API locaux indiqués par IP, comme 127.0.0.1, et `bun run dev` lance désormais Firefox avec l'extension chargée pour faciliter le développement.",
+      "ja": "127.0.0.1などのIP指定ローカルAPIエンドポイントに正しく接続できるように修正し、開発用に `bun run dev` で拡張機能入りのFirefoxを起動できるようにしました。",
+      "ko": "127.0.0.1 등 IP로 지정한 로컬 API 엔드포인트 연결을 수정했으며, 개발용으로 `bun run dev` 실행 시 확장 기능이 설치된 Firefox가 시작됩니다.",
+      "pt-BR": "Corrigida a ligação a endpoints de API locais indicados por IP, como 127.0.0.1, e o comando `bun run dev` passa a iniciar o Firefox com a extensão carregada para desenvolvimento.",
+      "pt-PT": "Corrigida a ligação a endpoints de API locais indicados por IP, como 127.0.0.1, e o comando `bun run dev` passa a iniciar o Firefox com a extensão carregada para desenvolvimento.",
+      "ru": "Исправлено подключение к локальным API-эндпоинтам, заданным IP-адресом, например 127.0.0.1, а команда `bun run dev` теперь запускает Firefox с загруженным расширением для разработки.",
+      "zh-CN": "修复了使用 127.0.0.1 等 IP 指定的本地 API 端点的连接问题，`bun run dev` 现在还会启动已安装该扩展的 Firefox，方便开发调试。"
     }
   }
 }
