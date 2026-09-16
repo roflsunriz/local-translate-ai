@@ -19,7 +19,7 @@ Local Translate AI は以下のデータをブラウザのローカルストレ�
 ### データの保護
 
 - API キーは Web Crypto API を使用して暗号化されます
-- localhost 以外のエンドポイントへの接続には HTTPS が必須です
+- localhostやループバックアドレス（127.0.0.0/8、`::1`）以外のエンドポイントへの接続には HTTPS が必須です
 - 翻訳結果の表示時には XSS 対策としてサニタイズ処理を行います
 
 ### データの削除
@@ -53,7 +53,7 @@ Local Translate AI stores the following data in your browser's local storage:
 ### Data Protection
 
 - API keys are encrypted using the Web Crypto API
-- HTTPS is required for connections to endpoints other than localhost
+- HTTPS is required for connections to endpoints other than localhost and loopback addresses (127.0.0.0/8, `::1`)
 - Translation results are sanitized to prevent XSS attacks when displayed
 
 ### Data Deletion

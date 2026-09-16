@@ -4,15 +4,30 @@
 
 /**
  * Validate API endpoint URL
- * - localhost URLs are allowed without HTTPS
+ * - Loopback URLs (localhost, 127.0.0.0/8, ::1) are allowed without HTTPS
  * - All other URLs must use HTTPS
  */
+export function isLoopbackHostname(hostname: string): boolean {
+  const normalized = hostname.toLowerCase();
+  if (normalized === 'localhost') {
+    return true;
+  }
+  if (normalized === '::1' || normalized === '[::1]') {
+    return true;
+  }
+  const ipv4Parts = normalized.split('.');
+  if (ipv4Parts.length === 4 && ipv4Parts[0] === '127') {
+    return ipv4Parts.every((part) => /^\d{1,3}$/.test(part) && Number(part) >= 0 && Number(part) <= 255);
+  }
+  return false;
+}
+
 export function validateApiEndpoint(url: string): { valid: boolean; error?: string } {
   try {
     const parsed = new URL(url);
 
-    // Allow localhost without HTTPS
-    if (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1') {
+    // Allow loopback without HTTPS
+    if (isLoopbackHostname(parsed.hostname)) {
       return { valid: true };
     }
 
