@@ -33,7 +33,15 @@ bun run build
 
 ## Firefox での起動
 
-### web-ext を使う場合
+### 開発用ビルド＋起動（推奨）
+
+```powershell
+bun run dev
+```
+
+`dist/` をウォッチビルドしながら、拡張機能を読み込んだ Firefox を起動します。再ビルド時は自動リロードされます。Firefox は一時プロファイルで起動するため、普段使いのプロファイルには影響しません。
+
+### web-ext を使う場合（ウォッチなし）
 
 ```powershell
 bun run preview

@@ -43,7 +43,7 @@ Firefoxのメニューを開き、「拡張機能とテーマ」を選び、ギ�
 # 依存関係をインストール
 bun install
 
-# 開発ビルド（ウォッチモード）
+# 開発ビルド（ウォッチモード）＋ Firefoxで起動
 bun run dev
 
 # 本番ビルド
@@ -51,6 +51,13 @@ bun run build
 ```
 
 ### Firefoxへのインストール（開発用）
+
+```bash
+# 開発用にビルド＋Firefoxを起動（変更時は自動リビルド・自動リロード）
+bun run dev
+```
+
+ウォッチなしでビルド済みの `dist/` を起動する場合:
 
 ```bash
 # web-extでFirefoxを起動
@@ -117,13 +124,13 @@ LLMサーバーを起動せずに翻訳したい場合、Google翻訳モード�
 ### コマンド一覧
 
 ```bash
-# 開発ビルド（ウォッチモード）
+# 開発ビルド（ウォッチモード）＋ Firefoxで起動
 bun run dev
 
 # 本番ビルド
 bun run build
 
-# Firefoxでプレビュー
+# Firefoxでプレビュー（ウォッチなし）
 bun run preview
 
 # リント
