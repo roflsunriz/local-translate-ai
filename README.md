@@ -176,3 +176,6 @@ Issue・Pull Requestはいつでも歓迎します。
 4. ブランチをプッシュ (`git push origin feature/amazing-feature`)
 5. Pull Requestを作成
 
+## 依存更新の自動処理
+
+Dependabot は対象の依存関係を毎週確認します。patch／minor 更新は PR のチェック（CI）が成功した後に自動で squash merge されます。CI の失敗ジョブは 1 回だけ再実行します。再失敗時は読み取り権限のジョブで `bun.lock` を再生成し、限定した修正コミットで CI を再実行します。修復できない PR は残します。major 更新は手動で確認します。

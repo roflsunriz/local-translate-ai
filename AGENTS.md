@@ -33,3 +33,7 @@ bun run build
 - Prefer existing services, stores, and message types over new abstractions.
 - Do not revert user changes in the working tree.
 - Use `bun` for package scripts and dependency operations.
+
+## Dependabot の限定修復（2026-09-23）
+
+- CI 再失敗後の自動修復は `bun.lock` だけをパッチとして適用する。修復後は `workflow_dispatch` で `.github/workflows/ci.yml` を再実行するため、この CI の `contents: read` と checkout の `persist-credentials: false` を維持し、PR コードを実行するジョブへ書き込み権限や秘密情報を渡さない。根拠は `.github/workflows/dependabot-automation.yml` と共通ワークフローの権限分離。
