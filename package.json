@@ -32,7 +32,7 @@
     "dompurify": "^3.4.15",
     "react": "^19.3.0",
     "react-dom": "^19.2.8",
-    "zustand": "^5.0.14"
+    "zustand": "^5.0.15"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",
