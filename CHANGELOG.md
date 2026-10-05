@@ -14,6 +14,9 @@
 
 ### Changed
 
+
+- 不具合・機能提案などの受付とPRの記入形式を揃え、プロジェクト固有の確認項目を残した。 READMEは既存の意味と手順を保ち、実装と異なる説明や読みにくい表現を修正した。
+
 - 依存更新を安全に省力化するため、Dependabot の patch／minor PR を既存 CI の全チェック成功後に自動取り込みし、失敗ジョブを一度再実行し、必要なら `bun.lock` を限定して再生成する設定を追加した。
 - 開発基盤を最新に保つため、Dependabot の major 更新を取り込んだ（`@types/node` 25→26、`@vitejs/plugin-react` 5→6、Vite 7→8、actions/checkout 4→7、actions/setup-node 4→7、actions/download-artifact 4→8、actions/upload-artifact 4→7、softprops/action-gh-release 2→3）。
 

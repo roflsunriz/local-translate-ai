@@ -1,5 +1,5 @@
-name: "[BUG] バグ報告"
-title: "[BUG] "
+name: 不具合報告
+title: '[Bug] '
 description: 不具合の報告はこちら
 labels:
   - bug
@@ -7,8 +7,34 @@ labels:
 body:
   - type: markdown
     attributes:
+      value: |-
+        再現可能な不具合を報告します。対象環境、再現手順、期待した結果と実際の結果を整理してください。
+        導入・利用・開発方法は [README](https://github.com/roflsunriz/local-translate-ai/blob/HEAD/README.md) を確認してください。
+        本文と添付に秘密情報や個人情報を含めないでください。脆弱性の詳細は公開せず、[セキュリティ方針](https://github.com/roflsunriz/local-translate-ai/blob/HEAD/SECURITY.md) を確認してください。
+  - type: markdown
+    attributes:
       value: |
         ありがとうございます。再現手順や環境情報をできるだけ詳しく共有してください。
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: 事前確認
+      options:
+        - label: 同じ内容の既存Issueを検索しました。
+          required: true
+        - label: READMEと関連する利用・更新手順を確認しました。
+          required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: 環境情報
+      description: OS・Firefox・拡張機能のバージョン、モデル設定などを記載してください
+      placeholder: |
+        - OS:
+        - Firefox:
+        - 拡張機能バージョン:
+        - LLM/モデル:
+        - その他:
   - type: input
     id: title
     attributes:
@@ -38,27 +64,16 @@ body:
   - type: textarea
     id: expected
     attributes:
-      label: 期待する動作
+      label: 期待した結果
     validations:
       required: true
   - type: textarea
     id: actual
     attributes:
-      label: 実際の動作
+      label: 実際の結果
       description: 必要に応じてエラーメッセージを含めてください
     validations:
       required: true
-  - type: textarea
-    id: environment
-    attributes:
-      label: 環境情報
-      description: OS・Firefox・拡張機能のバージョン、モデル設定などを記載してください
-      placeholder: |
-        - OS:
-        - Firefox:
-        - 拡張機能バージョン:
-        - LLM/モデル:
-        - その他:
   - type: textarea
     id: logs
     attributes:
@@ -67,5 +82,12 @@ body:
   - type: textarea
     id: notes
     attributes:
-      label: 備考
+      label: 補足
       description: 発生頻度、影響範囲、暫定回避策などがあれば記載してください
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: 公開情報の確認
+      options:
+        - label: 本文・ログ・画像・添付から、認証情報、Cookie、トークン、秘密鍵、個人情報を除いたことを確認しました。
+          required: true
