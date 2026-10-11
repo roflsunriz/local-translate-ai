@@ -37,3 +37,7 @@ bun run build
 ## Dependabot の限定修復（2026-09-23）
 
 - CI 再失敗後の自動修復は `bun.lock` だけをパッチとして適用する。修復後は `workflow_dispatch` で `.github/workflows/ci.yml` を再実行するため、この CI の `contents: read` と checkout の `persist-credentials: false` を維持し、PR コードを実行するジョブへ書き込み権限や秘密情報を渡さない。根拠は `.github/workflows/dependabot-automation.yml` と共通ワークフローの権限分離。
+
+## TypeScript 7 と ESLint（2026-10-11）
+
+- TypeScript 7 は `typescript-eslint` が利用する従来のコンパイラー API を提供しない。`package.json` では `@typescript/native` に TypeScript 7 の `tsc`、`typescript` に `@typescript/typescript6` の API を割り当てる。型チェックは `bun run type-check`、lint は `bun run lint` で両方を確認する。根拠は [TypeScript 7 の公式移行案内](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/#running-side-by-side-with-typescript-6-0) と `eslint.config.js` の型付き lint 設定。
