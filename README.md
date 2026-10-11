@@ -143,6 +143,8 @@ bun run type-check
 bun run test
 ```
 
+TypeScript 7 の `tsc` で型チェックします。型情報を使う ESLint は TypeScript 6 の API を必要とするため、両方を開発依存に含めています。
+
 ### ディレクトリ構成
 
 ```

@@ -18,3 +18,5 @@ AMO掲載ロケールの根拠と今回の対応範囲は [docs/AMO_LOCALES.md](
 設定を変えたときは `actionlint .github/workflows/dependabot-automation.yml` と実際の PR の Actions 結果を確認します。問題があれば呼び出し先の共通 workflow SHA を直前の検証済み値へ戻すコミットを push します。取り込まれた依存更新に問題があれば通常の revert コミットで復旧します。
 
 CI 完了より Dependabot の分類が遅れる場合は、`callback_workflow_file` が指す呼び出し側 workflow を `workflow_dispatch` し、同じ PR 番号・head SHA・全チェックを再確認する。呼び出し側のファイル名を変える際はこの入力も一緒に更新する。
+
+TypeScript の major 更新では、型チェックの `tsc` と `typescript-eslint` が使う API の対応状況を確認する。TypeScript 7.0 では `@typescript/native` を `typescript` 7、`typescript` を `@typescript/typescript6` に割り当て、`bun run type-check` と `bun run lint` の両方を検証する。`bun audit` で修正版のない間接依存が残る場合は、経路と影響を `verification.md` に記録する。
