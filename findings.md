@@ -187,3 +187,12 @@ TypeScript の major 更新では、型チェックの `tsc` と `typescript-esl
 ## web-ext監査の再確認（2026-10-16）
 
 公式npmメタデータではweb-ext 10.8.0が公開済みだが、引き続き@devicefarmer/adbkit 3.3.9へ依存する。node-forgeの最新は1.4.0で、GHSA-86w9-cpqp-85rvの影響範囲に残る。移動元にある10.7.0「最新」は当時の条件であり、現在の最新版を意味しない。監査を無効化・依存を削除せず、上流の修正版と依存経路を再確認する。
+
+## node-forgeの限定修復（2026-10-16）
+
+- 初回の文書分離時点では上流修正版未公開のためraw監査が失敗した。その後、同じGHSAに対して既にUnuniqueで使用している `patches/node-forge@1.4.0.patch` を再利用した。RSA PKCS#1 v1.5のDigestInfo内でDigestAlgorithmの余分なASN.1要素を拒否する要素数チェックを追加する。正常なNULLパラメーターとパラメーター省略は維持する。
+- 対象は開発用web-ext → @devicefarmer/adbkit → node-forge 1.4.0のGHSA-86w9-cpqp-85rvだけ。npmのhigh 3パッケージは同じ1件の伝播であり、3種類の脆弱性を意味しない。製品拡張の権限・実行時ソースへは変更を加えない。
+- パッチの改行LF正規化SHA-256は `bf79ed31495742976d81633581cd09531da2e28b9e9f2f8cbbc9bc98a0900d27`。修正後rsa.js全体の同SHA-256は `5ddabed1d7cbaee0649d468a0bb12de65947cef6704b6a1897944ee2c3f50bde`。版・パッチSHA・実ソース全体のSHAと修正箇所、正常／不正署名構造の回帰を監査時に検証する。
+- 監査JSONの当該GHSAは表示し続け、検証済みパッチにより対応していることを明示する。未知のGHSA、別依存の警告、親パッケージ自身の別脆弱性、パッチ欠落・不一致、回帰失敗は引き続き失敗する。監査の一般的な閾値・対象を緩めない。上流修正版へ更新するときはローカルパッチと限定判定の必要性を再評価して同じ検証を行う。
+
+BunのpatchedDependenciesとbun.lockで適用する。`bun install --frozen-lockfile` 後、`bun run audit` で実パッチとNode回帰を確認する。CIのtask matrixにもauditを含め、未知の指摘を失敗させる。Vitestの製品テスト23件とは別にNode回帰5件を実行する。

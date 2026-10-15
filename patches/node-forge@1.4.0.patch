@@ -1,0 +1,21 @@
+diff --git a/lib/rsa.js b/lib/rsa.js
+index a4264822b4dcd6dca44ca3e59e410c982eed7183..05f86a495540be0d9951b7089ad54d8567f23daa 100644
+--- a/lib/rsa.js
++++ b/lib/rsa.js
+@@ -1168,11 +1168,14 @@ pki.setRsaPublicKey = pki.rsa.setPublicKey = function(n, e) {
+             parseAllBytes: options._parseAllDigestBytes
+           });
+ 
+-          // validate DigestInfo structure and element count
++          // Validate both ASN.1 sequence lengths. The validator ignores extra
++          // nested elements, which can permit forged low-exponent signatures.
+           var capture = {};
+           var errors = [];
+           if(!asn1.validate(obj, digestInfoValidator, capture, errors) ||
+-            obj.value.length !== 2) {
++            obj.value.length !== 2 ||
++            obj.value[0].value.length !==
++              (('parameters' in capture) ? 2 : 1)) {
+             var error = new Error(
+               'ASN.1 object does not contain a valid RSASSA-PKCS1-v1_5 ' +
+               'DigestInfo value.');

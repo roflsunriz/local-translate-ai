@@ -32,3 +32,9 @@ Dependabot PR #23 の TypeScript 7 単独更新では `typescript-eslint` がコ
 - GitHubの既存Dependabot警告を読み取り、Open PRも確認した（作業開始時Open PR 0件、Open警告 0件）。GitHubの警告なしを全依存の安全保証や実機動作の検証とは扱わない。
 - ローカル監査はGHSA-86w9-cpqp-85rv（node-forge 1.4.0）を検出して失敗した。公式npmメタデータでnode-forge 1.4.0、adbkit 3.3.9、web-ext 10.8.0の依存経路を確認した。上流最新版も影響を受け、安全な公式修正版がないため、監査の抑制・無関係な降格・独自暗号パッチは加えていない。修正版公開後の再監査が必要。詳細はfindings.mdの再確認節を参照する。
 - 文書移動と参照整理では製品の実行時ロジックを変更していない。実機書換え、認証操作、外部サービスへの投稿・署名・リリースは実施せず、これらの動作が再検証済みであるとは扱わない。
+
+## 2026-10-16: node-forgeの既存パッチによる限定修復
+
+- 初回のraw監査に残ったGHSA-86w9-cpqp-85rvへ、Ununiqueの既存パッチと構造回帰を再利用した。node-forge 1.4.0に不足していたDigestAlgorithmのASN.1要素数検査を追加し、パッチと実ファイル全体のSHA-256・版を監査時に照合する。
+- Node回帰5件は、パッチ真正性と冪等性、正常パラメーターあり／省略の署名受理、余分なネスト要素の拒否、当該GHSAのみの判別、未知のGHSA・別依存・親の別警告を失敗させる負例が通過した。raw監査の警告本文は保持し、パッチを確認した対応済みの1件として明示する。既知脆弱性0件という表示には置き換えない。
+- BunのpatchedDependenciesを登録し、bun install --frozen-lockfileで再現した。bun run auditとNode回帰5件、lint、型検査、Vitest23件、拡張buildが通過した。CIにaudit taskを追加した。AMO署名・公開や実利用プロファイルは操作していない。

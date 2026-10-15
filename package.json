@@ -24,7 +24,9 @@
     "sign:unlisted": "web-ext sign -s dist --channel \"unlisted\"",
     "sign:listed": "web-ext sign -s dist --channel \"listed\" --amo-metadata \"amo-metadata.json\" --upload-source-code \"source-code.zip\"",
     "amo:unlisted": "bun run build && bun run zip:source && bun run zip:dist && bun run sign:unlisted",
-    "amo:listed": "bun run build && bun run zip:source && bun run zip:dist && bun run sign:listed"
+    "amo:listed": "bun run build && bun run zip:source && bun run zip:dist && bun run sign:listed",
+    "audit": "bun scripts/audit-node-forge.mjs",
+    "test:node-forge": "node --test scripts/node-forge-regression.mjs"
   },
   "dependencies": {
     "@mdi/js": "^7.4.47",
@@ -82,5 +84,8 @@
     "tmp": "0.2.7",
     "uuid": "14.0.1",
     "yauzl": "3.4.0"
+  },
+  "patchedDependencies": {
+    "node-forge@1.4.0": "patches/node-forge@1.4.0.patch"
   }
 }

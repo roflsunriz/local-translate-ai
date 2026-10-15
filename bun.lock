@@ -38,6 +38,9 @@
       },
     },
   },
+  "patchedDependencies": {
+    "node-forge@1.4.0": "patches/node-forge@1.4.0.patch",
+  },
   "overrides": {
     "adm-zip": "0.6.1",
     "fast-uri": "4.2.2",
