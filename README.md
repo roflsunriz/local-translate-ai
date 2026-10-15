@@ -87,82 +87,7 @@ LLMサーバーを起動せずに翻訳したい場合、Google翻訳モード�
 
 ## 開発
 
-### 開発に必要な環境
-
-- Node.js 20.0.0 以上
-- bun
-
-### 開発環境のセットアップ
-
-```bash
-# 依存関係をインストール
-bun install
-
-# 開発ビルド（ウォッチモード）＋ Firefoxで起動
-bun run dev
-
-# 本番ビルド
-bun run build
-```
-
-### Firefoxへのインストール（開発用）
-
-```bash
-# 開発用にビルド＋Firefoxを起動（変更時は自動リビルド・自動リロード）
-bun run dev
-```
-
-自動リビルドを使わず、ビルド済みの `dist/` を起動する場合は次を実行します。
-
-```bash
-# web-extでFirefoxを起動
-bun run preview
-```
-
-または、`about:debugging` → `このFirefox` → `一時的なアドオンを読み込む` から `dist/manifest.json` を選択します。
-
-### コマンド一覧
-
-```bash
-# 開発ビルド（ウォッチモード）＋ Firefoxで起動
-bun run dev
-
-# 本番ビルド
-bun run build
-
-# Firefoxでプレビュー（ウォッチなし）
-bun run preview
-
-# リント
-bun run lint
-
-# 型チェック
-bun run type-check
-
-# テスト
-bun run test
-```
-
-TypeScript 7 の `tsc` で型チェックします。型情報を使う ESLint は TypeScript 6 の API を必要とするため、両方を開発依存に含めています。
-
-### ディレクトリ構成
-
-```
-src/
-├── background/     # Background Script
-├── components/     # 共通Reactコンポーネント
-├── content/        # Content Script
-├── hooks/          # カスタムフック
-├── i18n/           # 国際化リソース
-├── options/        # 設定画面UI（React）
-├── services/       # API通信・ストレージ等
-├── sidebar/        # サイドバーUI（React）
-├── stores/         # Zustand stores
-├── styles/         # グローバルCSS
-├── types/          # TypeScript型定義
-├── utils/          # ユーティリティ
-└── vite.config.mjs # Vite設定
-```
+詳細は [findings.md](findings.md#readme-1) に移しました。
 
 ## ライセンス
 
@@ -180,4 +105,4 @@ Issue・Pull Requestはいつでも歓迎します。
 
 ## 依存更新の自動処理
 
-Dependabot は対象の依存関係を毎週確認します。patch／minor 更新は PR のチェック（CI）が成功した後に自動で squash merge されます。CI の失敗ジョブは 1 回だけ再実行します。再失敗時は読み取り権限のジョブで `bun.lock` を再生成し、限定した修正コミットで CI を再実行します。修復できない PR は残します。major 更新は手動で確認します。
+詳細は [findings.md](findings.md#readme-2) に移しました。

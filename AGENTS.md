@@ -13,31 +13,12 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 4. 全文を読了するまで、ローカル `AGENTS.md` だけを根拠に作業を続けてはならない。読了後は `COMMON-AGENTS.md` を最優先の指針とし、読了直後の最初の進捗報告で全文を読了したことを明示する。
    このファイルでは `local-translate-ai` 固有の補足だけを記載する。
 
-## Project
+## プロジェクト固有の知見
 
-Local Translate AI is a Firefox WebExtension built with TypeScript, React, Vite, and Bun.
+- [COMMON-AGENTS.md](COMMON-AGENTS.md) を最優先とし、作業前に [findings.md](findings.md) も先頭から末尾まで全文読む。出力省略や読取り失敗を読了扱いしない。
+- 実現手段・環境差・明示的な例外・再利用する調査知見はfindings.mdへ随時記録する。変更履歴はCHANGELOG.md、実施した検証と未検証事項はverification.mdに残す。
+- ユーザーの禁止・承認条件、秘密情報と既存データの保護、未コミット変更を戻さない義務を弱めない。
 
-## Commands
+## 作業義務
 
-Configured checks for this repository:
-
-```sh
-bun run lint
-bun run type-check
-bun run build
-```
-
-## Notes
-
-- Keep changes scoped to the requested behavior.
-- Prefer existing services, stores, and message types over new abstractions.
-- Do not revert user changes in the working tree.
-- Use `bun` for package scripts and dependency operations.
-
-## Dependabot の限定修復（2026-09-23）
-
-- CI 再失敗後の自動修復は `bun.lock` だけをパッチとして適用する。修復後は `workflow_dispatch` で `.github/workflows/ci.yml` を再実行するため、この CI の `contents: read` と checkout の `persist-credentials: false` を維持し、PR コードを実行するジョブへ書き込み権限や秘密情報を渡さない。根拠は `.github/workflows/dependabot-automation.yml` と共通ワークフローの権限分離。
-
-## TypeScript 7 と ESLint（2026-10-11）
-
-- TypeScript 7 は `typescript-eslint` が利用する従来のコンパイラー API を提供しない。`package.json` では `@typescript/native` に TypeScript 7 の `tsc`、`typescript` に `@typescript/typescript6` の API を割り当てる。型チェックは `bun run type-check`、lint は `bun run lint` で両方を確認する。根拠は [TypeScript 7 の公式移行案内](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/#running-side-by-side-with-typescript-6-0) と `eslint.config.js` の型付き lint 設定。
+依頼された挙動へ変更を限定し、既存のサービス・store・message型を優先する。PRコードを実行するjobへ書込み権限や秘密情報を渡さない。

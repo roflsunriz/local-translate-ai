@@ -7,13 +7,9 @@
 
 ## [Unreleased]
 
-### Fixed
-
-- CI と Dependabot の分類の実行順が前後しても更新を取りこぼさないよう、同じ PR 番号と head SHA を再照合する経路を追加した。
-- plugin-react 6 が要求する `vite/internal` が Vite 7 に存在せずビルドできないため、Vite を 8 系へ同時更新してビルド失敗を解消した。
-
 ### Changed
 
+- 利用者向けの手順と開発知見を区別できるように、固有の実現手段・共通指針の適用条件・調査記録をfindings.mdへ本文を保って分離し、作業前の全文必読と文書間の参照を整えた。
 
 - TypeScript 7 で型チェックを続けながら ESLint の型付き検査も維持できるよう、TypeScript 6 の互換 API を併用する構成に変更した。
 - 依存関係の既知の脆弱性を減らすため、修正版が公開された間接依存と、互換範囲内の開発依存を更新した。
@@ -21,6 +17,11 @@
 
 - 依存更新を安全に省力化するため、Dependabot の patch／minor PR を既存 CI の全チェック成功後に自動取り込みし、失敗ジョブを一度再実行し、必要なら `bun.lock` を限定して再生成する設定を追加した。
 - 開発基盤を最新に保つため、Dependabot の major 更新を取り込んだ（`@types/node` 25→26、`@vitejs/plugin-react` 5→6、Vite 7→8、actions/checkout 4→7、actions/setup-node 4→7、actions/download-artifact 4→8、actions/upload-artifact 4→7、softprops/action-gh-release 2→3）。
+
+### Fixed
+
+- CI と Dependabot の分類の実行順が前後しても更新を取りこぼさないよう、同じ PR 番号と head SHA を再照合する経路を追加した。
+- plugin-react 6 が要求する `vite/internal` が Vite 7 に存在せずビルドできないため、Vite を 8 系へ同時更新してビルド失敗を解消した。
 
 ## [1.8.0] - 2026-09-16
 
