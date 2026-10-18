@@ -4,7 +4,7 @@
  */
 
 import type { Settings } from '@/types/settings';
-import { DEFAULT_SETTINGS } from '@/types/settings';
+import { DEFAULT_SETTINGS, normalizePageTranslationConcurrency } from '@/types/settings';
 
 import { encrypt, decrypt, isEncrypted } from './cryptoService';
 
@@ -36,6 +36,9 @@ export class SettingsService {
     const profilesWithDefaults = settings.profiles.map((profile) => ({
       ...profile,
       apiType: profile.apiType ?? 'openai',
+      pageTranslationConcurrency: normalizePageTranslationConcurrency(
+        profile.pageTranslationConcurrency,
+      ),
     }));
 
     settings.profiles = await Promise.all(
@@ -61,6 +64,9 @@ export class SettingsService {
       const profilesWithDefaults = partial.profiles.map((profile) => ({
         ...profile,
         apiType: profile.apiType ?? 'openai',
+        pageTranslationConcurrency: normalizePageTranslationConcurrency(
+          profile.pageTranslationConcurrency,
+        ),
       }));
 
       updated.profiles = await Promise.all(
@@ -80,6 +86,9 @@ export class SettingsService {
         updated.profiles.map(async (profile) => ({
           ...profile,
           apiType: profile.apiType ?? 'openai',
+          pageTranslationConcurrency: normalizePageTranslationConcurrency(
+            profile.pageTranslationConcurrency,
+          ),
           apiKey: await this.decryptApiKey(profile.apiKey),
         }))
       );

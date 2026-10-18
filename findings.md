@@ -196,3 +196,9 @@ TypeScript の major 更新では、型チェックの `tsc` と `typescript-esl
 - 監査JSONの当該GHSAは表示し続け、検証済みパッチにより対応していることを明示する。未知のGHSA、別依存の警告、親パッケージ自身の別脆弱性、パッチ欠落・不一致、回帰失敗は引き続き失敗する。監査の一般的な閾値・対象を緩めない。上流修正版へ更新するときはローカルパッチと限定判定の必要性を再評価して同じ検証を行う。
 
 BunのpatchedDependenciesとbun.lockで適用する。`bun install --frozen-lockfile` 後、`bun run audit` で実パッチとNode回帰を確認する。CIのtask matrixにもauditを含め、未知の指摘を失敗させる。Vitestの製品テスト23件とは別にNode回帰5件を実行する。
+
+## ページ翻訳の同時推論（2026-10-19）
+
+- OpenAI互換というAPI形式は同時推論能力を規定しない。llama.cppは`--parallel`のserver slotとcontinuous batching、Ollamaは`OLLAMA_NUM_PARALLEL`とメモリー条件、LM StudioはMax Concurrent Predictions、LocalAIとvLLMはbackend／scheduler設定で、1インスタンス内の複数リクエストを処理できる。複数インスタンスは必須ではない。
+- `TranslationProfile.pageTranslationConcurrency`をページ翻訳のクライアント側上限とし、範囲は1～32、既定値と旧設定の補完値は1とする。完了数と元配列indexは別に扱い、並列完了順が前後しても対応するDOM nodeへ適用する。Google翻訳モードはこのプロファイル設定の対象外で、従来どおり順次処理する。
+- 利用者向けの比較、設定方法、一次資料は`docs/PAGE_TRANSLATION_CONCURRENCY.md`を正本とする。外部実装の既定値は変わり得るため、変更時は公式資料を再確認する。

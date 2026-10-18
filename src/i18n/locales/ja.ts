@@ -95,6 +95,8 @@ export const ja = {
       apiKey: 'APIキー',
       model: 'モデル名',
       timeout: 'タイムアウト（秒）',
+      pageTranslationConcurrency: 'ページ翻訳の同時リクエスト数',
+      pageTranslationConcurrencyDescription: 'APIへ同時に送る段落数（1～32）。サーバーの並列slot数やプロバイダーの制限に合わせてください。既定値は1です。',
       sourceLanguage: 'デフォルトソース言語',
       targetLanguage: 'デフォルトターゲット言語',
       cannotDeleteLast: '最後のプロファイルは削除できません',

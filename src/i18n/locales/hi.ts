@@ -95,6 +95,8 @@ export const hi = {
       apiKey: 'API कुंजी',
       model: 'मॉडल नाम',
       timeout: 'टाइमआउट (सेकंड)',
+      pageTranslationConcurrency: 'पेज अनुवाद के समवर्ती अनुरोध',
+      pageTranslationConcurrencyDescription: 'API को एक साथ भेजे जाने वाले अनुच्छेद अनुरोध (1–32)। इसे सर्वर स्लॉट या प्रदाता सीमा के अनुसार रखें। डिफ़ॉल्ट 1 है।',
       sourceLanguage: 'डिफ़ॉल्ट स्रोत भाषा',
       targetLanguage: 'डिफ़ॉल्ट लक्ष्य भाषा',
       cannotDeleteLast: 'अंतिम प्रोफाइल हटाया नहीं जा सकता',

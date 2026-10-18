@@ -95,6 +95,8 @@ export const ru = {
       apiKey: 'API ключ',
       model: 'Название модели',
       timeout: 'Тайм-аут (секунды)',
+      pageTranslationConcurrency: 'Одновременные запросы перевода страницы',
+      pageTranslationConcurrencyDescription: 'Число абзацев, одновременно отправляемых в API (1–32). Укажите число слотов сервера или лимит провайдера. По умолчанию — 1.',
       sourceLanguage: 'Исходный язык по умолчанию',
       targetLanguage: 'Целевой язык по умолчанию',
       cannotDeleteLast: 'Невозможно удалить последний профиль',

@@ -7,11 +7,21 @@
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-10-19
+
+### Added
+
+- APIサーバーのslot数やクラウドプロバイダーの制限に合わせてページ翻訳を高速化できるよう、プロファイルごとに1～32件の同時リクエスト数を設定できるようにした。既存設定と既定値は1件の順次処理を維持する。
+
 ### Security
 
 - 開発用node-forgeの署名構造検査の不足を補うため、検証済みのASN.1要素数チェックを適用し、パッチ真正性・正常／不正署名の回帰と当該GHSAだけの監査判別を必須にした。raw警告と未知の指摘は引き続き可視化する。
 
 ### Changed
+
+- リリース前の依存確認で見つかった互換更新を取り込み、DOMPurify、React、ESLint、Vitest、web-extなどとBun実行環境を更新した。
+- 並列処理の退行を公開前にも検出できるよう、通常CIとリリース検証へテストを追加し、リリース検証では依存監査も実行するようにした。
+- llama.cppを現行手順で安全に起動できるよう、旧make／CUDAオプションをCMake方式へ直し、同一PC向けの例をループバック待受へ変更した。
 
 - 利用者向けの手順と開発知見を区別できるように、固有の実現手段・共通指針の適用条件・調査記録をfindings.mdへ本文を保って分離し、作業前の全文必読と文書間の参照を整えた。
 
@@ -209,6 +219,8 @@
 - 外部エンドポイントへのHTTPS強制
 
 [1.7.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.6.0...v1.7.0
+[1.9.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.8.0...v1.9.0
+[1.8.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.7.0...v1.8.0
 [1.6.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.5.2...v1.6.0
 [1.5.1]: https://github.com/roflsunriz/local-translate-ai/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.4.2...v1.5.0
@@ -219,5 +231,5 @@
 [1.2.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/roflsunriz/local-translate-ai/compare/v0.1.0...v1.0.0
-[Unreleased]: https://github.com/roflsunriz/local-translate-ai/compare/v1.7.0...HEAD
+[Unreleased]: https://github.com/roflsunriz/local-translate-ai/compare/v1.9.0...HEAD
 [0.1.0]: https://github.com/roflsunriz/local-translate-ai/releases/tag/v0.1.0

@@ -502,8 +502,13 @@ async function handleTranslatePage(
       },
     };
 
-    const progressCallback = (completed: number, total: number, result: string) => {
-      const nodeId = contentResponse.nodeIds[completed - 1];
+    const progressCallback = (
+      completed: number,
+      total: number,
+      result: string,
+      index = completed - 1,
+    ) => {
+      const nodeId = contentResponse.nodeIds[index];
       if (nodeId && result) {
         const convertedResult = applyConversions(result, conversionOptions);
         const sanitizedResult = sanitizeAccumulatedResult(convertedResult);

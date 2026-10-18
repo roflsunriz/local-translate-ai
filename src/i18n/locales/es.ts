@@ -95,6 +95,8 @@ export const es = {
       apiKey: 'Clave de API',
       model: 'Nombre del modelo',
       timeout: 'Tiempo de espera (segundos)',
+      pageTranslationConcurrency: 'Solicitudes simultáneas de traducción de página',
+      pageTranslationConcurrencyDescription: 'Párrafos enviados simultáneamente a la API (1–32). Ajústalo a las ranuras del servidor o al límite del proveedor. El valor predeterminado es 1.',
       sourceLanguage: 'Idioma de origen predeterminado',
       targetLanguage: 'Idioma de destino predeterminado',
       cannotDeleteLast: 'No se puede eliminar el último perfil',

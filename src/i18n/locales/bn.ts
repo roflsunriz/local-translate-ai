@@ -95,6 +95,8 @@ export const bn = {
       apiKey: 'API কী',
       model: 'মডেল নাম',
       timeout: 'টাইমআউট (সেকেন্ড)',
+      pageTranslationConcurrency: 'পৃষ্ঠা অনুবাদের সমবর্তী অনুরোধ',
+      pageTranslationConcurrencyDescription: 'একসঙ্গে API-তে পাঠানো অনুচ্ছেদ অনুরোধের সংখ্যা (1–32)। সার্ভার স্লট বা প্রদানকারীর সীমার সঙ্গে মিলিয়ে নিন। ডিফল্ট 1।',
       sourceLanguage: 'ডিফল্ট উৎস ভাষা',
       targetLanguage: 'ডিফল্ট লক্ষ্য ভাষা',
       cannotDeleteLast: 'শেষ প্রোফাইল মুছে ফেলা যাবে না',

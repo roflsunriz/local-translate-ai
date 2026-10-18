@@ -2,6 +2,8 @@
  * Translation Service - Handles API communication with llama.cpp server
  */
 
+import { normalizePageTranslationConcurrency } from '@/types/settings';
+
 import type { ApiType, TranslationProfile, SupportedLanguage } from '@/types/settings';
 import type { TranslationResult } from '@/types/translation';
 import type {
@@ -297,43 +299,58 @@ export class TranslationService {
     targetLanguage: SupportedLanguage,
     profile: TranslationProfile,
     signal: AbortSignal,
-    onProgress: (completed: number, total: number, result: string) => void
+    onProgress: (completed: number, total: number, result: string, index: number) => void
   ): Promise<string[]> {
-    const results: string[] = [];
+    const results = new Array<string>(texts.length);
     const total = texts.length;
+    const configuredConcurrency = normalizePageTranslationConcurrency(
+      profile.pageTranslationConcurrency,
+    );
+    const concurrency = Math.min(
+      total,
+      configuredConcurrency,
+    );
+    let nextIndex = 0;
+    let completed = 0;
 
-    for (let i = 0; i < texts.length; i++) {
-      if (signal.aborted) {
-        throw new Error('Translation cancelled');
-      }
-
-      const text = texts[i];
-      if (!text || text.trim().length === 0) {
-        results.push('');
-        onProgress(i + 1, total, '');
-        continue;
-      }
-
-      try {
-        const result = await this.translate(
-          text,
-          sourceLanguage,
-          targetLanguage,
-          profile,
-          signal
-        );
-        results.push(result.translatedText);
-        onProgress(i + 1, total, result.translatedText);
-      } catch (error) {
-        if (signal.aborted || (error instanceof Error && error.name === 'AbortError')) {
-          throw error;
+    const worker = async (): Promise<void> => {
+      while (nextIndex < total) {
+        if (signal.aborted) {
+          throw new Error('Translation cancelled');
         }
-        // On error, keep original text
-        console.error(`Failed to translate text at index ${i}:`, error);
-        results.push(text);
-        onProgress(i + 1, total, text);
+
+        const index = nextIndex;
+        nextIndex += 1;
+        const text = texts[index] ?? '';
+        let translatedText = '';
+
+        if (text.trim().length > 0) {
+          try {
+            const result = await this.translate(
+              text,
+              sourceLanguage,
+              targetLanguage,
+              profile,
+              signal,
+            );
+            translatedText = result.translatedText;
+          } catch (error) {
+            if (signal.aborted || (error instanceof Error && error.name === 'AbortError')) {
+              throw error;
+            }
+            // On error, keep original text
+            console.error(`Failed to translate text at index ${index}:`, error);
+            translatedText = text;
+          }
+        }
+
+        results[index] = translatedText;
+        completed += 1;
+        onProgress(completed, total, translatedText, index);
       }
-    }
+    };
+
+    await Promise.all(Array.from({ length: concurrency }, worker));
 
     return results;
   }

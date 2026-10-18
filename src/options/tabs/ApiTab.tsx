@@ -4,7 +4,12 @@ import { Button } from '@/components/Button';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useSettingsStore, useUIStore } from '@/stores';
-import { DEFAULT_PROFILE } from '@/types/settings';
+import {
+  DEFAULT_PROFILE,
+  MAX_PAGE_TRANSLATION_CONCURRENCY,
+  MIN_PAGE_TRANSLATION_CONCURRENCY,
+  normalizePageTranslationConcurrency,
+} from '@/types/settings';
 
 import type { ApiType, TranslationProfile, SupportedLanguage } from '@/types/settings';
 
@@ -279,6 +284,42 @@ function ProfileEditor({ profile, onChange, onSave, onCancel }: ProfileEditorPro
             className="mb-1 block text-sm font-medium"
             style={{ color: 'var(--color-text-secondary)' }}
           >
+            {t('settings.api.pageTranslationConcurrency')}
+          </label>
+          <input
+            type="number"
+            min={MIN_PAGE_TRANSLATION_CONCURRENCY}
+            max={MAX_PAGE_TRANSLATION_CONCURRENCY}
+            step={1}
+            value={profile.pageTranslationConcurrency}
+            onChange={(e) => {
+              updateField(
+                'pageTranslationConcurrency',
+                normalizePageTranslationConcurrency(Number(e.target.value)),
+              );
+            }}
+            className="w-full rounded-md border px-3 py-2 text-sm"
+            style={{
+              backgroundColor: 'var(--color-bg-secondary)',
+              borderColor: 'var(--color-border)',
+              color: 'var(--color-text-primary)',
+            }}
+            aria-describedby="page-translation-concurrency-description"
+          />
+          <p
+            id="page-translation-concurrency-description"
+            className="mt-1 text-xs"
+            style={{ color: 'var(--color-text-muted)' }}
+          >
+            {t('settings.api.pageTranslationConcurrencyDescription')}
+          </p>
+        </div>
+
+        <div>
+          <label
+            className="mb-1 block text-sm font-medium"
+            style={{ color: 'var(--color-text-secondary)' }}
+          >
             {t('settings.api.sourceLanguage')}
           </label>
           <LanguageSelector
@@ -356,6 +397,14 @@ function ProfileViewer({ profile }: ProfileViewerProps) {
         <div>
           <dt style={{ color: 'var(--color-text-muted)' }}>{t('settings.api.timeout')}</dt>
           <dd style={{ color: 'var(--color-text-primary)' }}>{profile.timeout}s</dd>
+        </div>
+        <div>
+          <dt style={{ color: 'var(--color-text-muted)' }}>
+            {t('settings.api.pageTranslationConcurrency')}
+          </dt>
+          <dd style={{ color: 'var(--color-text-primary)' }}>
+            {profile.pageTranslationConcurrency}
+          </dd>
         </div>
         <div>
           <dt style={{ color: 'var(--color-text-muted)' }}>{t('settings.api.sourceLanguage')} → {t('settings.api.targetLanguage')}</dt>

@@ -47,23 +47,22 @@ cd llama.cpp
 
 #### macOS / Linux の場合
 
-**CPUのみ**
+**CPUまたはmacOSのMetal**
 
 ```bash
-make
+cmake -B build
+cmake --build build --config Release -j
 ```
 
-**GPU (Metal for macOS, CUDA for Linux)**
+macOSではMetal backendが既定で有効です。
 
-macOS (Metal):
-```bash
-LLAMA_METAL=1 make
-```
+**LinuxのNVIDIA CUDA**
 
-Linux (CUDA):
-*CUDA Toolkitがインストールされている必要があります。 nvcc --version で確認できます。 NVIDIA公式サイトからインストールしてください。*
+CUDA Toolkitがインストールされている必要があります。`nvcc --version`で確認できます。
+
 ```bash
-LLAMA_CUDA=1 make
+cmake -B build -DGGML_CUDA=ON
+cmake --build build --config Release -j
 ```
 
 #### Windows の場合
@@ -76,10 +75,10 @@ mkdir build
 cd build
 
 # CMakeでビルドファイルを生成 (Visual Studio 2019 Communityの例)
-# GPUを使う場合は -DLLAMA_CUBLAS=on を付ける
-cmake .. -DLLAMA_BUILD_SERVER=ON -G "Visual Studio 16 2019" -A x64
-# CPUのみの場合
-# cmake .. -DLLAMA_BUILD_SERVER=ON -G "Visual Studio 16 2019" -A x64
+cmake .. -G "Visual Studio 16 2019" -A x64
+
+# NVIDIA CUDAを使う場合は、代わりに次を実行
+# cmake .. -DGGML_CUDA=ON -G "Visual Studio 16 2019" -A x64
 
 # ビルド
 cmake --build . --config Release --target llama-server
@@ -141,19 +140,32 @@ llama.cpp/
 
 ```bash 
 # macOS / Linux / Windows (ソースからビルドした場合) 
-./llama-server -m ./models/plamo-2-translate.Q4_K_M.gguf --port 3002 --host 0.0.0.0 -c 4096
+./llama-server -m ./models/plamo-2-translate.Q4_K_M.gguf --port 3002 --host 127.0.0.1 -c 4096
 
 # Windows (ビルド済みファイル or buildディレクトリから実行する場合) 
-./llama-server.exe -m ../models/plamo-2-translate.Q4_K_M.gguf --port 3002 --host 0.0.0.0 -c 4096
+./llama-server.exe -m ../models/plamo-2-translate.Q4_K_M.gguf --port 3002 --host 127.0.0.1 -c 4096
 ```
 
 ### 主なオプション
 
 - `-m <モデルのパス>`: 使用するモデルファイルのパスを指定します。
 - `--port <ポート番号>`: サーバーがリッスンするポート番号を指定します。デフォルトは `8080` です。
-- `--host <ホスト名/IP>`: サーバーがバインドするホストを指定します。`0.0.0.0` を指定すると、外部からのアクセスを許可します。
-- `-c <コンテキストサイズ>`: モデルのコンテキストサイズを指定します。デフォルトは `512` です。PLaMoモデルの場合は `4096` 程度を推奨します。
+- `--host <ホスト名/IP>`: サーバーがバインドするホストを指定します。同じPCだけで使う場合は`127.0.0.1`に限定します。`0.0.0.0`はLANを含む外部へ公開するため、必要な場合だけAPIキーやファイアウォールと併用してください。
+- `-c <コンテキストサイズ>`: モデルのコンテキストサイズを指定します。現在のllama.cppで`0`または省略した場合はモデルの値を使います。PLaMoモデルで明示する場合は、1slotあたり4096 token程度を目安にします。
 - `-ngl <レイヤー数>`: GPUにオフロードするモデルのレイヤー数を指定します。GPUを使用する場合、`35` などの大きな値を指定すると高速化されます。
+- `--parallel <slot数>`: 1つのサーバーで同時処理できるリクエストslot数を指定します。複数のサーバーインスタンスを起動する必要はありません。
+
+### ページ翻訳を並列化する
+
+Local Translate AIの既定値は、従来と同じ1件ずつの順次処理です。4件を同時処理する例は次のとおりです。
+
+```bash
+./llama-server -m ./models/plamo-2-translate.Q4_K_M.gguf --port 3002 --host 127.0.0.1 -c 16384 --parallel 4
+```
+
+設定 > API > 対象プロファイルで「ページ翻訳の同時リクエスト数」を4にしてください。llama.cppは1インスタンス内の複数slotをcontinuous batchingで処理します。`-c`で確保したコンテキストはslot間で共有されるため、上の例では4slotに対して合計16384 tokenを確保しています。必要なメモリーと最適な値はモデル、量子化、CPU/GPU、入力長で変わります。メモリー不足や速度低下が起きる場合は、拡張機能とサーバーの両方を2または1へ下げてください。
+
+詳細と他の推論サーバーとの違いは [ページ翻訳の同時リクエスト仕様](./docs/PAGE_TRANSLATION_CONCURRENCY.md) を参照してください。
 
 サーバーが正常に起動すると、`http://localhost:3002` でAPIが利用可能になります。
 

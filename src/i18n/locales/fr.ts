@@ -95,6 +95,8 @@ export const fr = {
       apiKey: 'Clé API',
       model: 'Nom du modèle',
       timeout: 'Délai d\'attente (secondes)',
+      pageTranslationConcurrency: 'Requêtes simultanées de traduction de page',
+      pageTranslationConcurrencyDescription: 'Paragraphes envoyés simultanément à l’API (1 à 32). Adaptez ce nombre aux slots du serveur ou à la limite du fournisseur. La valeur par défaut est 1.',
       sourceLanguage: 'Langue source par défaut',
       targetLanguage: 'Langue cible par défaut',
       cannotDeleteLast: 'Impossible de supprimer le dernier profil',

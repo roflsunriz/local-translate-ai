@@ -95,6 +95,8 @@ export const zh = {
       apiKey: 'API 密钥',
       model: '模型名称',
       timeout: '超时（秒）',
+      pageTranslationConcurrency: '页面翻译并发请求数',
+      pageTranslationConcurrencyDescription: '同时发送到 API 的段落请求数（1～32）。请与服务器插槽数或服务商限制一致。默认值为 1。',
       sourceLanguage: '默认源语言',
       targetLanguage: '默认目标语言',
       cannotDeleteLast: '无法删除最后一个配置',

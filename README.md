@@ -10,6 +10,7 @@ llama.cppでホストしたローカルLLMを使用して翻訳を行うFirefox�
 
 - **テキスト選択翻訳**: テキストを選択すると翻訳ボタンが表示され、ワンクリックで翻訳
 - **ページ全体翻訳**: 右クリックメニューからページ全体を翻訳
+- **ページ翻訳の並列化**: APIプロファイルごとに1～32件の同時リクエスト数を設定可能（既定値1）
 - **サイドバー翻訳**: サイドバーからテキストを入力して翻訳
 - **ストリーミング対応**: 長文でも逐次表示で快適に翻訳結果を確認
 - **翻訳履歴**: 過去の翻訳を保存・再利用（設定画面・サイドバーから確認可能）
@@ -41,9 +42,9 @@ Firefoxのメニューから「拡張機能とテーマ」を開き、ギア（�
 3. 以下のようにサーバーを起動する（ポートやパスは環境に合わせて調整）。
    ```bash
    # macOS / Linux / Windows(ビルドした場合)
-   ./llama-server -m ./models/plamo-2-translate.Q4_K_M.gguf --port 3002 --host 0.0.0.0 -c 4096
+   ./llama-server -m ./models/plamo-2-translate.Q4_K_M.gguf --port 3002 --host 127.0.0.1 -c 4096
    # Windowsで配布バイナリを利用する場合の一例（modelsを上の階層に置いた場合）
-   ./llama-server.exe -m ../models/plamo-2-translate.Q4_K_M.gguf --port 3002 --host 0.0.0.0 -c 4096
+   ./llama-server.exe -m ../models/plamo-2-translate.Q4_K_M.gguf --port 3002 --host 127.0.0.1 -c 4096
    ```
 4. 拡張機能の設定でAPIエンドポイントを `http://localhost:3002/v1/chat/completions` に設定し、モデル名に `plamo-2-translate-gguf` を指定する。
 
@@ -58,6 +59,7 @@ Firefoxのメニューから「拡張機能とテーマ」を開き、ギア（�
 | APIキー | `test` | ローカルではAPIキーは不要ですが、クラウド翻訳する場合は必須です。 |
 | モデル | `plamo-2-translate-gguf` | 翻訳モデルの名前を設定します。llama.cppの名前と合わせてください。クラウド翻訳する場合はモデル名の指定を行います。例:`tngtech/deepseek-r1t2-chimera:free`や`zai-glm-4.6`など |
 | タイムアウト | 600秒 | デフォルトは10分で中止。 |
+| ページ翻訳の同時リクエスト数 | 1 | 1～32。APIサーバーの並列slot数やプロバイダーのレート制限に合わせて設定します。 |
 | ソース言語 | 自動検出 | 翻訳元の言語です。 |
 | ターゲット言語 | Japanese | 翻訳先言語です。 |
 | システムプロンプト | 省略 | AIモデルに設定する役割を指定してください。デフォルトではテクノロジー専門家です。 |
@@ -67,8 +69,12 @@ Firefoxのメニューから「拡張機能とテーマ」を開き、ギア（�
 
 ```bash
 # PLaMo-2-Translateモデルを使用する場合
-./llama-server -m plamo-2-translate.gguf --port 3002 --host 0.0.0.0
+./llama-server -m plamo-2-translate.gguf --port 3002 --host 127.0.0.1
 ```
+
+ページ翻訳を並列化する場合は、llama.cpp側でも同数以上のslotを用意します。例えば4件を同時処理する場合は `--parallel 4` を付け、設定 > API > 対象プロファイルの「ページ翻訳の同時リクエスト数」も4にします。並列数を増やすとKVキャッシュなどのメモリー使用量も増えるため、まず2～4で実測してください。
+
+OpenAI互換APIという形式だけでは、サーバーが同時推論するか、内部キューで順次処理するかは決まりません。llama.cpp、Ollama、LM Studio、LocalAI、vLLMとクラウドAPIの違いは [ページ翻訳の同時リクエスト仕様](./docs/PAGE_TRANSLATION_CONCURRENCY.md) を参照してください。
 
 ### Anthropic Messages APIを使う場合
 

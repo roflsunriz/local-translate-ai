@@ -1,5 +1,13 @@
 # 検証手順
 
+## ページ翻訳の同時リクエスト対応とv1.9.0（2026-10-19）
+
+- llama.cpp、Ollama、LM Studio、LocalAI、vLLM、OpenAI API、OpenRouterの公式資料を確認した。OpenAI互換形式そのものは並列能力を保証せず、主要なローカルサーバーは1インスタンス内で複数リクエストを処理できるため、プロファイル単位の上限（1～32、既定値1）とした。根拠と適用条件は`docs/PAGE_TRANSLATION_CONCURRENCY.md`に記録した。
+- Vitest 28件で、指定した並列数を超えないこと、結果の配列順を保持すること、並列完了順から元段落indexを識別できること、旧設定と不正なインポート値を1として扱うこと、過大なインポート値を32に制限すること、1件の失敗後も他のworkerが継続することを確認した。
+- `bun install --frozen-lockfile`、`bun run lint`、`bun run type-check`、`bun run test`、`bun run build`、`bun run audit`、`bun run test:node-forge`、`bun run amo:validate`、`bun run amo:lint`が成功した。`bun outdated`に残件はない。AMO lintの既知の`innerHTML`警告2件は、今回の差分では増えていない。
+- web-ext 10.8.0で一時プロファイルのヘッドレスFirefoxへ`dist`をtemporary add-onとして読み込めた。実モデルを使った速度比較とサーバーslotメトリクスの確認は、モデル／推論サーバーが起動していないため未実施。並列上限・順序・失敗時継続は自動テストで代替検証した。
+- 公式actionlint v1.7.12のWindows amd64アセットを公式SHA-256一覧と照合して一時利用し、Bun 1.4.0への更新とCI／リリースmatrixへの`test`・`audit`追加を含む2 workflowをエラー0件で検査した。公開後のGitHub Actionsでも最終確認する。
+
 ## TypeScript 7 への更新（2026-10-11）
 
 Dependabot PR #23 の TypeScript 7 単独更新では `typescript-eslint` がコンパイラー API を読み込めず、CI の lint が失敗した。TypeScript 公式の併用構成に従い、`typescript` を TypeScript 6 の互換 API、`@typescript/native` を TypeScript 7 の `tsc` に割り当てた。`bunx tsc --version` で 7.0.2 を確認する。

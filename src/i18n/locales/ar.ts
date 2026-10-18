@@ -95,6 +95,8 @@ export const ar = {
       apiKey: 'مفتاح API',
       model: 'اسم النموذج',
       timeout: 'المهلة (بالثواني)',
+      pageTranslationConcurrency: 'طلبات ترجمة الصفحة المتزامنة',
+      pageTranslationConcurrencyDescription: 'عدد الفقرات المرسلة إلى API في الوقت نفسه (1–32). طابقه مع عدد فتحات الخادم أو حد المزوّد. القيمة الافتراضية 1.',
       sourceLanguage: 'لغة المصدر الافتراضية',
       targetLanguage: 'لغة الهدف الافتراضية',
       cannotDeleteLast: 'لا يمكن حذف الملف الشخصي الأخير',

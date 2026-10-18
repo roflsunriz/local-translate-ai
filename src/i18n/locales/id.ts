@@ -95,6 +95,8 @@ export const id = {
       apiKey: 'Kunci API',
       model: 'Nama Model',
       timeout: 'Batas Waktu (detik)',
+      pageTranslationConcurrency: 'Permintaan terjemahan halaman bersamaan',
+      pageTranslationConcurrencyDescription: 'Jumlah paragraf yang dikirim ke API sekaligus (1–32). Sesuaikan dengan slot server atau batas penyedia. Nilai bawaan adalah 1.',
       sourceLanguage: 'Bahasa Sumber Default',
       targetLanguage: 'Bahasa Target Default',
       cannotDeleteLast: 'Tidak dapat menghapus profil terakhir',

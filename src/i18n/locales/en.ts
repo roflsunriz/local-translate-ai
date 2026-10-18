@@ -95,6 +95,8 @@ export const en = {
       apiKey: 'API Key',
       model: 'Model Name',
       timeout: 'Timeout (seconds)',
+      pageTranslationConcurrency: 'Concurrent page translation requests',
+      pageTranslationConcurrencyDescription: 'Paragraph requests sent to the API at once (1–32). Match the server slot count or provider limit. The default is 1.',
       sourceLanguage: 'Default Source Language',
       targetLanguage: 'Default Target Language',
       cannotDeleteLast: 'Cannot delete the last profile',

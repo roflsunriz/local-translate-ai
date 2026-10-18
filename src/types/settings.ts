@@ -35,6 +35,20 @@ export type UILanguage =
 export type ThemeMode = 'auto' | 'light' | 'dark';
 export type ApiType = 'openai' | 'anthropic';
 
+export const MIN_PAGE_TRANSLATION_CONCURRENCY = 1;
+export const MAX_PAGE_TRANSLATION_CONCURRENCY = 32;
+
+export function normalizePageTranslationConcurrency(value: unknown): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return MIN_PAGE_TRANSLATION_CONCURRENCY;
+  }
+
+  return Math.min(
+    MAX_PAGE_TRANSLATION_CONCURRENCY,
+    Math.max(MIN_PAGE_TRANSLATION_CONCURRENCY, Math.floor(value)),
+  );
+}
+
 export interface TranslationProfile {
   id: string;
   name: string;
@@ -43,6 +57,7 @@ export interface TranslationProfile {
   apiKey: string;
   model: string;
   timeout: number;
+  pageTranslationConcurrency: number;
   sourceLanguage: SupportedLanguage;
   targetLanguage: SupportedLanguage;
   systemPrompt: string;
@@ -128,6 +143,7 @@ export const DEFAULT_PROFILE: TranslationProfile = {
   apiKey: 'test',
   model: 'plamo-2-translate-gguf',
   timeout: 600,
+  pageTranslationConcurrency: MIN_PAGE_TRANSLATION_CONCURRENCY,
   sourceLanguage: 'auto',
   targetLanguage: 'Japanese',
   systemPrompt: DEFAULT_SYSTEM_PROMPT,

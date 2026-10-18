@@ -114,22 +114,22 @@
   },
   "version": {
     "license": "MIT",
-    "approval_notes": "This release fixes connections to IP-based loopback API endpoints, adds loopback coverage to the extension connection policy, and streamlines development startup with `bun run dev`. No remote code is included. The source archive is uploaded with the submission. To test local translation, use the documented llama.cpp or OpenAI-compatible setup; Google Translate can be tested without a local server.",
+    "approval_notes": "This release adds a per-profile page translation concurrency setting (1-32, default 1). Requests are still made directly by the extension to the user-configured endpoint; no remote code is included. The source archive is uploaded with the submission. Automated tests cover concurrency limits, stable paragraph mapping, legacy settings, failure handling, and the maximum cap. To test with llama.cpp, start llama-server with multiple slots (for example `--parallel 4`), set the profile concurrency to the same value, and translate a multi-paragraph page.",
     "release_notes": {
-      "en-CA": "Fixed connections to IP-based local API endpoints such as 127.0.0.1, and `bun run dev` now launches Firefox with the extension loaded for development.",
-      "en-GB": "Fixed connections to IP-based local API endpoints such as 127.0.0.1, and `bun run dev` now launches Firefox with the extension loaded for development.",
-      "en-US": "Fixed connections to IP-based local API endpoints such as 127.0.0.1, and `bun run dev` now launches Firefox with the extension loaded for development.",
-      "es-AR": "Se corrigió la conexión con los endpoints de API locales indicados por IP, como 127.0.0.1, y `bun run dev` ahora inicia Firefox con la extensión cargada para facilitar el desarrollo.",
-      "es-CL": "Se corrigió la conexión con los endpoints de API locales indicados por IP, como 127.0.0.1, y `bun run dev` ahora inicia Firefox con la extensión cargada para facilitar el desarrollo.",
-      "es-ES": "Se corrigió la conexión con los endpoints de API locales indicados por IP, como 127.0.0.1, y `bun run dev` ahora inicia Firefox con la extensión cargada para facilitar el desarrollo.",
-      "es-MX": "Se corrigió la conexión con los endpoints de API locales indicados por IP, como 127.0.0.1, y `bun run dev` ahora inicia Firefox con la extensión cargada para facilitar el desarrollo.",
-      "fr": "Correction de la connexion aux points de terminaison d'API locaux indiqués par IP, comme 127.0.0.1, et `bun run dev` lance désormais Firefox avec l'extension chargée pour faciliter le développement.",
-      "ja": "127.0.0.1などのIP指定ローカルAPIエンドポイントに正しく接続できるように修正し、開発用に `bun run dev` で拡張機能入りのFirefoxを起動できるようにしました。",
-      "ko": "127.0.0.1 등 IP로 지정한 로컬 API 엔드포인트 연결을 수정했으며, 개발용으로 `bun run dev` 실행 시 확장 기능이 설치된 Firefox가 시작됩니다.",
-      "pt-BR": "Corrigida a ligação a endpoints de API locais indicados por IP, como 127.0.0.1, e o comando `bun run dev` passa a iniciar o Firefox com a extensão carregada para desenvolvimento.",
-      "pt-PT": "Corrigida a ligação a endpoints de API locais indicados por IP, como 127.0.0.1, e o comando `bun run dev` passa a iniciar o Firefox com a extensão carregada para desenvolvimento.",
-      "ru": "Исправлено подключение к локальным API-эндпоинтам, заданным IP-адресом, например 127.0.0.1, а команда `bun run dev` теперь запускает Firefox с загруженным расширением для разработки.",
-      "zh-CN": "修复了使用 127.0.0.1 等 IP 指定的本地 API 端点的连接问题，`bun run dev` 现在还会启动已安装该扩展的 Firefox，方便开发调试。"
+      "en-CA": "Added a per-profile setting for 1 to 32 concurrent page translation requests. The default remains 1; match the value to your local server slots or API provider limits.",
+      "en-GB": "Added a per-profile setting for 1 to 32 concurrent page translation requests. The default remains 1; match the value to your local server slots or API provider limits.",
+      "en-US": "Added a per-profile setting for 1 to 32 concurrent page translation requests. The default remains 1; match the value to your local server slots or API provider limits.",
+      "es-AR": "Se agregó una opción por perfil para enviar de 1 a 32 solicitudes simultáneas al traducir páginas. El valor predeterminado sigue siendo 1; ajústalo a las ranuras del servidor local o a los límites del proveedor de API.",
+      "es-CL": "Se agregó una opción por perfil para enviar de 1 a 32 solicitudes simultáneas al traducir páginas. El valor predeterminado sigue siendo 1; ajústalo a las ranuras del servidor local o a los límites del proveedor de API.",
+      "es-ES": "Se añadió una opción por perfil para enviar de 1 a 32 solicitudes simultáneas al traducir páginas. El valor predeterminado sigue siendo 1; ajústalo a las ranuras del servidor local o a los límites del proveedor de API.",
+      "es-MX": "Se agregó una opción por perfil para enviar de 1 a 32 solicitudes simultáneas al traducir páginas. El valor predeterminado sigue siendo 1; ajústalo a las ranuras del servidor local o a los límites del proveedor de API.",
+      "fr": "Ajout d'un réglage par profil pour envoyer de 1 à 32 requêtes simultanées lors de la traduction d'une page. La valeur par défaut reste 1 ; adaptez-la aux slots du serveur local ou aux limites du fournisseur d'API.",
+      "ja": "ページ翻訳で1～32件のリクエストを同時送信できる設定をAPIプロファイルごとに追加しました。既定値は従来どおり1です。ローカルサーバーのslot数やAPIプロバイダーの制限に合わせて設定できます。",
+      "ko": "페이지 번역 시 1~32개의 요청을 동시에 보낼 수 있는 프로필별 설정을 추가했습니다. 기본값은 기존과 동일한 1이며, 로컬 서버 슬롯 수나 API 제공자 제한에 맞게 설정할 수 있습니다.",
+      "pt-BR": "Foi adicionada uma configuração por perfil para enviar de 1 a 32 solicitações simultâneas na tradução de páginas. O padrão continua sendo 1; ajuste ao número de slots do servidor local ou aos limites do provedor da API.",
+      "pt-PT": "Foi adicionada uma definição por perfil para enviar entre 1 e 32 pedidos simultâneos na tradução de páginas. O valor predefinido continua a ser 1; ajuste-o aos slots do servidor local ou aos limites do fornecedor da API.",
+      "ru": "Добавлена настройка профиля для 1–32 одновременных запросов при переводе страницы. Значение по умолчанию остаётся равным 1; укажите число слотов локального сервера или лимит API-провайдера.",
+      "zh-CN": "新增了按 API 配置文件设置页面翻译并发请求数的功能，可设为 1～32。默认值仍为 1；请根据本地服务器插槽数或 API 服务商限制进行设置。"
     }
   }
 }

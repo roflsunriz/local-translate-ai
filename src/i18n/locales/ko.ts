@@ -95,6 +95,8 @@ export const ko = {
       apiKey: 'API 키',
       model: '모델 이름',
       timeout: '타임아웃 (초)',
+      pageTranslationConcurrency: '페이지 번역 동시 요청 수',
+      pageTranslationConcurrencyDescription: 'API에 동시에 보낼 문단 요청 수(1~32)입니다. 서버 슬롯 수 또는 제공자 제한에 맞추세요. 기본값은 1입니다.',
       sourceLanguage: '기본 원본 언어',
       targetLanguage: '기본 대상 언어',
       cannotDeleteLast: '마지막 프로필은 삭제할 수 없습니다',
