@@ -202,3 +202,8 @@ BunのpatchedDependenciesとbun.lockで適用する。`bun install --frozen-lock
 - OpenAI互換というAPI形式は同時推論能力を規定しない。llama.cppは`--parallel`のserver slotとcontinuous batching、Ollamaは`OLLAMA_NUM_PARALLEL`とメモリー条件、LM StudioはMax Concurrent Predictions、LocalAIとvLLMはbackend／scheduler設定で、1インスタンス内の複数リクエストを処理できる。複数インスタンスは必須ではない。
 - `TranslationProfile.pageTranslationConcurrency`をページ翻訳のクライアント側上限とし、範囲は1～32、既定値と旧設定の補完値は1とする。完了数と元配列indexは別に扱い、並列完了順が前後しても対応するDOM nodeへ適用する。Google翻訳モードはこのプロファイル設定の対象外で、従来どおり順次処理する。
 - 利用者向けの比較、設定方法、一次資料は`docs/PAGE_TRANSLATION_CONCURRENCY.md`を正本とする。外部実装の既定値は変わり得るため、変更時は公式資料を再確認する。
+
+## Vite 8とCommonJS Reactコンポーネント（2026-10-19）
+
+- Vite 8のRolldownで、ES module形式を模した古いCommonJSパッケージ`@mdi/react`を既定importすると、既定exportのReactコンポーネントではなくmodule objectが二重にラップされた。v1.9.0の配布ビルドでは共通`MdiIcon`の初期描画がReact error #130で停止し、設定画面とサイドバーが白紙になった。
+- `@mdi/js`のパスデータを共通`MdiIcon`内の標準`svg`／`path`要素で描画すれば、表示寸法・色・CSS classを保ちながらCommonJS相互運用を避けられる。ViteやCommonJS依存を更新したときは、ビルド成功だけでなく一時Firefoxへ`dist`を読み込み、拡張UIの初期描画例外を確認する。

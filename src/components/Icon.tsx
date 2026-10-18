@@ -2,7 +2,6 @@
  * Icon component using Material Design Icons
  */
 
-import Icon from '@mdi/react';
 import {
   mdiCog,
   mdiApi,
@@ -112,18 +111,20 @@ export function MdiIcon({ name, size = 24, color, className }: MdiIconProps) {
     return null;
   }
 
-  const computedSize = typeof size === 'number' ? size / 24 : size;
-
-  // Build props conditionally to satisfy exactOptionalPropertyTypes
-  if (color && className) {
-    return <Icon path={path} size={computedSize} color={color} className={className} />;
-  } else if (color) {
-    return <Icon path={path} size={computedSize} color={color} />;
-  } else if (className) {
-    return <Icon path={path} size={computedSize} className={className} />;
-  }
-
-  return <Icon path={path} size={computedSize} />;
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      fill={color ?? 'currentColor'}
+      className={className}
+      role="presentation"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d={path} />
+    </svg>
+  );
 }
 
 export default MdiIcon;

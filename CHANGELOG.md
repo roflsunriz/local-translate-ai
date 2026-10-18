@@ -7,6 +7,17 @@
 
 ## [Unreleased]
 
+## [1.9.1] - 2026-10-19
+
+### Fixed
+
+- v1.9.0で設定画面とサイドバーが白紙になる回帰を解消するため、Vite 8でコンポーネントではなくmodule objectとして解決されていた古いCommonJSアイコンラッパーを、標準SVG描画へ置き換えた。
+
+### Changed
+
+- 同じバンドル互換性問題の再発経路をなくすため、不要になった`@mdi/react`依存を削除し、共通アイコンのSVG描画を自動テストへ追加した。
+- 公開前の依存更新確認で見つかった互換更新を取り込み、PostCSSを8.5.31へ更新した。
+
 ## [1.9.0] - 2026-10-19
 
 ### Added
@@ -219,6 +230,7 @@
 - 外部エンドポイントへのHTTPS強制
 
 [1.7.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.6.0...v1.7.0
+[1.9.1]: https://github.com/roflsunriz/local-translate-ai/compare/v1.9.0...v1.9.1
 [1.9.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.8.0...v1.9.0
 [1.8.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.7.0...v1.8.0
 [1.6.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.5.2...v1.6.0
@@ -231,5 +243,5 @@
 [1.2.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/roflsunriz/local-translate-ai/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/roflsunriz/local-translate-ai/compare/v0.1.0...v1.0.0
-[Unreleased]: https://github.com/roflsunriz/local-translate-ai/compare/v1.9.0...HEAD
+[Unreleased]: https://github.com/roflsunriz/local-translate-ai/compare/v1.9.1...HEAD
 [0.1.0]: https://github.com/roflsunriz/local-translate-ai/releases/tag/v0.1.0

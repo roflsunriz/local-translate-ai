@@ -1,5 +1,12 @@
 # 検証手順
 
+## 設定画面の白紙化修正とv1.9.1（2026-10-19）
+
+- v1.9.0の`dist`をweb-ext 10.8.0から一時プロファイルのヘッドレスFirefox 158へ読み込み、`moz-extension://.../assets/global-*.js`の初期描画でReact error #130（要素型がobject）を再現した。生成JSを確認し、Vite 8のRolldownが`@mdi/react`の既定exportをmodule objectとして二重にラップしていたことを原因と特定した。
+- 共通`MdiIcon`を`@mdi/js`のパスデータから標準`svg`／`path`要素を描画する実装へ変更し、`@mdi/react`を依存関係とlockfileから削除した。共通アイコンのSVG出力をVitestへ追加した。
+- 修正後の`dist`を同じFirefox起動経路へ読み込み、v1.9.0で出ていたReact例外が発生しないことを確認した。`bun install --frozen-lockfile`、`bun run lint`、`bun run type-check`、`bun run test`（6ファイル、30件）、`bun run build`、`bun run audit`、`bun run test:node-forge`、`bun run amo:validate`、`bun run amo:lint`、`git diff --check`が成功した。AMO lintの既知のReact内部`innerHTML`警告は2件で増加していない。
+- `bun outdated`で見つかったPostCSS 8.5.31を取り込み、更新後に残件がないことと全検査の再成功を確認した。`bun run zip:dist`で50エントリーのv1.9.1パッケージを生成し、`manifest.json`の版、設定画面、サイドバー、background scriptの同梱を確認した。
+
 ## ページ翻訳の同時リクエスト対応とv1.9.0（2026-10-19）
 
 - llama.cpp、Ollama、LM Studio、LocalAI、vLLM、OpenAI API、OpenRouterの公式資料を確認した。OpenAI互換形式そのものは並列能力を保証せず、主要なローカルサーバーは1インスタンス内で複数リクエストを処理できるため、プロファイル単位の上限（1～32、既定値1）とした。根拠と適用条件は`docs/PAGE_TRANSLATION_CONCURRENCY.md`に記録した。
