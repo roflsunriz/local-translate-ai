@@ -1,5 +1,10 @@
 # 検証手順
 
+## 2026-10-19: CI高速化
+
+- 変更したGitHub Actionsをactionlint 1.7.12で検査し、エラー0件を確認した。
+- GitHub上の未解決Dependabot更新PRと依存脆弱性アラートがともに0件であることを確認した。
+
 ## 設定画面の白紙化修正とv1.9.1（2026-10-19）
 
 - v1.9.0の`dist`をweb-ext 10.8.0から一時プロファイルのヘッドレスFirefox 158へ読み込み、`moz-extension://.../assets/global-*.js`の初期描画でReact error #130（要素型がobject）を再現した。生成JSを確認し、Vite 8のRolldownが`@mdi/react`の既定exportをmodule objectとして二重にラップしていたことを原因と特定した。

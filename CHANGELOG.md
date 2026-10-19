@@ -7,6 +7,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- CIとリリースの検証matrixをfail-fast化し、workflow別の重複実行取消しとBun依存キャッシュで結果を早く返すようにした。
+
 ## [1.9.1] - 2026-10-19
 
 ### Fixed
