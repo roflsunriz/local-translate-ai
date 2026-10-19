@@ -58,3 +58,8 @@ Dependabot PR #23 の TypeScript 7 単独更新では `typescript-eslint` がコ
 - 初回のraw監査に残ったGHSA-86w9-cpqp-85rvへ、Ununiqueの既存パッチと構造回帰を再利用した。node-forge 1.4.0に不足していたDigestAlgorithmのASN.1要素数検査を追加し、パッチと実ファイル全体のSHA-256・版を監査時に照合する。
 - Node回帰5件は、パッチ真正性と冪等性、正常パラメーターあり／省略の署名受理、余分なネスト要素の拒否、当該GHSAのみの判別、未知のGHSA・別依存・親の別警告を失敗させる負例が通過した。raw監査の警告本文は保持し、パッチを確認した対応済みの1件として明示する。既知脆弱性0件という表示には置き換えない。
 - BunのpatchedDependenciesを登録し、bun install --frozen-lockfileで再現した。bun run auditとNode回帰5件、lint、型検査、Vitest23件、拡張buildが通過した。CIにaudit taskを追加した。AMO署名・公開や実利用プロファイルは操作していない。
+
+## 2026-10-20: Dependabot 月末一括処理
+
+- `.github/dependabot.yml` は毎月28日00:00、`.github/workflows/dependabot-automation.yml` は同日18:00（いずれも `Asia/Tokyo`）に設定した。呼び出し先は検証済み共通 workflow の固定 SHA とし、現在の head SHA、Dependabot の資格状態、全 PR チェック成功を merge 前に再確認する。
+- YAML 構文、変更差分、空白エラーをローカルで検査した。実際の月末 schedule と Dependabot PR の merge 経路は、次回の毎月28日実行で確認する。
