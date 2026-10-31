@@ -25,7 +25,7 @@
     "sign:listed": "web-ext sign -s dist --channel \"listed\" --amo-metadata \"amo-metadata.json\" --upload-source-code \"source-code.zip\"",
     "amo:unlisted": "bun run build && bun run zip:source && bun run zip:dist && bun run sign:unlisted",
     "amo:listed": "bun run build && bun run zip:source && bun run zip:dist && bun run sign:listed",
-    "audit": "bun scripts/audit-node-forge.mjs",
+    "audit": "bun scripts/audit-dependencies.mjs",
     "test:node-forge": "node --test scripts/node-forge-regression.mjs"
   },
   "dependencies": {
@@ -73,10 +73,11 @@
   ],
   "overrides": {
     "adm-zip": "0.6.1",
-    "fast-uri": "4.2.2",
+    "fast-uri": "4.2.3",
     "flatted": "3.4.3",
     "image-size": "2.0.3",
-    "node-forge": "1.4.0",
+    "minimatch@^10.0.0": "11.0.1",
+    "node-forge": "1.4.2",
     "picomatch": "4.0.5",
     "rollup": "4.62.2",
     "shell-quote": "1.12.0",
@@ -85,6 +86,6 @@
     "yauzl": "3.4.0"
   },
   "patchedDependencies": {
-    "node-forge@1.4.0": "patches/node-forge@1.4.0.patch"
+    "deepmerge@4.3.1": "patches/deepmerge@4.3.1.patch"
   }
 }
