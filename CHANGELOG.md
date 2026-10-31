@@ -9,6 +9,7 @@
 
 ### Changed
 
+- 型付きlintのpeer依存を満たすため、typescript-eslintのparserとeslint-pluginを8.72.1に揃えた。
 - GitHub Actions の月間利用時間を抑えるため、Dependabot version update と自動マージを毎週・即時処理から毎月28日（Asia/Tokyo）の月末一括処理へ変更した。
 - CIとリリースの検証matrixをfail-fast化し、workflow別の重複実行取消しとBun依存キャッシュで結果を早く返すようにした。
 

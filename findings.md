@@ -1,6 +1,7 @@
 # 調査知見
 
 - TypeScript 7 CLIは `@typescript/native`、typed ESLint用APIは `@typescript/typescript6` を `typescript` aliasで併用する。型検査とlintの両方を確認する。
+- typescript-eslintのparserとeslint-pluginはpeer依存に従って同じ版へ更新し、Bun lockの実効版を確認する。
 - Dependabotの再修復は読取り権限で `bun.lock` だけを変更し、PRコードへ秘密や書込み権限を渡さない。
 - `node-forge` 1.4.2 は DigestInfo を正規DERとして照合する。旧1.4.0向けパッチと監査例外を撤去し、正常な署名構造と余分な要素の拒否をNode回帰で確認する。
 - `deepmerge` 4.3.1 は GHSA-gcqx-w48m-w2h4 の修正版が未公開。上流PR #274 に基づき `__proto__` の書込みを両ループで防ぐ限定パッチを適用し、パッチと全配布入口のハッシュ・攻撃回帰を毎回確認する。
