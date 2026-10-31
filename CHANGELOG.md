@@ -12,6 +12,11 @@
 - GitHub Actions の月間利用時間を抑えるため、Dependabot version update と自動マージを毎週・即時処理から毎月28日（Asia/Tokyo）の月末一括処理へ変更した。
 - CIとリリースの検証matrixをfail-fast化し、workflow別の重複実行取消しとBun依存キャッシュで結果を早く返すようにした。
 
+### Security
+
+- 開発依存の既知の脆弱性に対応するため、fast-uri、undici、zod、node-forgeとminimatch 10系を修正版へ更新した。deepmergeは修正版公開まで限定パッチと攻撃回帰を適用する。
+- node-forgeの上流修正版へ移行し、旧パッチと監査例外を撤去した。minimatch 3系の判定差は実装と回帰を照合し、未確認の監査結果は引き続き失敗させる。
+
 ## [1.9.1] - 2026-10-19
 
 ### Fixed
