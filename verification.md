@@ -7,6 +7,7 @@
 - PLaMo 3 2Bでも拡張機能から英日・日英、通常・ストリーミング、選択翻訳とページ翻訳メッセージを再確認した。ページ翻訳のコンテキストメニュー自体は操作していない。
 - 固定インストール、lint、型検査、build、Vitest 54件、依存監査、AMO情報検証、AMO lintと配布ZIP生成が成功した。AMO lintには既存のReact生成コード由来の `innerHTML` 警告が2件残る。素の監査に残るdeepmergeの警告は既存の限定パッチと回帰で検証し、他の未確認警告は失敗させる。依存更新の残件はなかった。
 - 最初のGitHub CIではNode 20に `navigator` がなく画面テストが失敗し、非対応のVitest 5.1 reporterも `Map.groupBy` 不在で詳細を表示できなかった。Node 20でJSON reporterを使って原因を再現し、テストにブラウザーの言語情報を与えた後に同じ3件が通過した。CI・公開用Nodeを24 LTSへ更新し、Node 24で全54件を再実行した。
+- 修正後のGitHub CI（run 42205350118）とリリースworkflow（run 42205447751）は成功した。AMOの1.10.1はlisted・public・審査済みで、GitHub ReleaseのXPIを取得し、SHA-256、manifestの版、署名、主要画面とbackgroundの同梱を確認した。
 - 公式Hy-MT2の2bit GGUFは手元の2種類のサーバーでtensor offsetの不一致となり、Q4_K_Mで実測した。GPU、他の量子化形式・モデル、全言語の組合せは未検証。
 
 ## 2026-11-06: PLaMo 3 Translate対応と1.10.0
