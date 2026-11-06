@@ -174,6 +174,7 @@ export function OptionsPage() {
               </button>
             </div>
             <button
+              id="settings-save"
               onClick={() => { void handleSave(); }}
               className="inline-flex items-center gap-2 rounded-md px-6 py-2 text-sm font-medium text-white transition-colors"
               style={{ backgroundColor: 'var(--color-accent)' }}

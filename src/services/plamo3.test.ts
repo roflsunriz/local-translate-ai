@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { Plamo3LanguageError, TranslationService } from './translationService';
 
-import { DEFAULT_PROFILE, DEFAULT_USER_PROMPT_TEMPLATE } from '@/types/settings';
+import { DEFAULT_PROFILE, PLAMO2_SYSTEM_PROMPT, PLAMO2_USER_PROMPT_TEMPLATE, GENERAL_USER_PROMPT_TEMPLATE } from '@/types/settings';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { SettingsService } from '@/services/settingsService';
 import { sanitizeTranslationResult } from '@/utils/sanitize';
@@ -106,7 +106,7 @@ describe('PLaMo 3 requests', () => {
     const fetchMock = mockChatResponse();
     const profile: TranslationProfile = {
       ...DEFAULT_PROFILE, apiType: 'openai', model: 'plamo-2', systemPrompt: 'Translate to {{target_language}}',
-      userPromptTemplate: DEFAULT_USER_PROMPT_TEMPLATE,
+      userPromptTemplate: PLAMO2_USER_PROMPT_TEMPLATE,
     };
     await new TranslationService().translate('Hello', 'English', 'Japanese', profile);
     expect(bodyOf(fetchMock)).toEqual({
@@ -130,13 +130,54 @@ describe('saved profile compatibility', () => {
   it('leaves legacy profiles and prompts in OpenAI mode in both storage readers', async () => {
     const { apiType: _apiType, plamo3Form: _form, ...legacyProfile } = {
       ...DEFAULT_PROFILE, id: 'legacy', model: 'plamo-2', apiType: 'openai' as const,
+      systemPrompt: PLAMO2_SYSTEM_PROMPT, userPromptTemplate: PLAMO2_USER_PROMPT_TEMPLATE,
     };
     const stored = { activeProfileId: 'legacy', profiles: [legacyProfile] };
     vi.stubGlobal('browser', { storage: { local: { get: vi.fn(async () => ({ settings: stored })) } } });
     const serviceSettings = await new SettingsService().getSettings();
-    expect(serviceSettings.profiles[0]).toMatchObject({ id: 'legacy', model: 'plamo-2', apiType: 'openai', userPromptTemplate: DEFAULT_USER_PROMPT_TEMPLATE });
+    expect(serviceSettings.profiles[0]).toMatchObject({ id: 'legacy', model: 'plamo-2', apiType: 'openai', userPromptTemplate: PLAMO2_USER_PROMPT_TEMPLATE });
     await useSettingsStore.getState().loadFromStorage();
-    expect(useSettingsStore.getState().settings.profiles[0]).toMatchObject({ id: 'legacy', model: 'plamo-2', apiType: 'openai', userPromptTemplate: DEFAULT_USER_PROMPT_TEMPLATE });
+    expect(useSettingsStore.getState().settings.profiles[0]).toMatchObject({ id: 'legacy', model: 'plamo-2', apiType: 'openai', userPromptTemplate: PLAMO2_USER_PROMPT_TEMPLATE });
+  });
+});
+
+describe('custom prompts for other translation models', () => {
+  it('sends the general template without an empty system message', async () => {
+    const fetchMock = mockChatResponse();
+    await new TranslationService().translate('你好，世界。', 'Chinese', 'English', {
+      ...DEFAULT_PROFILE, apiType: 'openai', model: 'hy-mt2',
+    });
+    expect(bodyOf(fetchMock)).toEqual({
+      model: 'hy-mt2',
+      messages: [{ role: 'user', content: GENERAL_USER_PROMPT_TEMPLATE
+        .replace('{{target_language}}', 'English').replace('{{input_text}}', '你好，世界。') }],
+      stream: false,
+    });
+  });
+
+  it('uses Chinese language names in custom Chinese instructions and preserves source placeholders', async () => {
+    const fetchMock = mockChatResponse();
+    await new TranslationService().translate('Keep {{target_language}} and {{output_text}}.', 'English', 'Chinese', {
+      ...DEFAULT_PROFILE,
+      apiType: 'openai',
+      model: 'hy-mt2',
+      systemPrompt: '',
+      userPromptTemplate: '把{{source_language_zh}}翻译成{{target_language_zh}}：\n{{input_text}}',
+    });
+    expect(bodyOf(fetchMock)).toMatchObject({
+      messages: [{ role: 'user', content: '把英语翻译成中文：\nKeep {{target_language}} and {{output_text}}.' }],
+    });
+  });
+
+  it('omits an empty system prompt for Anthropic while retaining custom user instructions', async () => {
+    const fetchMock = mockChatResponse();
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ content: [{ type: 'text', text: 'こんにちは' }] })));
+    await new TranslationService().translate('Hello', 'English', 'Japanese', {
+      ...DEFAULT_PROFILE, apiType: 'anthropic', systemPrompt: '', userPromptTemplate: 'Translate: {{input_text}}',
+    });
+    const request = bodyOf(fetchMock);
+    expect(request).toMatchObject({ messages: [{ role: 'user', content: 'Translate: Hello' }] });
+    expect(request).not.toHaveProperty('system');
   });
 });
 

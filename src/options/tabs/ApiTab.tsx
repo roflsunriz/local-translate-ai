@@ -93,6 +93,7 @@ export function ApiTab() {
                 <Button
                   variant="ghost"
                   size="sm"
+                  data-profile-action="edit"
                   onClick={() => { setEditingProfile({ ...profile }); }}
                 >
                   {t('common.edit')}
@@ -158,13 +159,14 @@ function ProfileEditor({ profile, onChange, onSave, onCancel }: ProfileEditorPro
 
       <div className="grid gap-4 md:grid-cols-2">
         <div>
-          <label
+          <label htmlFor="profile-name"
             className="mb-1 block text-sm font-medium"
             style={{ color: 'var(--color-text-secondary)' }}
           >
             {t('settings.api.profileName')}
           </label>
           <input
+            id="profile-name"
             type="text"
             value={profile.name}
             onChange={(e) => { updateField('name', e.target.value); }}
@@ -178,14 +180,16 @@ function ProfileEditor({ profile, onChange, onSave, onCancel }: ProfileEditorPro
         </div>
 
         <div>
-          <label
+          <label htmlFor="profile-api-type"
             className="mb-1 block text-sm font-medium"
             style={{ color: 'var(--color-text-secondary)' }}
           >
             {t('settings.api.apiType')}
           </label>
           <select
+            id="profile-api-type"
             value={profile.apiType}
+            aria-describedby="profile-api-type-help"
             onChange={(e) => { updateField('apiType', e.target.value as ApiType); }}
             className="w-full rounded-md border px-3 py-2 text-sm"
             style={{
@@ -198,16 +202,20 @@ function ProfileEditor({ profile, onChange, onSave, onCancel }: ProfileEditorPro
             <option value="anthropic">{t('settings.api.apiTypeAnthropic')}</option>
             <option value="plamo3">{t('settings.api.apiTypePlamo3')}</option>
           </select>
+          <p id="profile-api-type-help" className="mt-1 text-xs" style={{ color: 'var(--color-text-muted)' }}>
+            {t('settings.api.apiTypeHelp')}
+          </p>
         </div>
 
         <div>
-          <label
+          <label htmlFor="profile-model"
             className="mb-1 block text-sm font-medium"
             style={{ color: 'var(--color-text-secondary)' }}
           >
             {t('settings.api.model')}
           </label>
           <input
+            id="profile-model"
             type="text"
             value={profile.model}
             onChange={(e) => { updateField('model', e.target.value); }}
@@ -221,13 +229,14 @@ function ProfileEditor({ profile, onChange, onSave, onCancel }: ProfileEditorPro
         </div>
 
         <div className="md:col-span-2">
-          <label
+          <label htmlFor="profile-endpoint"
             className="mb-1 block text-sm font-medium"
             style={{ color: 'var(--color-text-secondary)' }}
           >
             {t('settings.api.endpoint')}
           </label>
           <input
+            id="profile-endpoint"
             type="url"
             value={profile.apiEndpoint}
             onChange={(e) => { updateField('apiEndpoint', e.target.value); }}
@@ -348,7 +357,7 @@ function ProfileEditor({ profile, onChange, onSave, onCancel }: ProfileEditorPro
         <Button variant="ghost" onClick={onCancel}>
           {t('common.cancel')}
         </Button>
-        <Button variant="primary" onClick={onSave}>
+        <Button id="profile-save" variant="primary" onClick={onSave}>
           {t('common.save')}
         </Button>
       </div>

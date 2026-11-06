@@ -1,8 +1,8 @@
 import { useTranslation } from '@/hooks/useTranslation';
 import { useSettingsStore } from '@/stores';
-import { DEFAULT_SYSTEM_PROMPT, DEFAULT_USER_PROMPT_TEMPLATE } from '@/types/settings';
+import { PLAMO2_SYSTEM_PROMPT, PLAMO2_USER_PROMPT_TEMPLATE, GENERAL_USER_PROMPT_TEMPLATE } from '@/types/settings';
 
-import type { Plamo3Form } from '@/types/settings';
+import type { ApiType, Plamo3Form } from '@/types/settings';
 
 export function PromptTab() {
   const { t } = useTranslation();
@@ -17,12 +17,51 @@ export function PromptTab() {
     );
   }
 
-  if (activeProfile.apiType === 'plamo3') {
-    return (
-      <div className="space-y-4">
-        <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-          {t('settings.prompt.plamo3Description')}
+  const handleUpdatePrompt = (
+    field: 'systemPrompt' | 'userPromptTemplate',
+    value: string
+  ) => {
+    updateProfile(activeProfile.id, { [field]: value });
+  };
+
+  const handleResetSystemPrompt = () => {
+    updateProfile(activeProfile.id, { systemPrompt: PLAMO2_SYSTEM_PROMPT });
+  };
+
+  const handleResetUserPrompt = () => {
+    updateProfile(activeProfile.id, { userPromptTemplate: PLAMO2_USER_PROMPT_TEMPLATE });
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <label htmlFor="prompt-api-type" className="mb-1 block text-sm font-medium"
+          style={{ color: 'var(--color-text-secondary)' }}>
+          {t('settings.api.apiType')}
+        </label>
+        <select
+          id="prompt-api-type"
+          value={activeProfile.apiType}
+          onChange={(e) => { updateProfile(activeProfile.id, { apiType: e.target.value as ApiType }); }}
+          className="w-full rounded-md border px-3 py-2 text-sm"
+          style={{
+            backgroundColor: 'var(--color-bg-tertiary)',
+            borderColor: 'var(--color-border)',
+            color: 'var(--color-text-primary)',
+          }}
+        >
+          <option value="plamo3">{t('settings.api.apiTypePlamo3')}</option>
+          <option value="openai">{t('settings.api.apiTypeOpenAI')}</option>
+          <option value="anthropic">{t('settings.api.apiTypeAnthropic')}</option>
+        </select>
+        <p className="mt-2 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+          {activeProfile.apiType === 'plamo3'
+            ? t('settings.prompt.plamo3Description')
+            : t('settings.prompt.genericDescription')}
         </p>
+      </div>
+
+      {activeProfile.apiType === 'plamo3' && (
         <div>
           <label htmlFor="plamo3-form" className="mb-1 block text-sm font-medium"
             style={{ color: 'var(--color-text-secondary)' }}>
@@ -44,44 +83,38 @@ export function PromptTab() {
             <option value="polite">{t('settings.prompt.plamo3FormPolite')}</option>
           </select>
         </div>
-      </div>
-    );
-  }
+      )}
 
-  const handleUpdatePrompt = (
-    field: 'systemPrompt' | 'userPromptTemplate',
-    value: string
-  ) => {
-    updateProfile(activeProfile.id, { [field]: value });
-  };
+      {activeProfile.apiType !== 'plamo3' &&
+        (activeProfile.systemPrompt === PLAMO2_SYSTEM_PROMPT ||
+          activeProfile.userPromptTemplate === PLAMO2_USER_PROMPT_TEMPLATE) && (
+        <p id="prompt-plamo2-hint" className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+          {t('settings.prompt.plamo2Hint')}
+        </p>
+      )}
 
-  const handleResetSystemPrompt = () => {
-    updateProfile(activeProfile.id, { systemPrompt: DEFAULT_SYSTEM_PROMPT });
-  };
-
-  const handleResetUserPrompt = () => {
-    updateProfile(activeProfile.id, { userPromptTemplate: DEFAULT_USER_PROMPT_TEMPLATE });
-  };
-
-  return (
-    <div className="space-y-6">
       <div>
-        <div className="mb-2 flex items-center justify-between">
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
           <label
+            htmlFor="prompt-system"
             className="text-sm font-medium"
             style={{ color: 'var(--color-text-secondary)' }}
           >
             {t('settings.prompt.systemPrompt')}
           </label>
-          <button
-            onClick={handleResetSystemPrompt}
-            className="text-xs transition-colors hover:underline"
-            style={{ color: 'var(--color-accent)' }}
-          >
-            {t('settings.prompt.resetToDefault')}
-          </button>
+          <div className="flex flex-wrap gap-3">
+            <button id="prompt-clear-system" onClick={() => { handleUpdatePrompt('systemPrompt', ''); }}
+              className="text-xs transition-colors hover:underline" style={{ color: 'var(--color-accent)' }}>
+              {t('common.clear')}
+            </button>
+            <button id="prompt-plamo2-system" onClick={handleResetSystemPrompt}
+              className="text-xs transition-colors hover:underline" style={{ color: 'var(--color-accent)' }}>
+              {t('settings.prompt.plamo2Default')}
+            </button>
+          </div>
         </div>
         <textarea
+          id="prompt-system"
           value={activeProfile.systemPrompt}
           onChange={(e) => { handleUpdatePrompt('systemPrompt', e.target.value); }}
           rows={4}
@@ -95,22 +128,28 @@ export function PromptTab() {
       </div>
 
       <div>
-        <div className="mb-2 flex items-center justify-between">
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
           <label
+            htmlFor="prompt-user"
             className="text-sm font-medium"
             style={{ color: 'var(--color-text-secondary)' }}
           >
             {t('settings.prompt.userPrompt')}
           </label>
-          <button
-            onClick={handleResetUserPrompt}
-            className="text-xs transition-colors hover:underline"
-            style={{ color: 'var(--color-accent)' }}
-          >
-            {t('settings.prompt.resetToDefault')}
-          </button>
+          <div className="flex flex-wrap gap-3">
+            <button id="prompt-general-template"
+              onClick={() => { handleUpdatePrompt('userPromptTemplate', GENERAL_USER_PROMPT_TEMPLATE); }}
+              className="text-xs transition-colors hover:underline" style={{ color: 'var(--color-accent)' }}>
+              {t('settings.prompt.generalTemplate')}
+            </button>
+            <button id="prompt-plamo2-template" onClick={handleResetUserPrompt}
+              className="text-xs transition-colors hover:underline" style={{ color: 'var(--color-accent)' }}>
+              {t('settings.prompt.plamo2Default')}
+            </button>
+          </div>
         </div>
         <textarea
+          id="prompt-user"
           value={activeProfile.userPromptTemplate}
           onChange={(e) => { handleUpdatePrompt('userPromptTemplate', e.target.value); }}
           rows={8}
@@ -148,6 +187,18 @@ export function PromptTab() {
               {'{{target_language}}'}
             </code>{' '}
             - {t('settings.prompt.variableTarget')}
+          </li>
+          <li>
+            <code className="rounded bg-[var(--color-bg-secondary)] px-1">
+              {'{{source_language_zh}}'}
+            </code>{' '}
+            - {t('settings.prompt.variableSourceChinese')}
+          </li>
+          <li>
+            <code className="rounded bg-[var(--color-bg-secondary)] px-1">
+              {'{{target_language_zh}}'}
+            </code>{' '}
+            - {t('settings.prompt.variableTargetChinese')}
           </li>
           <li>
             <code className="rounded bg-[var(--color-bg-secondary)] px-1">

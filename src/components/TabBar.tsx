@@ -25,10 +25,11 @@ export function TabBar({ tabs, activeTab, onTabChange }: TabBarProps) {
           <button
             key={tab.id}
             role="tab"
+            data-tab-id={tab.id}
             aria-selected={isActive}
             onClick={() => { onTabChange(tab.id); }}
             className={`
-              flex flex-1 shrink-0 items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors
+              flex flex-1 shrink-0 items-center justify-center gap-2 whitespace-nowrap px-4 py-3 text-sm font-medium transition-colors
               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset
               focus-visible:ring-[var(--color-accent)]
             `}

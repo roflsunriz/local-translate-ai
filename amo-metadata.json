@@ -114,22 +114,22 @@
   },
   "version": {
     "license": "MIT",
-    "approval_notes": "Version 1.10.0 adds a PLaMo 3 Translate request mode for llama.cpp. It sends the source text and language codes using chat_template_kwargs, retains existing profiles, and adds a Japanese style selector. It does not add remote code or permissions. Automated tests cover request formats, legacy profiles, streaming and unsupported languages.",
+    "approval_notes": "Version 1.10.1 keeps prompt fields available in every API mode and lets users switch to OpenAI-compatible or Anthropic APIs. It preserves saved prompts, adds a general translation template and Chinese language-name variables, and leaves the PLaMo 3 request format unchanged. Automated tests cover legacy settings, request construction and prompt visibility.",
     "release_notes": {
-      "en-CA": "Added PLaMo 3 Translate support and made it the default for new profiles. Existing profiles are preserved. Choose the Japanese writing style in Prompt settings.",
-      "en-GB": "Added PLaMo 3 Translate support and made it the default for new profiles. Existing profiles are preserved. Choose the Japanese writing style in Prompt settings.",
-      "en-US": "Added PLaMo 3 Translate support and made it the default for new profiles. Existing profiles are preserved. Choose the Japanese writing style in Prompt settings.",
-      "es-AR": "Se añadió compatibilidad con PLaMo 3 Translate como opción predeterminada para perfiles nuevos. Se conservan los perfiles existentes. El estilo japonés se elige en la configuración de prompts.",
-      "es-CL": "Se añadió compatibilidad con PLaMo 3 Translate como opción predeterminada para perfiles nuevos. Se conservan los perfiles existentes. El estilo japonés se elige en la configuración de prompts.",
-      "es-ES": "Se añadió compatibilidad con PLaMo 3 Translate como opción predeterminada para perfiles nuevos. Se conservan los perfiles existentes. El estilo japonés se elige en la configuración de prompts.",
-      "es-MX": "Se añadió compatibilidad con PLaMo 3 Translate como opción predeterminada para perfiles nuevos. Se conservan los perfiles existentes. El estilo japonés se elige en la configuración de prompts.",
-      "fr": "Prise en charge de PLaMo 3 Translate, utilisé par défaut pour les nouveaux profils. Les profils existants sont conservés. Le style japonais se choisit dans les paramètres des invites.",
-      "ja": "PLaMo 3 Translateに対応し、新規プロファイルの既定にしました。既存プロファイルは維持されます。設定のプロンプト画面で日本語の文体を選べます。",
-      "ko": "PLaMo 3 Translate 지원을 추가하고 새 프로필의 기본값으로 설정했습니다. 기존 프로필은 유지됩니다. 프롬프트 설정에서 일본어 문체를 선택할 수 있습니다.",
-      "pt-BR": "Adicionado suporte ao PLaMo 3 Translate como padrão para novos perfis. Os perfis existentes são mantidos. O estilo japonês pode ser escolhido nas configurações de prompt.",
-      "pt-PT": "Adicionado suporte ao PLaMo 3 Translate como padrão para novos perfis. Os perfis existentes são mantidos. O estilo japonês pode ser escolhido nas configurações de prompt.",
-      "ru": "Добавлена поддержка PLaMo 3 Translate, теперь это настройка по умолчанию для новых профилей. Существующие профили сохраняются. Стиль японского выбирается в настройках промпта.",
-      "zh-CN": "新增 PLaMo 3 Translate 支持，并将其设为新配置的默认选项。现有配置会保留。可在提示词设置中选择日语文体。"
+      "en-CA": "Prompt fields remain visible for every API type. Switch to OpenAI-compatible for Hy-MT2 and other models, and customize or choose a general template. Existing prompts are preserved. Chinese language-name variables are also available.",
+      "en-GB": "Prompt fields remain visible for every API type. Switch to OpenAI-compatible for Hy-MT2 and other models, and customize or choose a general template. Existing prompts are preserved. Chinese language-name variables are also available.",
+      "en-US": "Prompt fields remain visible for every API type. Switch to OpenAI-compatible for Hy-MT2 and other models, and customize or choose a general template. Existing prompts are preserved. Chinese language-name variables are also available.",
+      "es-AR": "Los campos de prompt permanecen visibles en todos los tipos de API. Para Hy-MT2 y otros modelos, cambia a Compatible con OpenAI y usa una plantilla general o prompts propios. Se conservan los prompts existentes y se admiten nombres de idioma en chino.",
+      "es-CL": "Los campos de prompt permanecen visibles en todos los tipos de API. Para Hy-MT2 y otros modelos, cambia a Compatible con OpenAI y usa una plantilla general o prompts propios. Se conservan los prompts existentes y se admiten nombres de idioma en chino.",
+      "es-ES": "Los campos de prompt permanecen visibles en todos los tipos de API. Para Hy-MT2 y otros modelos, cambia a Compatible con OpenAI y usa una plantilla general o prompts propios. Se conservan los prompts existentes y se admiten nombres de idioma en chino.",
+      "es-MX": "Los campos de prompt permanecen visibles en todos los tipos de API. Para Hy-MT2 y otros modelos, cambia a Compatible con OpenAI y usa una plantilla general o prompts propios. Se conservan los prompts existentes y se admiten nombres de idioma en chino.",
+      "fr": "Les champs d’invite restent visibles pour tous les types d’API. Pour Hy-MT2 et les autres modèles, choisissez Compatible OpenAI et utilisez le modèle général ou vos propres invites. Les invites existantes sont conservées et des variables de langue en chinois sont disponibles.",
+      "ja": "すべてのAPI種別でプロンプト入力欄を表示します。Hy-MT2などではOpenAI互換へ切り替え、汎用テンプレートや独自のプロンプトを使えます。既存の設定は保持され、中国語の言語名変数も利用できます。",
+      "ko": "모든 API 유형에서 프롬프트 입력란을 표시합니다. Hy-MT2 등은 OpenAI 호환으로 전환하고 일반 템플릿이나 사용자 프롬프트를 사용할 수 있습니다. 기존 프롬프트는 유지되며 중국어 언어 이름 변수도 지원합니다.",
+      "pt-BR": "Os campos de prompt permanecem visíveis em todos os tipos de API. Para Hy-MT2 e outros modelos, altere para Compatível com OpenAI e use um modelo geral ou prompts personalizados. Os prompts existentes são mantidos e há variáveis com nomes de idioma em chinês.",
+      "pt-PT": "Os campos de prompt permanecem visíveis em todos os tipos de API. Para Hy-MT2 e outros modelos, altere para Compatível com OpenAI e use um modelo geral ou prompts personalizados. Os prompts existentes são mantidos e há variáveis com nomes de idioma em chinês.",
+      "ru": "Поля промптов остаются видимыми для всех типов API. Для Hy-MT2 и других моделей выберите совместимый с OpenAI API и используйте общий шаблон или свои промпты. Существующие промпты сохраняются; доступны названия языков на китайском.",
+      "zh-CN": "所有 API 类型都会显示提示词输入框。使用 Hy-MT2 等模型时可切换到 OpenAI 兼容，使用通用模板或自定义提示词。现有提示词会保留，还可使用中文语言名称变量。"
     }
   }
 }

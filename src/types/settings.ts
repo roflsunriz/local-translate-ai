@@ -120,7 +120,7 @@ export interface Settings {
   useGoogleTranslate: boolean;
 }
 
-export const DEFAULT_SYSTEM_PROMPT =
+export const PLAMO2_SYSTEM_PROMPT =
 `You are an advanced translation engine with deep expertise in technology. Your role is to accurately translate text into {{target_language}} while preserving the original formatting, technical terminology, and abbreviations. Do not add any explanations or notes to the translation output.
 ---
 When translating into Japanese, do not end sentences with polite-form expressions such as "ます", "です", or "ました". Always use plain-form expressions such as "だ", "である", or "した". Examples:
@@ -131,11 +131,14 @@ Translation example 2: テーブルの上にリンゴが置いてある。その
 Source example 3: No need to mention, we have to hurry as possible as we can.
 Translation example 3: 言うまでもなく、私たちは可能な限り急ぐ必要がある。`;
 
-export const DEFAULT_USER_PROMPT_TEMPLATE = `<|plamo:op|>dataset
+export const PLAMO2_USER_PROMPT_TEMPLATE = `<|plamo:op|>dataset
 translation
 <|plamo:op|>input lang={{source_language}}
 {{input_text}}
 <|plamo:op|>output lang={{target_language}}`;
+
+export const GENERAL_USER_PROMPT_TEMPLATE =
+  'Translate the following text into {{target_language}}. Output only the translation, without additional explanation:\n\n{{input_text}}';
 
 export const DEFAULT_PROFILE: TranslationProfile = {
   id: 'default-plamo3-llama-cpp',
@@ -148,8 +151,8 @@ export const DEFAULT_PROFILE: TranslationProfile = {
   pageTranslationConcurrency: MIN_PAGE_TRANSLATION_CONCURRENCY,
   sourceLanguage: 'auto',
   targetLanguage: 'Japanese',
-  systemPrompt: DEFAULT_SYSTEM_PROMPT,
-  userPromptTemplate: DEFAULT_USER_PROMPT_TEMPLATE,
+  systemPrompt: '',
+  userPromptTemplate: GENERAL_USER_PROMPT_TEMPLATE,
   plamo3Form: 'plain',
 };
 

@@ -159,6 +159,7 @@ export function TranslatePanel() {
           {t('sidebar.translate.inputPlaceholder').split('...')[0]}
         </label>
         <TextArea
+          id="translation-input"
           value={inputText}
           onChange={setInputText}
           placeholder={t('sidebar.translate.inputPlaceholder')}
@@ -188,6 +189,7 @@ export function TranslatePanel() {
           </Button>
         ) : (
           <Button
+            id="translation-submit"
             variant="primary"
             onClick={handleTranslate}
             disabled={!inputText.trim()}
@@ -225,6 +227,7 @@ export function TranslatePanel() {
           {isTranslating ? t('sidebar.translate.translating') : t('sidebar.translate.outputPlaceholder').split(' ')[0]}
         </label>
         <TextArea
+          id="translation-output"
           value={displayText}
           readOnly
           placeholder={isTranslating ? t('sidebar.translate.translating') : t('sidebar.translate.outputPlaceholder')}

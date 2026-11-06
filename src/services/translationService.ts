@@ -46,6 +46,22 @@ const PLAMO3_LANGUAGE_CODES: Partial<Record<SupportedLanguage, string>> = {
   Indonesian: 'id',
 };
 
+const LANGUAGE_NAMES_ZH: Record<SupportedLanguage, string> = {
+  auto: '自动检测',
+  Japanese: '日语',
+  English: '英语',
+  Chinese: '中文',
+  Korean: '韩语',
+  Spanish: '西班牙语',
+  Portuguese: '葡萄牙语',
+  Russian: '俄语',
+  Hindi: '印地语',
+  Arabic: '阿拉伯语',
+  French: '法语',
+  Bengali: '孟加拉语',
+  Indonesian: '印尼语',
+};
+
 export class Plamo3LanguageError extends Error {
   constructor() {
     super('PLaMo 3 Translate does not support the selected language. Choose a supported language or another model.');
@@ -56,6 +72,8 @@ export class Plamo3LanguageError extends Error {
 type PromptTemplateVariable =
   | 'source_language'
   | 'target_language'
+  | 'source_language_zh'
+  | 'target_language_zh'
   | 'input_text'
   | 'output_text';
 
@@ -413,7 +431,7 @@ export class TranslationService {
     if (profile.apiType === 'anthropic') {
       return {
         model: profile.model,
-        system: systemPrompt,
+        ...(systemPrompt.trim() ? { system: systemPrompt } : {}),
         messages: [
           {
             role: 'user',
@@ -429,7 +447,7 @@ export class TranslationService {
     return {
       model: profile.model,
       messages: [
-        { role: 'system', content: systemPrompt },
+        ...(systemPrompt.trim() ? [{ role: 'system' as const, content: systemPrompt }] : []),
         { role: 'user', content: prompt },
       ],
       stream,
@@ -534,6 +552,8 @@ export class TranslationService {
     return {
       source_language: sourceLanguage,
       target_language: targetLanguage,
+      source_language_zh: LANGUAGE_NAMES_ZH[sourceLanguage],
+      target_language_zh: LANGUAGE_NAMES_ZH[targetLanguage],
       input_text: text,
       output_text: '',
     };
@@ -543,13 +563,10 @@ export class TranslationService {
     template: string,
     variables: PromptTemplateVariables
   ): string {
-    let rendered = template;
-
-    for (const [key, value] of Object.entries(variables)) {
-      rendered = rendered.split(`{{${key}}}`).join(value);
-    }
-
-    return rendered;
+    return template.replace(
+      /\{\{(source_language|target_language|source_language_zh|target_language_zh|input_text|output_text)\}\}/g,
+      (_match, key: PromptTemplateVariable) => variables[key],
+    );
   }
 
   private async executeWithRetry<T>(
