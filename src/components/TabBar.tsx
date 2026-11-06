@@ -15,7 +15,7 @@ interface TabBarProps {
 export function TabBar({ tabs, activeTab, onTabChange }: TabBarProps) {
   return (
     <div
-      className="flex border-b"
+      className="flex overflow-x-auto border-b"
       style={{ borderColor: 'var(--color-border)' }}
       role="tablist"
     >
@@ -28,7 +28,7 @@ export function TabBar({ tabs, activeTab, onTabChange }: TabBarProps) {
             aria-selected={isActive}
             onClick={() => { onTabChange(tab.id); }}
             className={`
-              flex flex-1 items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors
+              flex flex-1 shrink-0 items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors
               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset
               focus-visible:ring-[var(--color-accent)]
             `}

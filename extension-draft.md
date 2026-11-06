@@ -71,7 +71,7 @@
 - [✅️] プロファイル切り替え(デフォルト：Default-PLaMo2-Llama-cpp)
 - [✅️] APIエンドポイント設定(デフォルト：http://localhost:3002/v1/chat/completions)
 - [✅️] APIキー設定(デフォルト：test)
-- [✅️] モデル設定(デフォルト：plamo-2-translate-gguf)
+- [✅️] モデル設定(新規プロファイルのデフォルト：plamo-3-translate)
 - [✅️] タイムアウト設定(デフォルト：600秒)
 - [✅️] ソース言語設定(デフォルト：auto)
 - [✅️] ターゲット言語設定(デフォルト：Japanese)

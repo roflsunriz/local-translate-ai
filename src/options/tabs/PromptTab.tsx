@@ -2,6 +2,8 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useSettingsStore } from '@/stores';
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_USER_PROMPT_TEMPLATE } from '@/types/settings';
 
+import type { Plamo3Form } from '@/types/settings';
+
 export function PromptTab() {
   const { t } = useTranslation();
   const { updateProfile, getActiveProfile } = useSettingsStore();
@@ -11,6 +13,37 @@ export function PromptTab() {
     return (
       <div style={{ color: 'var(--color-text-muted)' }}>
         {t('settings.api.currentProfile')}: N/A
+      </div>
+    );
+  }
+
+  if (activeProfile.apiType === 'plamo3') {
+    return (
+      <div className="space-y-4">
+        <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+          {t('settings.prompt.plamo3Description')}
+        </p>
+        <div>
+          <label htmlFor="plamo3-form" className="mb-1 block text-sm font-medium"
+            style={{ color: 'var(--color-text-secondary)' }}>
+            {t('settings.prompt.plamo3Form')}
+          </label>
+          <select
+            id="plamo3-form"
+            value={activeProfile.plamo3Form ?? 'plain'}
+            onChange={(e) => { updateProfile(activeProfile.id, { plamo3Form: e.target.value as Plamo3Form }); }}
+            className="w-full rounded-md border px-3 py-2 text-sm"
+            style={{
+              backgroundColor: 'var(--color-bg-tertiary)',
+              borderColor: 'var(--color-border)',
+              color: 'var(--color-text-primary)',
+            }}
+          >
+            <option value="auto">{t('settings.prompt.plamo3FormAuto')}</option>
+            <option value="plain">{t('settings.prompt.plamo3FormPlain')}</option>
+            <option value="polite">{t('settings.prompt.plamo3FormPolite')}</option>
+          </select>
+        </div>
       </div>
     );
   }

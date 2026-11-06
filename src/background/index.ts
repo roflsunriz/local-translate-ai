@@ -5,7 +5,7 @@
 import { GoogleTranslateService } from '@/services/googleTranslateService';
 import { HistoryService } from '@/services/historyService';
 import { SettingsService } from '@/services/settingsService';
-import { TranslationService } from '@/services/translationService';
+import { Plamo3LanguageError, TranslationService } from '@/services/translationService';
 import { resolveLanguage, t as translate } from '@/i18n';
 import { applyConversions } from '@/utils/currency';
 import { sanitizeAccumulatedResult } from '@/utils/sanitize';
@@ -403,7 +403,9 @@ async function handleTranslateText(
       void broadcastMessage(response);
       return response;
     } else {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage = error instanceof Plamo3LanguageError
+        ? translate('notifications.plamo3UnsupportedLanguage', resolveLanguage((await settingsService.getSettings()).uiLanguage))
+        : error instanceof Error ? error.message : 'Unknown error';
       console.error('Translation error:', error);
       const response = {
         type: 'TRANSLATE_TEXT_ERROR',
@@ -590,7 +592,9 @@ async function handleTranslatePage(
       timestamp: Date.now(),
     });
 
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorMessage = error instanceof Plamo3LanguageError
+      ? translate('notifications.plamo3UnsupportedLanguage', resolveLanguage((await settingsService.getSettings()).uiLanguage))
+      : error instanceof Error ? error.message : 'Unknown error';
     const isCancelled = abortController.signal.aborted || errorMessage.includes('cancelled');
     if (!isCancelled) {
       console.error('Page translation error:', error);

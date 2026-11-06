@@ -38,15 +38,17 @@ Firefoxのメニューから「拡張機能とテーマ」を開き、ギア（�
 詳細な手順は [llama-cpp.md](./llama-cpp.md) を参照してください。ここでは最小限の流れだけ記載します。
 
 1. [llama.cppのReleases](https://github.com/ggml-org/llama.cpp/releases) からお使いの環境に合ったアーカイブをダウンロードし、展開して `llama-server` (Windowsは `llama-server.exe`) を取得する。GPU利用時はCUDA対応ビルドを選択。
-2. 展開先直下に `models` ディレクトリを作成し、Hugging Face Hub から `plamo-2-translate.Q4_K_M.gguf` を配置する。
+2. 展開先直下に `models` ディレクトリを作成し、[PLaMo 3 Translate 2B GGUF](https://huggingface.co/pfnet/plamo-3-translate-2b-GGUF) の `plamo-3-translate-2b-Q4_K_M.gguf` を配置する。モデルの利用条件は[公式ライセンス](https://plamo.preferredai.jp/info/plamo-community-license-ja)を確認する。
 3. 以下のようにサーバーを起動する（ポートやパスは環境に合わせて調整）。
    ```bash
    # macOS / Linux / Windows(ビルドした場合)
-   ./llama-server -m ./models/plamo-2-translate.Q4_K_M.gguf --port 3002 --host 127.0.0.1 -c 4096
+   ./llama-server -m ./models/plamo-3-translate-2b-Q4_K_M.gguf --port 3002 --host 127.0.0.1 -c 16384 --alias plamo-3-translate --jinja --no-prefill-assistant
    # Windowsで配布バイナリを利用する場合の一例（modelsを上の階層に置いた場合）
-   ./llama-server.exe -m ../models/plamo-2-translate.Q4_K_M.gguf --port 3002 --host 127.0.0.1 -c 4096
+   ./llama-server.exe -m ../models/plamo-3-translate-2b-Q4_K_M.gguf --port 3002 --host 127.0.0.1 -c 16384 --alias plamo-3-translate --jinja --no-prefill-assistant
    ```
-4. 拡張機能の設定でAPIエンドポイントを `http://localhost:3002/v1/chat/completions` に設定し、モデル名に `plamo-2-translate-gguf` を指定する。
+4. 新規インストールでは既定のAPI種別・エンドポイント・モデル名のまま使用する。既存利用者は設定 > APIで新しいプロファイルを作成するか、対象プロファイルのAPI種別を `PLaMo 3 Translate (llama.cpp)`、エンドポイントを `http://localhost:3002/v1/chat/completions`、モデル名を `plamo-3-translate` に設定する。
+
+既存プロファイルは更新時に変更されません。PLaMo 2を使い続ける場合は従来の設定を保持してください。PLaMo 3では原文と言語設定を使い、従来のシステム・ユーザープロンプトは使いません。設定 > プロンプトで日本語の文体を選べます。中国語は簡体字として扱い、ポルトガル語はモデルの公式対応言語に含まれません。
 
 ## 設定
 
@@ -54,22 +56,22 @@ Firefoxのメニューから「拡張機能とテーマ」を開き、ギア（�
 
 | 項目 | デフォルト値 | 備考 |
 |------|-------------|------|
-| API種別 | OpenAI互換 | Anthropic Messages API を利用する場合は設定から切り替えてください。 |
+| API種別 | PLaMo 3 Translate (llama.cpp) | PLaMo 2や他のOpenAI互換API、Anthropic Messages APIを使う場合は切り替えてください。 |
 | APIエンドポイント | `http://localhost:3002/v1/chat/completions` | OpenRouterやCerebrasなどのOpenAI互換APIを使用できます。 |
 | APIキー | `test` | ローカルではAPIキーは不要ですが、クラウド翻訳する場合は必須です。 |
-| モデル | `plamo-2-translate-gguf` | 翻訳モデルの名前を設定します。llama.cppの名前と合わせてください。クラウド翻訳する場合はモデル名の指定を行います。例:`tngtech/deepseek-r1t2-chimera:free`や`zai-glm-4.6`など |
+| モデル | `plamo-3-translate` | サーバーの `--alias` または利用するAPIのモデル名と合わせてください。 |
 | タイムアウト | 600秒 | デフォルトは10分で中止。 |
 | ページ翻訳の同時リクエスト数 | 1 | 1～32。APIサーバーの並列slot数やプロバイダーのレート制限に合わせて設定します。 |
 | ソース言語 | 自動検出 | 翻訳元の言語です。 |
 | ターゲット言語 | Japanese | 翻訳先言語です。 |
-| システムプロンプト | 省略 | AIモデルに設定する役割を指定してください。デフォルトではテクノロジー専門家です。 |
-| ユーザープロンプトテンプレート | 省略 | デフォルトではPLaMo専用テンプレートが指定されています。 |
+| 日本語の文体 | 常体 | PLaMo 3で日本語へ翻訳する場合に適用します。敬体またはモデルの既定も選べます。 |
+| システム／ユーザープロンプト | PLaMo 3では不使用 | OpenAI互換・Anthropicのプロファイルでは従来どおり設定できます。 |
 
 ### llama.cppサーバーの起動例
 
 ```bash
-# PLaMo-2-Translateモデルを使用する場合
-./llama-server -m plamo-2-translate.gguf --port 3002 --host 127.0.0.1
+# PLaMo 3 Translate 2Bモデルを使用する場合
+./llama-server -m ./models/plamo-3-translate-2b-Q4_K_M.gguf --port 3002 --host 127.0.0.1 -c 16384 --alias plamo-3-translate --jinja --no-prefill-assistant
 ```
 
 ページ翻訳を並列化する場合は、llama.cpp側でも同数以上のslotを用意します。例えば4件を同時処理する場合は `--parallel 4` を付け、設定 > API > 対象プロファイルの「ページ翻訳の同時リクエスト数」も4にします。並列数を増やすとKVキャッシュなどのメモリー使用量も増えるため、まず2～4で実測してください。
@@ -93,7 +95,7 @@ LLMサーバーを起動せずに翻訳したい場合、Google翻訳モード�
 
 ## 開発
 
-詳細は [findings.md](findings.md#readme-1) に移しました。
+Node.js 20以上とBunを用意し、`bun install --frozen-lockfile` で依存関係を導入します。`bun run build` で `dist/` を生成します。開発時の起動・テストは[テスト手順](./docs/TESTING.md)、リリースは[更新手順](./how-to-update.md)を参照してください。
 
 ## ライセンス
 
@@ -111,4 +113,4 @@ Issue・Pull Requestはいつでも歓迎します。
 
 ## 依存更新の自動処理
 
-詳細は [findings.md](findings.md#readme-2) に移しました。
+Dependabotの更新確認とマージは毎月28日（日本時間）にまとめます。詳細は[更新手順](./how-to-update.md)を参照してください。

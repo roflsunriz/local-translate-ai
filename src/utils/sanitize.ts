@@ -146,12 +146,12 @@ function removeLLMPrefixes(text: string): string {
   const prefixPatterns: RegExp[] = [
     // English prefixes
     /^(?:Here(?:'s| is) (?:the )?translation:?\s*)/i,
-    /^(?:The )?translation(?:\s+is)?:?\s*/i,
+    /^(?:The )?translation(?:\s+is)?\s*:\s*/i,
     /^(?:Translated text:?\s*)/i,
 
     // Japanese prefixes
-    /^(?:翻訳(?:結果)?(?:は)?[:：]?\s*)/,
-    /^(?:以下(?:が|は)翻訳(?:結果)?(?:です)?[:：]?\s*)/,
+    /^(?:翻訳(?:結果)?(?:は)?[:：]\s*)/,
+    /^(?:以下(?:が|は)翻訳(?:結果)?(?:です)?[:：]\s*)/,
   ];
 
   let result = text;

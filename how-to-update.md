@@ -1,4 +1,4 @@
-1. 未コミットの変更と前回リリースタグからの差分を確認し、変更の意図が分かるように `CHANGELOG.md` を更新する。
+1. 未コミットの変更と前回リリースタグからの差分を確認し、`CHANGELOG.md` に `## [X.X.X] - YYYY-MM-DD` と変更の意図を記載する。GitHub Releaseの本文にはこの節が自動的に使われる。
 2. `package.json` と `public/manifest.json` のバージョンを上げ、`amo-metadata.json` のリリースノートも更新する。
 3. `bun run amo:validate`、`bun run lint`、`bun run type-check`、`bun run build`、`bun run test`、`bun run amo:lint` を実行する。
 4. 変更を日本語Conventional Commits形式でコミットし、`main` にプッシュする。
@@ -9,13 +9,13 @@ AMO掲載ロケールの根拠と今回の対応範囲は [docs/AMO_LOCALES.md](
 
 ---
 
-間違えてタグを作ってプッシュしてしまいリリースを作ったときはgit tag -d vX.X.Xとgit push origin :refs/tags/vX.X.Xでタグを削除し、リリースを削除して、新しいHEADでタグを作り直す。
+公開済みの版に誤りがある場合は、既存のタグや配布物を付け替えず、修正した新しい版を発行する。公開前の作業で問題がある場合は、状況と既存データを確認し、対象の変更を修正して検証し直す。
 
 ## Dependabot PR の更新
 
 
 Dependabot version update は毎月28日00:00、検証済み PR の自動マージは同日18:00（いずれも `Asia/Tokyo`）にまとめます。28日より前に自動マージせず、現在の head SHA と全 PR チェックを月末処理で再確認します。
-詳細は [findings.md](findings.md#update-1) に移しました。
+PRコードを実行するジョブには書込み権限や秘密情報を渡さず、検証対象と更新対象を確認します。
 
 ## 依存監査
 

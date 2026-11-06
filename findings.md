@@ -1,5 +1,6 @@
 # 調査知見
 
+- PLaMo 3 Translate GGUFは原文をuserメッセージで送り、`chat_template_kwargs` の言語コードを使う。自動検出時は `source_lang` を省略し、日本語の `form` は他言語には付けない。旧プロファイルのOpenAIモードは変更しない。公式2BのQ4_K_Mは埋込みテンプレートと `--jinja --no-prefill-assistant` を使用し、`stop` は `<|plamo:tag|>`／`<|plamo:bos|>`。中国語は `zh-hans`、ポルトガル語は公式の対応言語外。[公式説明](https://huggingface.co/pfnet/plamo-3-translate-2b-GGUF/blob/main/README_ja.md)（2026-11-06確認）。
 - TypeScript 7 CLIは `@typescript/native`、typed ESLint用APIは `@typescript/typescript6` を `typescript` aliasで併用する。型検査とlintの両方を確認する。
 - typescript-eslintのparserとeslint-pluginはpeer依存に従って同じ版へ更新し、Bun lockの実効版を確認する。
 - Dependabotの再修復は読取り権限で `bun.lock` だけを変更し、PRコードへ秘密や書込み権限を渡さない。

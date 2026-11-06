@@ -196,6 +196,7 @@ function ProfileEditor({ profile, onChange, onSave, onCancel }: ProfileEditorPro
           >
             <option value="openai">{t('settings.api.apiTypeOpenAI')}</option>
             <option value="anthropic">{t('settings.api.apiTypeAnthropic')}</option>
+            <option value="plamo3">{t('settings.api.apiTypePlamo3')}</option>
           </select>
         </div>
 
@@ -387,7 +388,9 @@ function ProfileViewer({ profile }: ProfileViewerProps) {
           <dd style={{ color: 'var(--color-text-primary)' }}>
             {profile.apiType === 'anthropic'
               ? t('settings.api.apiTypeAnthropic')
-              : t('settings.api.apiTypeOpenAI')}
+              : profile.apiType === 'plamo3'
+                ? t('settings.api.apiTypePlamo3')
+                : t('settings.api.apiTypeOpenAI')}
           </dd>
         </div>
         <div>

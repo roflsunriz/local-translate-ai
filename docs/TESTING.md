@@ -64,14 +64,14 @@ bun run preview
 llama.cpp を使う場合の例です。モデルファイルやポートは環境に合わせて変更してください。
 
 ```powershell
-.\llama-server.exe -m ..\models\plamo-2-translate.Q4_K_M.gguf --port 3002 --host 127.0.0.1 -c 4096
+.\llama-server.exe -m ..\models\plamo-3-translate-2b-Q4_K_M.gguf --port 3002 --host 127.0.0.1 -c 16384 --alias plamo-3-translate --jinja --no-prefill-assistant
 ```
 
 拡張機能の設定画面で以下を確認します。
 
-- API種別: OpenAI互換
+- API種別: PLaMo 3 Translate (llama.cpp)
 - APIエンドポイント: `http://localhost:3002/v1/chat/completions`
-- モデル: llama.cpp 側で指定したモデル名
+- モデル: `plamo-3-translate`（llama.cpp 側の `--alias` と一致させる）
 - ターゲット言語: Japanese など確認しやすい言語
 
 API サーバーを使わずに確認する場合は、設定画面またはサイドバーで「Google翻訳」をオンにします。

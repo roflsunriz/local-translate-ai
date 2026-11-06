@@ -146,10 +146,10 @@ export function OptionsPage() {
           </div>
 
           <div
-            className="flex items-center justify-between border-t px-6 py-4"
+            className="flex flex-wrap items-center justify-between gap-3 border-t px-6 py-4"
             style={{ borderColor: 'var(--color-border)' }}
           >
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <button
                 onClick={handleExport}
                 className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors"

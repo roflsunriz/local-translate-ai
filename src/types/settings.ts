@@ -33,7 +33,8 @@ export type UILanguage =
   | 'id';
 
 export type ThemeMode = 'auto' | 'light' | 'dark';
-export type ApiType = 'openai' | 'anthropic';
+export type ApiType = 'openai' | 'anthropic' | 'plamo3';
+export type Plamo3Form = 'auto' | 'plain' | 'polite';
 
 export const MIN_PAGE_TRANSLATION_CONCURRENCY = 1;
 export const MAX_PAGE_TRANSLATION_CONCURRENCY = 32;
@@ -62,6 +63,7 @@ export interface TranslationProfile {
   targetLanguage: SupportedLanguage;
   systemPrompt: string;
   userPromptTemplate: string;
+  plamo3Form?: Plamo3Form;
 }
 
 export interface KeyboardShortcuts {
@@ -136,18 +138,19 @@ translation
 <|plamo:op|>output lang={{target_language}}`;
 
 export const DEFAULT_PROFILE: TranslationProfile = {
-  id: 'default-plamo2-llama-cpp',
-  name: 'Default-PLaMo2-Llama-cpp',
-  apiType: 'openai',
+  id: 'default-plamo3-llama-cpp',
+  name: 'Default-PLaMo3-Llama-cpp',
+  apiType: 'plamo3',
   apiEndpoint: 'http://localhost:3002/v1/chat/completions',
   apiKey: 'test',
-  model: 'plamo-2-translate-gguf',
+  model: 'plamo-3-translate',
   timeout: 600,
   pageTranslationConcurrency: MIN_PAGE_TRANSLATION_CONCURRENCY,
   sourceLanguage: 'auto',
   targetLanguage: 'Japanese',
   systemPrompt: DEFAULT_SYSTEM_PROMPT,
   userPromptTemplate: DEFAULT_USER_PROMPT_TEMPLATE,
+  plamo3Form: 'plain',
 };
 
 export const DEFAULT_EXCLUSION_PATTERNS: ExclusionPattern[] = [

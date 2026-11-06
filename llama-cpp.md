@@ -1,6 +1,6 @@
 # llama.cpp セットアップガイド
 
-このドキュメントは、[llama.cpp](https://github.com/ggml-org/llama.cpp) をセットアップし、[PLaMo-2-Translate](https://huggingface.co/mmnga/plamo-2-translate-gguf) モデルを使用して翻訳サーバーを起動する手順を説明します。
+このドキュメントは、[llama.cpp](https://github.com/ggml-org/llama.cpp) をセットアップし、[PLaMo 3 Translate 2B GGUF](https://huggingface.co/pfnet/plamo-3-translate-2b-GGUF) を使用して翻訳サーバーを起動する手順を説明します。モデルは拡張機能とは別の[ライセンス](https://plamo.preferredai.jp/info/plamo-community-license-ja)で提供されます。
 
 ## 0. 前提条件
 
@@ -88,7 +88,7 @@ cmake --build . --config Release --target llama-server
 
 ## 2. 翻訳モデルのダウンロード
 
-次に、翻訳に使用するモデル `plamo-2-translate-gguf` をダウンロードします。
+次に、翻訳に使用する公式モデルをダウンロードします。量子化形式はメモリー容量に合わせて選べます。以下は `Q4_K_M` の例です。
 
 `llama.cpp` のルートディレクトリに `models` ディレクトリを作成し、そこにモデルをダウンロードするのが一般的です。
 
@@ -101,19 +101,19 @@ Hugging Face Hubからモデルをダウンロードします。hf を使うと�
 
 ```bash
 # huggingface-hubが未インストールの場合はインストール
-# pip install -U "huggingface_hub[cli]"
+# pip install -U huggingface_hub
 
-hf download mmnga/plamo-2-translate-gguf plamo-2-translate.Q4_K_M.gguf --local-dir . --local-dir-use-symlinks False
+hf download pfnet/plamo-3-translate-2b-GGUF plamo-3-translate-2b-Q4_K_M.gguf --local-dir .
 ```
 
 `wget` や `curl` を使用して直接ダウンロードすることもできます。
 
 ```bash
 # wgetの場合
-wget https://huggingface.co/mmnga/plamo-2-translate-gguf/resolve/main/plamo-2-translate.Q4_K_M.gguf
+wget https://huggingface.co/pfnet/plamo-3-translate-2b-GGUF/resolve/main/plamo-3-translate-2b-Q4_K_M.gguf
 
 # curlの場合
-curl -L https://huggingface.co/mmnga/plamo-2-translate-gguf/resolve/main/plamo-2-translate.Q4_K_M.gguf -o plamo-2-translate.Q4_K_M.gguf
+curl -L https://huggingface.co/pfnet/plamo-3-translate-2b-GGUF/resolve/main/plamo-3-translate-2b-Q4_K_M.gguf -o plamo-3-translate-2b-Q4_K_M.gguf
 ```
 
 ダウンロード後、`llama.cpp` のルートディレクトリに戻ります。
@@ -130,7 +130,7 @@ cd ..
 llama.cpp/
 ├── llama-server(.exe)
 ├── models/
-│   └── plamo-2-translate.Q4_K_M.gguf
+│   └── plamo-3-translate-2b-Q4_K_M.gguf
 └── ...
 ```
 
@@ -140,10 +140,10 @@ llama.cpp/
 
 ```bash 
 # macOS / Linux / Windows (ソースからビルドした場合) 
-./llama-server -m ./models/plamo-2-translate.Q4_K_M.gguf --port 3002 --host 127.0.0.1 -c 4096
+./llama-server -m ./models/plamo-3-translate-2b-Q4_K_M.gguf --port 3002 --host 127.0.0.1 -c 16384 --alias plamo-3-translate --jinja --no-prefill-assistant
 
 # Windows (ビルド済みファイル or buildディレクトリから実行する場合) 
-./llama-server.exe -m ../models/plamo-2-translate.Q4_K_M.gguf --port 3002 --host 127.0.0.1 -c 4096
+./llama-server.exe -m ../models/plamo-3-translate-2b-Q4_K_M.gguf --port 3002 --host 127.0.0.1 -c 16384 --alias plamo-3-translate --jinja --no-prefill-assistant
 ```
 
 ### 主なオプション
@@ -151,7 +151,9 @@ llama.cpp/
 - `-m <モデルのパス>`: 使用するモデルファイルのパスを指定します。
 - `--port <ポート番号>`: サーバーがリッスンするポート番号を指定します。デフォルトは `8080` です。
 - `--host <ホスト名/IP>`: サーバーがバインドするホストを指定します。同じPCだけで使う場合は`127.0.0.1`に限定します。`0.0.0.0`はLANを含む外部へ公開するため、必要な場合だけAPIキーやファイアウォールと併用してください。
-- `-c <コンテキストサイズ>`: モデルのコンテキストサイズを指定します。現在のllama.cppで`0`または省略した場合はモデルの値を使います。PLaMoモデルで明示する場合は、1slotあたり4096 token程度を目安にします。
+- `-c <コンテキストサイズ>`: 入力と出力に使う容量を指定します。公式の例は16384ですが、メモリーと同時処理数に合わせて調整します。
+- `--alias plamo-3-translate`: 拡張機能の既定モデル名と合わせます。
+- `--jinja --no-prefill-assistant`: GGUF内のチャットテンプレートを使う公式起動例の設定です。古いllama.cppで利用できない場合は更新してください。
 - `-ngl <レイヤー数>`: GPUにオフロードするモデルのレイヤー数を指定します。GPUを使用する場合、`35` などの大きな値を指定すると高速化されます。
 - `--parallel <slot数>`: 1つのサーバーで同時処理できるリクエストslot数を指定します。複数のサーバーインスタンスを起動する必要はありません。
 
@@ -160,7 +162,7 @@ llama.cpp/
 Local Translate AIの既定値は、従来と同じ1件ずつの順次処理です。4件を同時処理する例は次のとおりです。
 
 ```bash
-./llama-server -m ./models/plamo-2-translate.Q4_K_M.gguf --port 3002 --host 127.0.0.1 -c 16384 --parallel 4
+./llama-server -m ./models/plamo-3-translate-2b-Q4_K_M.gguf --port 3002 --host 127.0.0.1 -c 16384 --parallel 4 --alias plamo-3-translate --jinja --no-prefill-assistant
 ```
 
 設定 > API > 対象プロファイルで「ページ翻訳の同時リクエスト数」を4にしてください。llama.cppは1インスタンス内の複数slotをcontinuous batchingで処理します。`-c`で確保したコンテキストはslot間で共有されるため、上の例では4slotに対して合計16384 tokenを確保しています。必要なメモリーと最適な値はモデル、量子化、CPU/GPU、入力長で変わります。メモリー不足や速度低下が起きる場合は、拡張機能とサーバーの両方を2または1へ下げてください。
@@ -169,4 +171,4 @@ Local Translate AIの既定値は、従来と同じ1件ずつの順次処理で�
 
 サーバーが正常に起動すると、`http://localhost:3002` でAPIが利用可能になります。
 
-これで、Local Translate AI拡張機能から利用する準備が整いました。拡張機能の設定で、APIエンドポイントを `http://localhost:3002/v1/chat/completions` に設定してください。
+これで、Local Translate AI拡張機能から利用する準備が整いました。API種別に `PLaMo 3 Translate (llama.cpp)`、エンドポイントに `http://localhost:3002/v1/chat/completions`、モデルに `plamo-3-translate` を設定してください。既存のPLaMo 2プロファイルは変更されないので、移行するときは新しいプロファイルを追加できます。

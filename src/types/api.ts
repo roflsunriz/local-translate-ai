@@ -14,6 +14,11 @@ export interface ChatCompletionRequest {
   max_tokens?: number;
   stream?: boolean;
   stop?: string[];
+  chat_template_kwargs?: {
+    target_lang: string;
+    source_lang?: string;
+    form?: 'plain' | 'polite';
+  };
 }
 
 export interface ChatCompletionChoice {

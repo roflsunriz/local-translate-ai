@@ -30,6 +30,29 @@ const ANTHROPIC_VERSION = '2023-06-01';
 const ANTHROPIC_MIN_MAX_TOKENS = 1024;
 const ANTHROPIC_MAX_TOKENS = 4096;
 
+// Codes supported by PLaMo 3 for the languages exposed by the extension.
+// Chinese selects Simplified Chinese; Portuguese is not in the model's published list.
+const PLAMO3_LANGUAGE_CODES: Partial<Record<SupportedLanguage, string>> = {
+  Japanese: 'ja',
+  English: 'en',
+  Chinese: 'zh-hans',
+  Korean: 'ko',
+  Spanish: 'es',
+  Russian: 'ru',
+  Hindi: 'hi',
+  Arabic: 'ar',
+  French: 'fr',
+  Bengali: 'bn',
+  Indonesian: 'id',
+};
+
+export class Plamo3LanguageError extends Error {
+  constructor() {
+    super('PLaMo 3 Translate does not support the selected language. Choose a supported language or another model.');
+    this.name = 'Plamo3LanguageError';
+  }
+}
+
 type PromptTemplateVariable =
   | 'source_language'
   | 'target_language'
@@ -164,6 +187,7 @@ export class TranslationService {
 
     const decoder = new TextDecoder();
     let accumulated = '';
+    let pendingLine = '';
 
     // Safety limits
     const maxOutputLength = Math.max(
@@ -182,17 +206,14 @@ export class TranslationService {
         }
 
         const { done, value } = await reader.read();
-        if (done) {
-          break;
-        }
-
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n');
+        pendingLine += done ? `${decoder.decode()}\n` : decoder.decode(value, { stream: true });
+        const lines = pendingLine.split('\n');
+        pendingLine = lines.pop() ?? '';
 
         for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6);
-            if (data === '[DONE]' && profile.apiType === 'openai') {
+          if (line.startsWith('data:')) {
+            const data = line.slice(5).replace(/^ /, '').trimEnd();
+            if (data === '[DONE]' && profile.apiType !== 'anthropic') {
               continue;
             }
 
@@ -238,6 +259,9 @@ export class TranslationService {
               // Ignore parsing errors for incomplete JSON
             }
           }
+        }
+        if (done) {
+          break;
         }
       }
     } catch (e) {
@@ -301,6 +325,9 @@ export class TranslationService {
     signal: AbortSignal,
     onProgress: (completed: number, total: number, result: string, index: number) => void
   ): Promise<string[]> {
+    if (profile.apiType === 'plamo3') {
+      this.buildPlamo3Options(sourceLanguage, targetLanguage, profile);
+    }
     const results = new Array<string>(texts.length);
     const total = texts.length;
     const configuredConcurrency = normalizePageTranslationConcurrency(
@@ -367,6 +394,17 @@ export class TranslationService {
     profile: TranslationProfile,
     stream: boolean
   ): ChatCompletionRequest | AnthropicMessageRequest {
+    if (profile.apiType === 'plamo3') {
+      return {
+        model: profile.model,
+        messages: [{ role: 'user', content: text }],
+        chat_template_kwargs: this.buildPlamo3Options(sourceLanguage, targetLanguage, profile),
+        temperature: 0,
+        stop: ['<|plamo:tag|>', '<|plamo:bos|>'],
+        stream,
+      };
+    }
+
     const systemPrompt = this.renderPromptTemplate(
       profile.systemPrompt,
       this.buildPromptTemplateVariables(text, sourceLanguage, targetLanguage)
@@ -396,6 +434,27 @@ export class TranslationService {
       ],
       stream,
     };
+  }
+
+  private buildPlamo3Options(
+    sourceLanguage: SupportedLanguage,
+    targetLanguage: SupportedLanguage,
+    profile: TranslationProfile
+  ): NonNullable<ChatCompletionRequest['chat_template_kwargs']> {
+    const target = PLAMO3_LANGUAGE_CODES[targetLanguage];
+    const source = sourceLanguage === 'auto' ? undefined : PLAMO3_LANGUAGE_CODES[sourceLanguage];
+    if (!target || (sourceLanguage !== 'auto' && !source)) {
+      throw new Plamo3LanguageError();
+    }
+
+    const options: NonNullable<ChatCompletionRequest['chat_template_kwargs']> = { target_lang: target };
+    if (source) {
+      options.source_lang = source;
+    }
+    if (target === 'ja' && profile.plamo3Form !== 'auto') {
+      options.form = profile.plamo3Form === 'polite' ? 'polite' : 'plain';
+    }
+    return options;
   }
 
   private buildHeaders(profile: TranslationProfile): Record<string, string> {
