@@ -1,5 +1,5 @@
 import { renderToStaticMarkup } from 'react-dom/server';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { PromptTab } from './PromptTab';
 
@@ -8,7 +8,11 @@ import { DEFAULT_PROFILE, DEFAULT_SETTINGS } from '@/types/settings';
 
 import type { ApiType } from '@/types/settings';
 
-afterEach(() => { useSettingsStore.getState().resetSettings(); });
+beforeEach(() => { vi.stubGlobal('navigator', { language: 'en-US' }); });
+afterEach(() => {
+  useSettingsStore.getState().resetSettings();
+  vi.unstubAllGlobals();
+});
 
 describe('PromptTab', () => {
   it.each<ApiType>(['plamo3', 'openai', 'anthropic'])(

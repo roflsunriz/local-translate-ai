@@ -1,5 +1,6 @@
 # 調査知見
 
+- Vitest 5.1はNode 20をサポートせず、失敗時のreporterでも `Map.groupBy` が必要になる。Reactのブラウザー向け表示テストは `navigator` を明示して実行し、CI・リリースはNode 24 LTSを使用する。Node 20は2026-04にサポート終了済み。
 - Hy-MT2は翻訳先の言語名を含むuserプロンプトを使い、標準のsystemプロンプトはない。英語の指示には英語名、中国語の指示には中国語名を使う。[公式モデル説明](https://huggingface.co/tencent/Hy-MT2-1.8B)（2026-11-06確認）。プロンプト画面のAPI種別と汎用テンプレートを選び、必要ならsystem欄を空にする。モデル名を変えてもAPI種別は自動変更しない。
 - PLaMo 3 Translate GGUFは原文をuserメッセージで送り、`chat_template_kwargs` の言語コードを使う。自動検出時は `source_lang` を省略し、日本語の `form` は他言語には付けない。旧プロファイルのOpenAIモードは変更しない。公式2BのQ4_K_Mは埋込みテンプレートと `--jinja --no-prefill-assistant` を使用し、`stop` は `<|plamo:tag|>`／`<|plamo:bos|>`。中国語は `zh-hans`、ポルトガル語は公式の対応言語外。[公式説明](https://huggingface.co/pfnet/plamo-3-translate-2b-GGUF/blob/main/README_ja.md)（2026-11-06確認）。
 - TypeScript 7 CLIは `@typescript/native`、typed ESLint用APIは `@typescript/typescript6` を `typescript` aliasで併用する。型検査とlintの両方を確認する。

@@ -109,7 +109,7 @@ LLMサーバーを起動せずに翻訳したい場合、Google翻訳モード�
 
 ## 開発
 
-Node.js 20以上とBunを用意し、`bun install --frozen-lockfile` で依存関係を導入します。`bun run build` で `dist/` を生成します。開発時の起動・テストは[テスト手順](./docs/TESTING.md)、リリースは[更新手順](./how-to-update.md)を参照してください。
+Node.js 24または26以降のLTS版とBunを用意し、`bun install --frozen-lockfile` で依存関係を導入します。`bun run build` で `dist/` を生成します。開発時の起動・テストは[テスト手順](./docs/TESTING.md)、リリースは[更新手順](./how-to-update.md)を参照してください。
 
 ## ライセンス
 

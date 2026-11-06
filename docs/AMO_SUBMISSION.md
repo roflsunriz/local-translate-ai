@@ -97,7 +97,7 @@ PRIVACY_POLICY.md の内容を入力
 3. ビルド手順を記載：
 
 ```powershell
-# Node.js 20.x と Bun が必要です
+# Node.js 24または26以降のLTS版とBunが必要です
 
 # 依存関係のインストール
 bun install --frozen-lockfile

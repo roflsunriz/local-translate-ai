@@ -4,7 +4,7 @@
   "description": "Firefox extension for translation using local LLM (llama.cpp)",
   "type": "module",
   "engines": {
-    "node": ">=20.0.0"
+    "node": "^22.13.0 || ^24.0.0 || >=26.0.0"
   },
   "packageManager": "bun@1.4.0",
   "scripts": {

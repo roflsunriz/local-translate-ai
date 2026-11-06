@@ -4,7 +4,7 @@
 
 ## 前提条件
 
-- Node.js 20.0.0 以上
+- Node.js 24または26以降のLTS版（22系は22.13.0以上にも対応）
 - bun
 - Firefox 142.0 以上
 - llama.cpp などの OpenAI 互換 API サーバー
